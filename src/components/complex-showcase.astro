@@ -1,0 +1,85 @@
+---
+/**
+ * Complex Chemistry Showcase Component
+ * Displays all complex images with their classified background colors
+ */
+import { COMPLEX_COLORS, getComplexesByColor } from '../data/complex-colors';
+
+const allComplexes = Object.values(COMPLEX_COLORS);
+const redComplexes = getComplexesByColor('red');
+const yellowComplexes = getComplexesByColor('yellow');
+const greenComplexes = getComplexesByColor('green');
+---
+
+<section class="p-8">
+  <h2 class="text-3xl font-bold mb-6 text-white">Complex Chemistry Classification</h2>
+
+  <!-- All Complexes -->
+  <div class="mb-8">
+    <h3 class="text-xl font-semibold mb-4 text-white">All Complexes</h3>
+    <div class="grid grid-cols-4 gap-4">
+      {allComplexes.map(complex => (
+        <div class={`p-4 rounded-lg ${complex.bgClass} flex flex-col items-center`}>
+          <img
+            src={`/complexes/${complex.filename}`}
+            alt={`Complex ${complex.filename}`}
+            class="w-24 h-24 object-contain mb-2"
+          />
+          <span class="text-sm font-medium text-white">{complex.filename}</span>
+          <span class="text-xs text-white/80">{complex.color}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <!-- Red Complexes -->
+  <div class="mb-8">
+    <h3 class="text-xl font-semibold mb-4 text-red-500">Red Complexes ({redComplexes.length})</h3>
+    <div class="grid grid-cols-4 gap-4">
+      {redComplexes.map(complex => (
+        <div class="p-4 rounded-lg bg-red-500 flex flex-col items-center">
+          <img
+            src={`/complexes/${complex.filename}`}
+            alt={`Complex ${complex.filename}`}
+            class="w-24 h-24 object-contain mb-2"
+          />
+          <span class="text-sm font-medium text-white">{complex.filename}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <!-- Yellow Complexes -->
+  <div class="mb-8">
+    <h3 class="text-xl font-semibold mb-4 text-yellow-400">Yellow Complexes ({yellowComplexes.length})</h3>
+    <div class="grid grid-cols-4 gap-4">
+      {yellowComplexes.map(complex => (
+        <div class="p-4 rounded-lg bg-yellow-400 flex flex-col items-center">
+          <img
+            src={`/complexes/${complex.filename}`}
+            alt={`Complex ${complex.filename}`}
+            class="w-24 h-24 object-contain mb-2"
+          />
+          <span class="text-sm font-medium text-gray-800">{complex.filename}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <!-- Green Complexes -->
+  <div class="mb-8">
+    <h3 class="text-xl font-semibold mb-4 text-green-500">Green Complexes ({greenComplexes.length})</h3>
+    <div class="grid grid-cols-4 gap-4">
+      {greenComplexes.map(complex => (
+        <div class="p-4 rounded-lg bg-green-500 flex flex-col items-center">
+          <img
+            src={`/complexes/${complex.filename}`}
+            alt={`Complex ${complex.filename}`}
+            class="w-24 h-24 object-contain mb-2"
+          />
+          <span class="text-sm font-medium text-white">{complex.filename}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

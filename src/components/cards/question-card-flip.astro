@@ -30,12 +30,12 @@ const getBackgroundPosition = (side: "note" | "question") => {
 };
 ---
 
-<div class={cn("flip-card-container", sizeClasses[size], className)}>
-  <div class="flip-card w-full h-full">
+<div class={cn("question-flip-card-container", sizeClasses[size], className)}>
+  <div class="question-flip-card w-full h-full">
     <!-- Front: Did you know? (Note) -->
     <div
       class={cn(
-        "flip-card-face flip-card-front absolute inset-0 rounded-lg border-4 overflow-hidden",
+        "question-flip-card-face question-flip-card-front absolute inset-0 rounded-lg border-4 overflow-hidden",
         difficultyColors[card.difficulty],
       )}
     >
@@ -52,7 +52,7 @@ const getBackgroundPosition = (side: "note" | "question") => {
     <!-- Back: Question -->
     <div
       class={cn(
-        "flip-card-face flip-card-back absolute inset-0 rounded-lg border-4 overflow-hidden",
+        "question-flip-card-face question-flip-card-back absolute inset-0 rounded-lg border-4 overflow-hidden",
         difficultyColors[card.difficulty],
       )}
     >
@@ -69,35 +69,35 @@ const getBackgroundPosition = (side: "note" | "question") => {
 </div>
 
 <style>
-  .flip-card-container {
+  .question-flip-card-container {
     perspective: 1000px;
     cursor: pointer;
   }
 
-  .flip-card {
+  .question-flip-card {
     transform-style: preserve-3d;
     transition: transform 0.6s;
     position: relative;
   }
 
-  .flip-card-face {
+  .question-flip-card-face {
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
   }
 
-  .flip-card-back {
+  .question-flip-card-back {
     transform: rotateY(180deg);
   }
 
-  .flip-card-container.flipped .flip-card {
+  .question-flip-card-container.flipped .question-flip-card {
     transform: rotateY(180deg);
   }
 </style>
 
 <script>
-  // Add click handlers to flip cards
+  // Add click handlers to question flip cards
   document.addEventListener("DOMContentLoaded", () => {
-    const containers = document.querySelectorAll(".flip-card-container");
+    const containers = document.querySelectorAll(".question-flip-card-container");
     containers.forEach((container) => {
       container.addEventListener("click", () => {
         container.classList.toggle("flipped");

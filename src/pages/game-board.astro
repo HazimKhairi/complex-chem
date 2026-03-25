@@ -37,38 +37,27 @@ import FateModal from "../components/game/fate-modal.astro";
     </div>
 
     <WinnersModel />
-    <section id="game-container" class="transform-origin-center">
-      <!-- Top Section: Players + Ligand Boxes -->
-      <section class="flex flex-col items-center mb-1 sm:mb-2 gap-2 sm:gap-3">
-        <!-- Top Ligand Boxes -->
-        <div class="flex justify-between gap-2 sm:gap-4 md:gap-6 w-full max-w-[280px] sm:max-w-[320px]">
-          <LigandBox playerId={1} />
-          <LigandBox playerId={2} />
-        </div>
+    <section id="game-container" class="transform-origin-center flex items-center gap-4 md:gap-6 lg:gap-8">
+      <!-- LEFT COLUMN: Player 1 & 3 -->
+      <div class="flex flex-col items-center gap-3 md:gap-4">
+        <LigandBox playerId={1} />
+        <PlayerCard id={1} playerName="Player 1" />
+        <PlayerCard id={3} playerName="Player 3" />
+        <LigandBox playerId={3} />
+      </div>
 
-        <!-- Top Players -->
-        <div class="flex justify-between w-full max-w-[280px] sm:max-w-[320px] player-area">
-          <PlayerCard id={1} playerName="Player 1" />
-          <PlayerCard id={2} playerName="Player 2" reverse />
-        </div>
-      </section>
+      <!-- CENTER: Ludo Board (Larger) -->
+      <div class="flex-shrink-0">
+        <LudoBoard />
+      </div>
 
-      <LudoBoard />
-
-      <!-- Bottom Section: Players + Ligand Boxes -->
-      <section class="flex flex-col items-center mt-1 sm:mt-2 gap-2 sm:gap-3">
-        <!-- Bottom Players -->
-        <div class="flex justify-between w-full max-w-[280px] sm:max-w-[320px] player-area">
-          <PlayerCard id={3} playerName="Player 3" />
-          <PlayerCard id={4} playerName="Player 4" reverse />
-        </div>
-
-        <!-- Bottom Ligand Boxes -->
-        <div class="flex justify-between gap-2 sm:gap-4 md:gap-6 w-full max-w-[280px] sm:max-w-[320px]">
-          <LigandBox playerId={3} />
-          <LigandBox playerId={4} />
-        </div>
-      </section>
+      <!-- RIGHT COLUMN: Player 2 & 4 -->
+      <div class="flex flex-col items-center gap-3 md:gap-4">
+        <LigandBox playerId={2} />
+        <PlayerCard id={2} playerName="Player 2" reverse />
+        <PlayerCard id={4} playerName="Player 4" reverse />
+        <LigandBox playerId={4} />
+      </div>
     </section>
     <GameAudio />
     <GameAssets />

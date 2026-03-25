@@ -15,7 +15,7 @@ const firstColorLetter = horseColor.charAt(0);
 <div
   id={`player-${id}`}
   class={cn(
-    "w-[135px] h-[135px] text-gray-500 text-sm box-content flex justify-center items-center",
+    "w-[180px] h-[180px] text-gray-500 text-sm box-content flex justify-center items-center",
     `bg-ludon-${horseColor} border-ludon-${horseColor}`,
     id === 1 && "border-t-2 border-l-2 rounded-tl-[5px]",
     id === 2 && "border-t-2 border-r-2 rounded-tr-[5px]",
@@ -25,9 +25,9 @@ const firstColorLetter = horseColor.charAt(0);
 >
   <table
     class={cn(
-      "block p-2.5 rounded-sm bg-white bg-shadow",
+      "block p-3.5 rounded-sm bg-white bg-shadow",
       "[&_td]:flex [&_td]:justify-center [&_td]:items-center",
-      "[&_td]:w-9 [&_td]:h-9 [&_td]:rounded-full [&_td]:bg-gray-200",
+      "[&_td]:w-12 [&_td]:h-12 [&_td]:rounded-full [&_td]:bg-gray-200",
       "[&_img]:w-3 [&_tr]:flex"
     )}
   >

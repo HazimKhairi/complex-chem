@@ -128,6 +128,7 @@ const gameState = {
   playerLigands: { 1: [], 2: [], 3: [], 4: [] },
   playerPoints: { 1: 0, 2: 0, 3: 0, 4: 0 }, // Question points for each player
   collectedLigandIds: [],
+  piecePositions: {}, // Track all piece positions: { "Player1H1": 5, "Player2H1": 12, ... }
   currentPlayer: 1 // Track whose turn it is
 };
 
@@ -146,10 +147,21 @@ function initGameMechanics() {
     Object.assign(gameState, JSON.parse(saved));
     updateAllLigandDisplays();
     updateAllPointsDisplays(); // Update points displays from saved state
+
+    // Restore piece positions after a short delay to ensure DOM is ready
+    setTimeout(() => {
+      restorePiecePositions();
+    }, 500);
   }
 
   // Listen for question answered events
   document.addEventListener("question-answered", handleQuestionAnswered);
+
+  // Listen for piece movement to save positions
+  document.addEventListener("piece-moved", (event) => {
+    console.log("🎯 Piece moved, saving positions...");
+    savePiecePositions();
+  });
 
   window.GameMechanics = {
     collectLigand,
@@ -323,6 +335,9 @@ function collectLigand(playerId, landedCell = null) {
       if (gameState.collectedLigandIds.includes(ligand.id)) {
         console.warn(`   ⚠️ Ligand "${ligandName}" already collected!`);
         showLigandModal(ligand, "⚠️ Already Collected!", "This ligand has already been collected by another player");
+        // Don't add to player inventory, but don't stop the turn either
+        // Just show the modal and continue
+        savePiecePositions(); // Save current piece positions
         return;
       }
     } else {
@@ -580,6 +595,52 @@ function setCurrentPlayer(playerId) {
 function saveState() {
   sessionStorage.setItem("game-state", JSON.stringify(gameState));
 }
+
+/**
+ * Save all piece positions from window variables to gameState
+ */
+function savePiecePositions() {
+  const positions = {};
+
+  // Save positions for all 4 players, 4 pieces each
+  for (let player = 1; player <= 4; player++) {
+    for (let horse = 1; horse <= 4; horse++) {
+      const key = `Player${player}H${horse}`;
+      const lastPosKey = `lastPos${key.toUpperCase()}`;
+
+      if (typeof window[lastPosKey] !== 'undefined') {
+        positions[key] = window[lastPosKey];
+      }
+    }
+  }
+
+  gameState.piecePositions = positions;
+  saveState();
+  console.log("💾 Piece positions saved:", positions);
+}
+
+/**
+ * Restore all piece positions from gameState to window variables
+ */
+function restorePiecePositions() {
+  if (!gameState.piecePositions) {
+    console.log("No saved piece positions found");
+    return;
+  }
+
+  console.log("📦 Restoring piece positions:", gameState.piecePositions);
+
+  Object.keys(gameState.piecePositions).forEach(key => {
+    const lastPosKey = `lastPos${key.toUpperCase()}`;
+    const position = gameState.piecePositions[key];
+    window[lastPosKey] = position;
+    console.log(`  Restored ${key} to position ${position}`);
+  });
+}
+
+// Expose to window for movement scripts to use
+window.savePiecePositions = savePiecePositions;
+window.restorePiecePositions = restorePiecePositions;
 
 // CSS for flip cards
 const style = document.createElement("style");

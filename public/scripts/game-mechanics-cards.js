@@ -247,13 +247,65 @@ function updateAllPointsDisplays() {
  */
 function showQuestionFeedback(isCorrect, points, difficulty) {
   const feedbackEl = document.getElementById("question-feedback");
-  if (!feedbackEl) return;
+  const modal = document.getElementById("question-modal");
+  const cardContainer = document.getElementById("question-card-container");
+  if (!feedbackEl || !modal) return;
 
-  const difficultyColors = {
-    easy: "bg-green-100 border-green-500 text-green-800",
-    medium: "bg-yellow-100 border-yellow-500 text-yellow-800",
-    hard: "bg-red-100 border-red-500 text-red-800"
-  };
+  const correctAnswer = parseInt(modal.dataset.correctAnswer);
+  const selectedAnswer = parseInt(modal.dataset.selectedAnswer || 0);
+
+  // Update card to show the actual question (right side of image)
+  if (cardContainer) {
+    const difficultyColors = {
+      easy: "#10B981",
+      medium: "#F59E0B",
+      hard: "#EF4444"
+    };
+
+    // Get the question image file from the existing card
+    const existingCard = cardContainer.querySelector('.question-card');
+    const bgImage = existingCard ? window.getComputedStyle(existingCard.querySelector('div')).backgroundImage : '';
+
+    cardContainer.innerHTML = `
+      <div class="question-card w-full rounded-lg border-4 overflow-hidden shadow-lg" style="border-color: ${difficultyColors[difficulty]};">
+        <!-- Show actual question (right side of card image) -->
+        <div class="w-full aspect-[7/5] bg-no-repeat relative" style="${bgImage ? 'background-image: ' + bgImage + '; ' : ''}background-position: 100% center; background-size: 200%;">
+          <div class="absolute top-2 left-2 px-3 py-1 rounded text-xs font-bold text-white" style="background-color: ${difficultyColors[difficulty]};">
+            ${difficulty.toUpperCase()} - ${points} points
+          </div>
+          <div class="absolute bottom-2 right-2 px-3 py-1 bg-black/70 text-white text-xs rounded font-semibold">
+            ${isCorrect ? '✅ Correct Answer!' : '❌ Wrong Answer'}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Highlight correct and wrong answers
+  const optionsContainer = document.getElementById("question-options");
+  if (optionsContainer) {
+    const options = optionsContainer.querySelectorAll(".answer-option");
+    options.forEach((option, index) => {
+      const answerNum = parseInt(option.dataset.answer);
+
+      // Disable all options
+      option.style.pointerEvents = 'none';
+      option.style.cursor = 'not-allowed';
+
+      if (answerNum === correctAnswer) {
+        // Highlight correct answer in green
+        option.className = "answer-option w-full p-4 rounded-lg text-left border-4 border-green-500 bg-green-100 text-green-900 font-bold";
+        option.innerHTML = option.innerHTML.replace(/^[A-D]\.\s/, match => `${match} ✅ `);
+      } else if (answerNum === selectedAnswer && !isCorrect) {
+        // Highlight wrong selected answer in red
+        option.className = "answer-option w-full p-4 rounded-lg text-left border-4 border-red-500 bg-red-100 text-red-900";
+        option.innerHTML = option.innerHTML.replace(/^[A-D]\.\s/, match => `${match} ❌ `);
+      } else {
+        // Fade out other options
+        option.className = "answer-option w-full p-4 rounded-lg text-left border-2 border-gray-300 bg-gray-50 text-gray-500 opacity-50";
+      }
+    });
+  }
 
   const bgColor = isCorrect ? "bg-green-100 border-green-500" : "bg-red-100 border-red-500";
   const textColor = isCorrect ? "text-green-800" : "text-red-800";
@@ -264,13 +316,13 @@ function showQuestionFeedback(isCorrect, points, difficulty) {
       <span class="text-3xl">${isCorrect ? '✅' : '❌'}</span>
       <div>
         <p class="font-bold text-lg">${isCorrect ? 'Correct!' : 'Incorrect'}</p>
-        ${isCorrect ? `<p class="text-sm">You earned <strong>${points} points</strong> (${difficulty} question)</p>` : '<p class="text-sm">Better luck next time!</p>'}
+        ${isCorrect ? `<p class="text-sm">You earned <strong>${points} points</strong> (${difficulty} question)</p>` : '<p class="text-sm">The correct answer is highlighted in green!</p>'}
       </div>
     </div>
   `;
   feedbackEl.classList.remove("hidden");
 
-  // Auto-hide feedback after 3 seconds and close modal
+  // Auto-hide feedback after 4 seconds and close modal
   setTimeout(() => {
     feedbackEl.classList.add("hidden");
     document.getElementById("question-modal")?.classList.add("hidden");
@@ -278,7 +330,7 @@ function showQuestionFeedback(isCorrect, points, difficulty) {
 
     // Dispatch event to notify orchestrator that modal is closed
     document.dispatchEvent(new CustomEvent("question-continue"));
-  }, 3000);
+  }, 4000); // Increased to 4 seconds to give time to read feedback
 }
 
 function collectLigand(playerId, landedCell = null) {
@@ -430,25 +482,17 @@ function showQuestion(playerId) {
     hard: "#EF4444"
   };
 
-  // Render question flip card
+  // Render question card (static - no flip, shows "Did you know?" fact only)
   cardContainer.innerHTML = `
-    <div class="question-flip-card-container w-full aspect-[7/5] cursor-pointer">
-      <div class="question-flip-card w-full h-full">
-        <div class="question-flip-card-face question-flip-card-front absolute inset-0 rounded-lg border-4 overflow-hidden" style="border-color: ${difficultyColors[question.difficulty]};">
-          <div class="w-full h-full bg-no-repeat" style="background-image: url('/assets/question-cards/${question.imageFile}'); background-position: 0% center; background-size: 200%;"></div>
-          <div class="absolute bottom-2 right-2 px-3 py-1 bg-black/70 text-white text-xs rounded">Click to flip</div>
-        </div>
-        <div class="question-flip-card-face question-flip-card-back absolute inset-0 rounded-lg border-4 overflow-hidden" style="border-color: ${difficultyColors[question.difficulty]};">
-          <div class="w-full h-full bg-no-repeat" style="background-image: url('/assets/question-cards/${question.imageFile}'); background-position: 100% center; background-size: 200%;"></div>
-          <div class="absolute bottom-2 right-2 px-3 py-1 bg-black/70 text-white text-xs rounded">Click to flip back</div>
+    <div class="question-card w-full rounded-lg border-4 overflow-hidden shadow-lg" style="border-color: ${difficultyColors[question.difficulty]};">
+      <!-- "Did you know?" fact from left side of card image -->
+      <div class="w-full aspect-[7/5] bg-no-repeat relative" style="background-image: url('/assets/question-cards/${question.imageFile}'); background-position: 0% center; background-size: 200%;">
+        <div class="absolute top-2 left-2 px-3 py-1 rounded text-xs font-bold text-white" style="background-color: ${difficultyColors[question.difficulty]};">
+          ${question.difficulty.toUpperCase()} - ${question.points} points
         </div>
       </div>
     </div>
   `;
-
-  // Add flip handler
-  const flipCard = cardContainer.querySelector(".question-flip-card-container");
-  flipCard.addEventListener("click", () => flipCard.classList.toggle("flipped"));
 
   // Options
   optionsContainer.innerHTML = `
@@ -463,7 +507,9 @@ function showQuestion(playerId) {
     option.addEventListener("click", () => {
       options.forEach(o => o.classList.remove("border-purple-500", "bg-purple-100"));
       option.classList.add("border-purple-500", "bg-purple-100");
-      window.setSelectedAnswer(parseInt(option.dataset.answer));
+      const selectedAnswer = parseInt(option.dataset.answer);
+      modal.dataset.selectedAnswer = selectedAnswer; // Store selected answer
+      window.setSelectedAnswer(selectedAnswer);
     });
   });
 

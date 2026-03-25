@@ -6,9 +6,6 @@ import GameAudio from "../components/game-audio.astro";
 import WinnersModel from "../components/game-board/winners-model.astro";
 import GameStartCountdown from "../components/game-board/game-start-countdown.astro";
 import GameAssets from "../components/game-assets.astro";
-import LigandCollectionModal from "../components/game/ligand-collection-modal.astro";
-import QuestionModal from "../components/game/question-modal.astro";
-import FateModal from "../components/game/fate-modal.astro";
 ---
 
 <Layout>
@@ -29,11 +26,6 @@ import FateModal from "../components/game/fate-modal.astro";
     <GameAssets />
     <GameStartCountdown />
   </main>
-
-  <!-- Level 1 Game Modals -->
-  <LigandCollectionModal />
-  <QuestionModal />
-  <FateModal />
 </Layout>
 
 <script>
@@ -43,26 +35,6 @@ import FateModal from "../components/game/fate-modal.astro";
   script.src = `scripts/${gameOption}.js`;
   script.type = "application/javascript";
   document.head.appendChild(script);
-
-  // Load Level 1 mechanics
-  const level1Script = document.createElement("script");
-  level1Script.src = "scripts/level-1-mechanics.js";
-  level1Script.type = "application/javascript";
-  level1Script.onload = () => {
-    // Initialize Level 1 when script loads
-    if (window.Level1) {
-      window.Level1.init();
-      console.log("Level 1 mechanics initialized!");
-
-      // Make handleTileLanding globally accessible for demo
-      window.testTile = (playerId, tileType) => {
-        window.Level1.handleTileLanding(playerId, tileType);
-      };
-
-      console.log("Demo: Use window.testTile(playerId, 'ligand|question|fate') to test");
-    }
-  };
-  document.head.appendChild(level1Script);
 
   // Optimize game size for screen
   function optimizeGameSize() {

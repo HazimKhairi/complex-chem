@@ -1,0 +1,59 @@
+---
+import { cn } from "../../lib/utils";
+import type { FateCard } from "../../lib/data/fate-cards";
+
+interface Props {
+  card: FateCard;
+  size?: "sm" | "md" | "lg";
+  class?: string;
+}
+
+const { card, size = "md", class: className } = Astro.props;
+
+const sizeClasses = {
+  sm: "w-24 h-32 text-xs",
+  md: "w-32 h-44 text-sm",
+  lg: "w-40 h-56 text-base",
+};
+---
+
+<div
+  class={cn(
+    "fate-card relative rounded-lg border-4 border-red-600 bg-white shadow-xl transition-transform hover:scale-105 cursor-pointer overflow-hidden",
+    sizeClasses[size],
+    className,
+  )}
+>
+  <!-- Warning Triangle Icon -->
+  <div class="absolute top-2 left-1/2 -translate-x-1/2">
+    <div
+      class="w-12 h-12 border-4 border-red-600 bg-white flex items-center justify-center"
+      style="clip-path: polygon(50% 0%, 0% 100%, 100% 100%)"
+    >
+      <div class="text-red-600 text-2xl font-black -mt-1">!</div>
+    </div>
+  </div>
+
+  <!-- Card Content -->
+  <div class="pt-16 px-3 pb-3 flex flex-col items-center justify-center h-full">
+    <h3 class="font-black text-red-600 text-center mb-2 uppercase tracking-wide">
+      {card.title}
+    </h3>
+    <p class="text-xs text-gray-700 text-center leading-tight">{card.description}</p>
+
+    {
+      card.value !== undefined && (
+        <div class="mt-3 px-3 py-1 bg-red-100 rounded-full">
+          <span class="text-red-700 font-bold">
+            {card.value > 0 ? `+${card.value}` : card.value}
+          </span>
+        </div>
+      )
+    }
+  </div>
+
+  <!-- "FATE CARD" Label at Bottom -->
+  <div class="absolute bottom-0 left-0 right-0 bg-red-600 py-1">
+    <p class="text-white text-center font-black text-xs tracking-widest">FATE CARD</p>
+  </div>
+</div>

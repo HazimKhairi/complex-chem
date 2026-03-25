@@ -1,0 +1,103 @@
+---
+import { cn } from "../../lib/utils";
+import type { Ligand } from "../../lib/data/ligands";
+
+interface Props {
+  ligand: Ligand;
+  flipped?: boolean;
+  size?: "sm" | "md" | "lg";
+  class?: string;
+}
+
+const { ligand, flipped = false, size = "md", class: className } = Astro.props;
+
+const sizeClasses = {
+  sm: "w-24 h-32 text-xs",
+  md: "w-32 h-44 text-sm",
+  lg: "w-40 h-56 text-base",
+};
+---
+
+<div
+  class={cn(
+    "ligand-card relative rounded-lg border-2 border-gray-800 shadow-lg transition-transform hover:scale-105 cursor-pointer",
+    sizeClasses[size],
+    className,
+  )}
+  data-flipped={flipped}
+>
+  <!-- Front Side -->
+  <div
+    class={cn(
+      "card-face absolute inset-0 backface-hidden flex flex-col",
+      flipped && "rotate-y-180",
+    )}
+  >
+    <!-- Header with colored background -->
+    <div class={cn("rounded-t-md p-2 flex items-center justify-center", ligand.color)}>
+      <h3 class="font-bold text-white text-lg">{ligand.name}</h3>
+    </div>
+
+    <!-- Card Body -->
+    <div class="flex-1 bg-white p-3 rounded-b-md flex flex-col justify-between">
+      <div class="space-y-1.5">
+        <div>
+          <span class="font-semibold text-gray-700">Compound:</span>
+          <span class="text-gray-600 block">{ligand.fullName}</span>
+        </div>
+        <div>
+          <span class="font-semibold text-gray-700">Classification:</span>
+          <span class="text-gray-600 block">{ligand.classification}</span>
+        </div>
+        <div>
+          <span class="font-semibold text-gray-700">Type:</span>
+          <span class="text-gray-600 block">{ligand.coordinationType}</span>
+        </div>
+        <div>
+          <span class="font-semibold text-gray-700">Donor Atom:</span>
+          <span class="text-gray-600 block">{ligand.donorAtom}</span>
+        </div>
+        <div>
+          <span class="font-semibold text-gray-700">Nomenclature:</span>
+          <span class="text-gray-600 block">{ligand.nomenclature}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Back Side (Molecule Structure - placeholder for now) -->
+  <div
+    class={cn(
+      "card-face absolute inset-0 backface-hidden bg-gray-50 rounded-lg flex items-center justify-center rotate-y-180",
+      !flipped && "rotate-y-0",
+    )}
+  >
+    <div class="text-center p-4">
+      <div class="text-4xl font-bold text-gray-300 mb-2">{ligand.name}</div>
+      <div class="text-xs text-gray-400">Molecular Structure</div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
+
+  .rotate-y-0 {
+    transform: rotateY(0deg);
+  }
+
+  .ligand-card {
+    perspective: 1000px;
+  }
+
+  .card-face {
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+  }
+</style>

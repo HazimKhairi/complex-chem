@@ -433,13 +433,18 @@ function moveHorse(event) {
       selectedPathCellClass = selectedPathCell[1].classList[0];
       selectedPathCellChild1 = $("." + selectedPathCellClass + "> span:first-child").children();
 
-      h1 = selectedPathCellChild1[0].classList[0];
-      h2 = selectedPathCellChild1[1].classList[0];
-
-      if (selectedPathCellChild1[0].classList[1] == identifyColor) {
-        playerHorseClass = h1;
-      } else if (selectedPathCellChild1[1].classList[1] == identifyColor) {
-        playerHorseClass = h2;
+      // Add null checks before accessing classList
+      if (selectedPathCellChild1[0] != null) {
+        h1 = selectedPathCellChild1[0].classList[0];
+        if (selectedPathCellChild1[0].classList[1] == identifyColor) {
+          playerHorseClass = h1;
+        }
+      }
+      if (selectedPathCellChild1[1] != null) {
+        h2 = selectedPathCellChild1[1].classList[0];
+        if (selectedPathCellChild1[1].classList[1] == identifyColor) {
+          playerHorseClass = h2;
+        }
       }
     }
   }

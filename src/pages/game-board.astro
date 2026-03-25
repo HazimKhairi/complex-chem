@@ -15,7 +15,7 @@ import FateModal from "../components/game/fate-modal.astro";
 <Layout>
   <main class="flex justify-center items-center min-h-dvh p-2 sm:p-4 overflow-hidden">
     <WinnersModel />
-    <section id="game-container" class="transform-origin-center w-full max-w-[95vw]">
+    <section id="game-container" class="transform-origin-center">
       <!-- Top Section: Players + Ligand Boxes -->
       <section class="flex flex-col items-center mb-1 sm:mb-2 gap-1 sm:gap-2">
         <!-- Top Ligand Boxes -->
@@ -73,7 +73,7 @@ import FateModal from "../components/game/fate-modal.astro";
   mechanicsScript.type = "application/javascript";
   document.head.appendChild(mechanicsScript);
 
-  // Optimize game size for screen - responsive scaling
+  // Optimize game size for screen - AGGRESSIVE scaling
   function optimizeGameSize() {
     const container = document.getElementById("game-container");
     if (!container) return;
@@ -89,11 +89,12 @@ import FateModal from "../components/game/fate-modal.astro";
     const containerHeight = container.offsetHeight;
     const containerWidth = container.offsetWidth;
 
-    // Calculate scale with padding - more aggressive on mobile
+    // AGGRESSIVE scaling - use almost ALL viewport space
     const isMobile = viewportWidth < 640; // Tailwind 'sm' breakpoint
     const isTablet = viewportWidth >= 640 && viewportWidth < 1024; // Tailwind 'md' to 'lg'
 
-    const paddingFactor = isMobile ? 0.95 : isTablet ? 0.92 : 0.88;
+    // Much higher padding factors to fill screen
+    const paddingFactor = isMobile ? 0.96 : isTablet ? 0.94 : 0.92;
 
     const scaleHeight = (viewportHeight * paddingFactor) / containerHeight;
     const scaleWidth = (viewportWidth * paddingFactor) / containerWidth;
@@ -101,11 +102,11 @@ import FateModal from "../components/game/fate-modal.astro";
     // Use the smaller scale to ensure everything fits
     const scale = Math.min(scaleHeight, scaleWidth);
 
-    // Apply scale (minimum 0.5 for very small screens, maximum 1.5 for large screens)
-    const finalScale = Math.max(0.5, Math.min(1.5, scale));
+    // Apply scale - allow scaling UP to 2x for large screens, minimum 0.4 for tiny screens
+    const finalScale = Math.max(0.4, Math.min(2.0, scale));
     container.style.transform = `scale(${finalScale})`;
 
-    console.log(`Viewport: ${viewportWidth}x${viewportHeight}, Scale: ${finalScale.toFixed(2)}`);
+    console.log(`Viewport: ${viewportWidth}x${viewportHeight}, Container: ${containerWidth}x${containerHeight}, Scale: ${finalScale.toFixed(2)}`);
   }
 
   // Run on load and resize with debounce

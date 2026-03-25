@@ -148,10 +148,11 @@ function initGameMechanics() {
     updateAllLigandDisplays();
     updateAllPointsDisplays(); // Update points displays from saved state
 
-    // Restore piece positions after a short delay to ensure DOM is ready
+    // Restore piece positions after a delay to ensure DOM and movement scripts are ready
     setTimeout(() => {
+      console.log("⏱️ Starting piece position restoration...");
       restorePiecePositions();
-    }, 500);
+    }, 1500); // Increased delay to ensure all scripts loaded
   }
 
   // Listen for question answered events
@@ -620,7 +621,7 @@ function savePiecePositions() {
 }
 
 /**
- * Restore all piece positions from gameState to window variables
+ * Restore all piece positions from gameState to window variables AND visually move pieces
  */
 function restorePiecePositions() {
   if (!gameState.piecePositions) {
@@ -630,12 +631,85 @@ function restorePiecePositions() {
 
   console.log("📦 Restoring piece positions:", gameState.piecePositions);
 
+  // Map player numbers to their color prefixes
+  const playerColors = {
+    1: 'r', // red
+    2: 'b', // blue
+    3: 'y', // yellow
+    4: 'g'  // green
+  };
+
   Object.keys(gameState.piecePositions).forEach(key => {
     const lastPosKey = `lastPos${key.toUpperCase()}`;
     const position = gameState.piecePositions[key];
+
+    // Set window variable
     window[lastPosKey] = position;
-    console.log(`  Restored ${key} to position ${position}`);
+    console.log(`  Restoring ${key} to position ${position}`);
+
+    // Extract player number and horse number from key (e.g., "Player1H1" -> player=1, horse=1)
+    const match = key.match(/Player(\d)H(\d)/);
+    if (!match) return;
+
+    const playerNum = parseInt(match[1]);
+    const horseNum = parseInt(match[2]);
+    const colorPrefix = playerColors[playerNum];
+    const pieceClass = `player${playerNum}h${horseNum}`;
+
+    // Find the piece element
+    const piece = document.querySelector(`img.${pieceClass}`);
+    if (!piece) {
+      console.warn(`  ⚠️ Piece element not found: ${pieceClass}`);
+      return;
+    }
+
+    // Determine target cell based on position
+    let targetCell;
+    if (position === undefined || position === 0 || position < 1) {
+      // Piece is in home/starting area
+      targetCell = document.querySelector(`#Player-${playerNum}-h${horseNum}`);
+    } else if (position === 57) {
+      // Piece has finished (reached home)
+      targetCell = document.querySelector(`#${colorPrefix}h6`);
+    } else if (position >= 53 && position <= 56) {
+      // Piece is in final path (home stretch)
+      const homePos = position - 52; // 53->1, 54->2, 55->3, 56->4
+      targetCell = document.querySelector(`#${colorPrefix}h${homePos}`);
+    } else if (position >= 1 && position <= 52) {
+      // Piece is on main path
+      targetCell = document.querySelector(`#${colorPrefix}${position}`);
+    }
+
+    // Move piece to target cell
+    if (targetCell && piece.parentElement !== targetCell) {
+      console.log(`  🎯 Moving ${pieceClass} to cell ${targetCell.id}`);
+
+      // Remove piece from current location
+      piece.remove();
+
+      // Check if target cell already has pieces (for merging)
+      const existingPieces = targetCell.querySelectorAll('img');
+      if (existingPieces.length > 0) {
+        // There are already pieces here - create/use merge span
+        let mergeSpan = targetCell.querySelector('span');
+        if (!mergeSpan) {
+          mergeSpan = document.createElement('span');
+          // Move existing pieces into span
+          existingPieces.forEach(p => mergeSpan.appendChild(p));
+          targetCell.appendChild(mergeSpan);
+        }
+        // Add new piece to merge span
+        mergeSpan.appendChild(piece);
+      } else {
+        // No other pieces - just append directly
+        targetCell.appendChild(piece);
+      }
+    } else if (!targetCell) {
+      console.warn(`  ⚠️ Target cell not found for position ${position}`);
+    }
   });
+
+  console.log("✅ Visual restoration complete!");
 }
 
 // Expose to window for movement scripts to use

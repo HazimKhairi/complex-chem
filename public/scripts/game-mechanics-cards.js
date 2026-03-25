@@ -21,25 +21,32 @@ const LIGANDS_DATA = [
 ];
 
 // Question cards (6-23.png)
+// Background colors: red=hard(5pts), yellow=medium(3pts), green=easy(2pts)
+// correctAnswer: 1=A, 2=B, 3=C, 4=D (1-based to match button data-answer values)
 const QUESTION_CARDS = [
-  { id: "q1", imageFile: "6.png", difficulty: "easy", points: 3 },
-  { id: "q2", imageFile: "7.png", difficulty: "easy", points: 3 },
-  { id: "q3", imageFile: "8.png", difficulty: "easy", points: 3 },
-  { id: "q4", imageFile: "9.png", difficulty: "easy", points: 3 },
-  { id: "q5", imageFile: "10.png", difficulty: "medium", points: 4 },
-  { id: "q6", imageFile: "11.png", difficulty: "medium", points: 4 },
-  { id: "q7", imageFile: "12.png", difficulty: "medium", points: 4 },
-  { id: "q8", imageFile: "13.png", difficulty: "medium", points: 4 },
-  { id: "q9", imageFile: "14.png", difficulty: "medium", points: 4 },
-  { id: "q10", imageFile: "15.png", difficulty: "medium", points: 4 },
-  { id: "q11", imageFile: "16.png", difficulty: "hard", points: 5 },
-  { id: "q12", imageFile: "17.png", difficulty: "hard", points: 5 },
-  { id: "q13", imageFile: "18.png", difficulty: "hard", points: 5 },
-  { id: "q14", imageFile: "19.png", difficulty: "hard", points: 5 },
-  { id: "q15", imageFile: "20.png", difficulty: "hard", points: 5 },
-  { id: "q16", imageFile: "21.png", difficulty: "hard", points: 5 },
-  { id: "q17", imageFile: "22.png", difficulty: "hard", points: 5 },
-  { id: "q18", imageFile: "23.png", difficulty: "hard", points: 5 }
+  // HARD (red background) - 5 points each
+  { id: "q1", imageFile: "6.png", difficulty: "hard", points: 5, correctAnswer: 3 },  // Answer: C
+  { id: "q2", imageFile: "7.png", difficulty: "hard", points: 5, correctAnswer: 3 },  // Answer: C
+  { id: "q3", imageFile: "8.png", difficulty: "hard", points: 5, correctAnswer: 2 },  // Answer: B
+  { id: "q4", imageFile: "9.png", difficulty: "hard", points: 5, correctAnswer: 3 },  // Answer: C
+  { id: "q5", imageFile: "10.png", difficulty: "hard", points: 5, correctAnswer: 3 }, // Answer: C
+  { id: "q6", imageFile: "11.png", difficulty: "hard", points: 5, correctAnswer: 2 }, // Answer: B
+
+  // MEDIUM (yellow background) - 3 points each
+  { id: "q7", imageFile: "12.png", difficulty: "medium", points: 3, correctAnswer: 2 }, // Answer: B
+  { id: "q8", imageFile: "13.png", difficulty: "medium", points: 3, correctAnswer: 1 }, // Answer: A
+  { id: "q9", imageFile: "14.png", difficulty: "medium", points: 3, correctAnswer: 1 }, // Answer: A
+  { id: "q10", imageFile: "15.png", difficulty: "medium", points: 3, correctAnswer: 2 }, // Answer: B
+  { id: "q11", imageFile: "16.png", difficulty: "medium", points: 3, correctAnswer: 3 }, // Answer: C
+  { id: "q12", imageFile: "17.png", difficulty: "medium", points: 3, correctAnswer: 3 }, // Answer: C
+
+  // EASY (green background) - 2 points each
+  { id: "q13", imageFile: "18.png", difficulty: "easy", points: 2, correctAnswer: 3 }, // Answer: C
+  { id: "q14", imageFile: "19.png", difficulty: "easy", points: 2, correctAnswer: 3 }, // Answer: C
+  { id: "q15", imageFile: "20.png", difficulty: "easy", points: 2, correctAnswer: 3 }, // Answer: C
+  { id: "q16", imageFile: "21.png", difficulty: "easy", points: 2, correctAnswer: 4 }, // Answer: D
+  { id: "q17", imageFile: "22.png", difficulty: "easy", points: 2, correctAnswer: 2 }, // Answer: B
+  { id: "q18", imageFile: "23.png", difficulty: "easy", points: 2, correctAnswer: 2 }  // Answer: B
 ];
 
 // Fate cards
@@ -397,7 +404,7 @@ function showQuestion(playerId) {
   modal.dataset.playerId = playerId;
   modal.dataset.points = question.points;
   modal.dataset.difficulty = question.difficulty;
-  modal.dataset.correctAnswer = "1"; // TODO: Add correct answers to QUESTION_CARDS data
+  modal.dataset.correctAnswer = question.correctAnswer;
 
   const difficultyColors = {
     easy: "#10B981",

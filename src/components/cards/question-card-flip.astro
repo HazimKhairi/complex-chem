@@ -11,9 +11,9 @@ interface Props {
 const { card, size = "md", class: className } = Astro.props;
 
 const sizeClasses = {
-  sm: "w-full h-64",
-  md: "w-full h-80",
-  lg: "w-full h-96",
+  sm: "w-full aspect-[3/4]",
+  md: "w-full aspect-[3/4]",
+  lg: "w-full aspect-[3/4]",
 };
 
 const difficultyColors = {
@@ -49,8 +49,8 @@ const getBackgroundPosition = (side: "note" | "question", position: "top" | "bot
       )}
     >
       <div
-        class="w-full h-full bg-cover bg-no-repeat"
-        style={`background-image: url('/assets/question-cards/${card.imageFile}'); background-position: ${getBackgroundPosition("note", card.position)}; background-size: 200% 200%;`}
+        class="w-full h-full bg-no-repeat"
+        style={`background-image: url('/assets/question-cards/${card.imageFile}'); background-position: ${getBackgroundPosition("note", card.position)}; background-size: 200% auto;`}
       >
       </div>
       <!-- Badge overlay -->
@@ -70,8 +70,8 @@ const getBackgroundPosition = (side: "note" | "question", position: "top" | "bot
       )}
     >
       <div
-        class="w-full h-full bg-cover bg-no-repeat"
-        style={`background-image: url('/assets/question-cards/${card.imageFile}'); background-position: ${getBackgroundPosition("question", card.position)}; background-size: 200% 200%;`}
+        class="w-full h-full bg-no-repeat"
+        style={`background-image: url('/assets/question-cards/${card.imageFile}'); background-position: ${getBackgroundPosition("question", card.position)}; background-size: 200% auto;`}
       >
       </div>
       <!-- Badge overlay -->

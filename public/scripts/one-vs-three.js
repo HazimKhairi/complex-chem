@@ -104,7 +104,7 @@ function transferDiceCode() {
       }, 250);
     }
   } else {
-    $("#player-4-dice").attr("src", "");
+    $("#player-4-dice").attr("src", "dice/dice-rest.png");
     $("#player-" + x + "-dice-arrow").attr("src", "");
     x = 1;
     $("#player-" + x + "-dice-arrow").attr("src", "gifs/arrow1.gif");

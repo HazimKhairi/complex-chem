@@ -7,6 +7,9 @@ import WinnersModel from "../components/game-board/winners-model.astro";
 import GameStartCountdown from "../components/game-board/game-start-countdown.astro";
 import GameAssets from "../components/game-assets.astro";
 import LigandBox from "../components/game-board/ligand-box.astro";
+import LigandModal from "../components/game/ligand-modal.astro";
+import QuestionModal from "../components/game/question-modal.astro";
+import FateModal from "../components/game/fate-modal.astro";
 ---
 
 <Layout>
@@ -42,6 +45,11 @@ import LigandBox from "../components/game-board/ligand-box.astro";
     <GameAudio />
     <GameAssets />
     <GameStartCountdown />
+
+    <!-- Game Modals -->
+    <LigandModal />
+    <QuestionModal />
+    <FateModal />
   </main>
 </Layout>
 
@@ -52,6 +60,12 @@ import LigandBox from "../components/game-board/ligand-box.astro";
   script.src = `scripts/${gameOption}.js`;
   script.type = "application/javascript";
   document.head.appendChild(script);
+
+  // Load game mechanics script
+  const mechanicsScript = document.createElement("script");
+  mechanicsScript.src = "scripts/game-mechanics.js";
+  mechanicsScript.type = "application/javascript";
+  document.head.appendChild(mechanicsScript);
 
   // Optimize game size for screen
   function optimizeGameSize() {

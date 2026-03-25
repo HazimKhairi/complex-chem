@@ -1,0 +1,48 @@
+---
+---
+
+<div id="question-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div class="sticky top-0 bg-gradient-to-r from-purple-600 to-pink-600 text-white p-4 rounded-t-2xl">
+      <h2 class="text-2xl font-bold">Chemistry Question 🧬</h2>
+      <p class="text-sm opacity-90">Answer correctly to earn points!</p>
+    </div>
+
+    <div class="p-6">
+      <div id="question-content" class="mb-6">
+        <!-- Question will be inserted here -->
+      </div>
+
+      <div id="question-options" class="space-y-3 mb-6">
+        <!-- Answer options will be inserted here -->
+      </div>
+
+      <div id="question-feedback" class="hidden p-4 rounded-lg mb-4">
+        <!-- Feedback will be shown here -->
+      </div>
+
+      <button id="submit-answer-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+        Submit Answer
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let selectedAnswer: number | null = null;
+
+  const submitBtn = document.getElementById("submit-answer-btn");
+
+  submitBtn?.addEventListener("click", () => {
+    if (selectedAnswer !== null) {
+      document.dispatchEvent(new CustomEvent("question-answered", {
+        detail: { answer: selectedAnswer }
+      }));
+    }
+  });
+
+  // Export function to set selected answer
+  (window as any).setSelectedAnswer = (answer: number) => {
+    selectedAnswer = answer;
+  };
+</script>

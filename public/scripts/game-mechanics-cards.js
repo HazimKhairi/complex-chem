@@ -43,15 +43,76 @@ const QUESTION_CARDS = [
 ];
 
 // Fate cards
-const FATE_CARDS_DATA = [];
-for (let i = 1; i <= 14; i++) {
-  FATE_CARDS_DATA.push({
-    id: `fate${i}`,
-    imageFile: `${i}.png`,
-    title: `Fate Card ${i}`,
-    effect: i % 3 === 0 ? "bonus" : i % 2 === 0 ? "penalty" : "neutral"
-  });
-}
+// Fate Cards - text-based cards rendered with HTML/CSS (not images)
+const FATE_CARDS_DATA = [
+  {
+    id: "point-booster",
+    title: "Point Booster",
+    description: "You've earned an Extra Points card. Hold onto it until the end of the game for an extra three points.",
+    effect: "point-booster",
+    value: 3,
+  },
+  {
+    id: "eureka-moment",
+    title: "Eureka Moment",
+    description: "Congratulations! Fate smiles upon you, granting you an extra Ligand card.",
+    effect: "ligand-gain",
+    value: 1,
+  },
+  {
+    id: "minus-card",
+    title: "Minus Card",
+    description: "You've been dealt a Minus Card, deducting three points from your score. Hold until the end of the game.",
+    effect: "minus",
+    value: -3,
+  },
+  {
+    id: "ligand-square",
+    title: "Ligand Square",
+    description: "Move ahead 3 spaces. Fate pushes you forward",
+    effect: "move-forward",
+    value: 3,
+  },
+  {
+    id: "second-chance",
+    title: "Second Chance",
+    description: "Fate grants you an extra turn.",
+    effect: "extra-turn",
+    value: 1,
+  },
+  {
+    id: "destiny-dance",
+    title: "Destiny Dance",
+    description: "Roll the dice and let fate decide your direction. You might move backward on the board.",
+    effect: "destiny-dance",
+  },
+  {
+    id: "swap-card",
+    title: "Swap Card",
+    description: "Swap one card with another player of your choice.",
+    effect: "swap-card",
+  },
+  {
+    id: "karma-kickback",
+    title: "Karma Kickback",
+    description: "You must return any one of your Ligand cards back.",
+    effect: "karma-kickback",
+    value: -1,
+  },
+  {
+    id: "twist-fate",
+    title: "Twist of Fate",
+    description: "You must exchange one of your Ligand cards with the previous player.",
+    effect: "twist-fate",
+  },
+  {
+    id: "generous-gesture",
+    title: "Generous Gesture",
+    description: "Spread the joy by donating one of your Ligand cards to another player.",
+    effect: "generous-gesture",
+    value: -1,
+  },
+];
 
 // Game state
 const gameState = {
@@ -207,11 +268,61 @@ function showFate(playerId) {
   const container = document.getElementById("fate-card-container");
 
   if (modal && container) {
-    // Render fate card (using actual fate card image if available)
+    // Render fate card with HTML/CSS (matching FateCard component design)
+    const valueHTML = fate.value !== undefined
+      ? `<div class="mt-3 px-3 py-1 bg-red-100 rounded-full text-red-700 font-bold text-sm">
+           ${fate.value > 0 ? '+' : ''}${fate.value}
+         </div>`
+      : '';
+
     container.innerHTML = `
-      <div class="w-full aspect-[3/4] rounded-lg border-4 border-red-500 overflow-hidden shadow-lg">
-        <img src="/assets/fate-cards/${fate.imageFile}" alt="${fate.title}" class="w-full h-full object-cover" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 200 300%27%3E%3Crect fill=%27%23fef2f2%27 width=%27200%27 height=%27300%27/%3E%3Ctext x=%2750%25%27 y=%2750%25%27 font-size=%2760%27 text-anchor=%27middle%27%3E🔺%3C/text%3E%3C/svg%3E';" />
+      <div class="fate-card relative bg-white border-4 border-red-600 rounded-lg flex flex-col items-center justify-center p-6 w-full aspect-[3/4] shadow-xl">
+        <!-- Warning Triangle at Top -->
+        <div class="triangle-container mb-4">
+          <div class="triangle">
+            <span class="triangle-text">!</span>
+          </div>
+        </div>
+
+        <!-- Card Title -->
+        <h3 class="font-black text-red-600 text-center text-base uppercase mb-3 leading-tight">
+          ${fate.title}
+        </h3>
+
+        <!-- Card Description -->
+        <p class="text-xs text-center leading-relaxed text-gray-800">
+          ${fate.description}
+        </p>
+
+        <!-- Value Badge -->
+        ${valueHTML}
       </div>
+
+      <style>
+        .triangle-container {
+          position: relative;
+          width: 60px;
+          height: 52px;
+        }
+        .triangle {
+          position: relative;
+          width: 0;
+          height: 0;
+          border-left: 30px solid transparent;
+          border-right: 30px solid transparent;
+          border-bottom: 52px solid #dc2626;
+        }
+        .triangle-text {
+          position: absolute;
+          top: 24px;
+          left: 50%;
+          transform: translateX(-50%);
+          color: white;
+          font-size: 28px;
+          font-weight: 900;
+          line-height: 1;
+        }
+      </style>
     `;
 
     modal.classList.remove("hidden");

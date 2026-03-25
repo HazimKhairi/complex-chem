@@ -9,78 +9,78 @@ import { QUESTION_CARDS } from "../lib/data/question-cards";
 ---
 
 <Layout>
-  <div class="bg-gray-100 min-h-screen p-8">
-    <div class="max-w-7xl mx-auto space-y-12">
+  <div class="bg-gray-100 min-h-screen p-4 sm:p-8">
+    <div class="max-w-7xl mx-auto space-y-8 sm:space-y-12">
       <!-- Header -->
       <div class="text-center">
-        <h1 class="text-4xl font-black text-gray-800 mb-2">Complex Chem Quest</h1>
-        <p class="text-gray-600">Custom Card Components Demo</p>
+        <h1 class="text-2xl sm:text-4xl font-black text-gray-800 mb-2">Complex Chem Quest</h1>
+        <p class="text-sm sm:text-base text-gray-600">Custom Card Components Demo</p>
       </div>
 
       <!-- Ligand Cards Section -->
-      <section class="space-y-6">
+      <section class="space-y-4 sm:space-y-6">
         <div class="border-b-4 border-blue-500 pb-2">
-          <h2 class="text-2xl font-bold text-gray-800">Ligand Cards</h2>
-          <p class="text-sm text-gray-600">
+          <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Ligand Cards</h2>
+          <p class="text-xs sm:text-sm text-gray-600">
             13 chemistry ligand cards with detailed information
           </p>
         </div>
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-          {LIGANDS.map((ligand) => <LigandCard ligand={ligand} size="md" />)}
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-6">
+          {LIGANDS.map((ligand) => <LigandCard ligand={ligand} size="sm" class="sm:w-40 sm:h-56" />)}
         </div>
       </section>
 
       <!-- Fate Cards Section -->
-      <section class="space-y-6">
+      <section class="space-y-4 sm:space-y-6">
         <div class="border-b-4 border-red-500 pb-2">
-          <h2 class="text-2xl font-bold text-gray-800">Fate Cards</h2>
-          <p class="text-sm text-gray-600">Random event cards that affect gameplay</p>
+          <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Fate Cards</h2>
+          <p class="text-xs sm:text-sm text-gray-600">Random event cards that affect gameplay</p>
         </div>
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-          {FATE_CARDS.map((card) => <FateCard card={card} size="md" />)}
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
+          {FATE_CARDS.map((card) => <FateCard card={card} size="sm" class="sm:w-40 sm:h-40" />)}
         </div>
       </section>
 
       <!-- Question Cards Section -->
-      <section class="space-y-6">
+      <section class="space-y-4 sm:space-y-6">
         <div class="border-b-4 border-purple-500 pb-2">
-          <h2 class="text-2xl font-bold text-gray-800">Question Cards</h2>
-          <p class="text-sm text-gray-600">
+          <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Question Cards</h2>
+          <p class="text-xs sm:text-sm text-gray-600">
             Chemistry questions with 3 difficulty levels (Easy, Medium, Hard)
           </p>
         </div>
 
         <!-- Easy Questions -->
-        <div class="space-y-4">
-          <h3 class="text-lg font-bold text-green-600">Easy (3 points)</h3>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="space-y-3 sm:space-y-4">
+          <h3 class="text-base sm:text-lg font-bold text-green-600">Easy (3 points)</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {
               QUESTION_CARDS.filter((q) => q.difficulty === "easy").map((card) => (
-                <QuestionCard card={card} size="md" />
+                <QuestionCard card={card} size="sm" class="sm:w-64 sm:min-h-64" />
               ))
             }
           </div>
         </div>
 
         <!-- Medium Questions -->
-        <div class="space-y-4">
-          <h3 class="text-lg font-bold text-yellow-600">Medium (4 points)</h3>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="space-y-3 sm:space-y-4">
+          <h3 class="text-base sm:text-lg font-bold text-yellow-600">Medium (4 points)</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {
               QUESTION_CARDS.filter((q) => q.difficulty === "medium").map((card) => (
-                <QuestionCard card={card} size="md" />
+                <QuestionCard card={card} size="sm" class="sm:w-64 sm:min-h-64" />
               ))
             }
           </div>
         </div>
 
         <!-- Hard Questions -->
-        <div class="space-y-4">
-          <h3 class="text-lg font-bold text-red-600">Hard (5 points)</h3>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="space-y-3 sm:space-y-4">
+          <h3 class="text-base sm:text-lg font-bold text-red-600">Hard (5 points)</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {
               QUESTION_CARDS.filter((q) => q.difficulty === "hard").map((card) => (
-                <QuestionCard card={card} size="md" />
+                <QuestionCard card={card} size="sm" class="sm:w-64 sm:min-h-64" />
               ))
             }
           </div>
@@ -88,32 +88,32 @@ import { QUESTION_CARDS } from "../lib/data/question-cards";
       </section>
 
       <!-- Size Variants Demo -->
-      <section class="space-y-6">
+      <section class="space-y-4 sm:space-y-6">
         <div class="border-b-4 border-indigo-500 pb-2">
-          <h2 class="text-2xl font-bold text-gray-800">Size Variants</h2>
-          <p class="text-sm text-gray-600">Small, Medium, and Large sizes</p>
+          <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Size Variants</h2>
+          <p class="text-xs sm:text-sm text-gray-600">Small, Medium, and Large sizes</p>
         </div>
-        <div class="flex items-end gap-8 flex-wrap">
+        <div class="flex items-end gap-4 sm:gap-8 flex-wrap">
           <div class="space-y-2">
-            <p class="text-sm font-bold text-gray-600">Small</p>
+            <p class="text-xs sm:text-sm font-bold text-gray-600">Small</p>
             <LigandCard ligand={LIGANDS[0]} size="sm" />
           </div>
           <div class="space-y-2">
-            <p class="text-sm font-bold text-gray-600">Medium (Default)</p>
+            <p class="text-xs sm:text-sm font-bold text-gray-600">Medium</p>
             <LigandCard ligand={LIGANDS[0]} size="md" />
           </div>
           <div class="space-y-2">
-            <p class="text-sm font-bold text-gray-600">Large</p>
+            <p class="text-xs sm:text-sm font-bold text-gray-600">Large</p>
             <LigandCard ligand={LIGANDS[0]} size="lg" />
           </div>
         </div>
       </section>
 
       <!-- Back to Home -->
-      <div class="text-center pt-8">
+      <div class="text-center pt-4 sm:pt-8">
         <a
           href="/"
-          class="inline-block px-6 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors font-semibold"
+          class="inline-block px-4 py-2 sm:px-6 sm:py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition-colors font-semibold text-sm sm:text-base"
         >
           Back to Home
         </a>

@@ -379,6 +379,14 @@ function showFate(playerId) {
   const container = document.getElementById("fate-card-container");
 
   if (modal && container) {
+    // Store fate card data in modal for later use
+    modal.dataset.playerId = playerId;
+    modal.dataset.fateEffect = fate.effect;
+    modal.dataset.fateValue = fate.value || 0;
+    modal.dataset.fateTitle = fate.title;
+
+    console.log(`🔺 [FATE] Player ${playerId} got fate card: ${fate.title} (${fate.effect}, value: ${fate.value || 0})`);
+
     // Render fate card with HTML/CSS (matching FateCard component design)
     const valueHTML = fate.value !== undefined
       ? `<div class="mt-3 px-3 py-1 bg-red-100 rounded-full text-red-700 font-bold text-sm">

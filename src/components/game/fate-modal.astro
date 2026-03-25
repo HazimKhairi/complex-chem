@@ -24,6 +24,23 @@
 
   continueBtn?.addEventListener("click", () => {
     if (modal) {
+      // Apply fate card effect before closing modal
+      const playerId = parseInt(modal.dataset.playerId || "0");
+      const fateEffect = modal.dataset.fateEffect;
+      const fateValue = parseInt(modal.dataset.fateValue || "0");
+      const fateTitle = modal.dataset.fateTitle;
+
+      console.log(`🔺 [FATE] Applying fate: ${fateTitle} to Player ${playerId}`);
+
+      // Apply points-based fate effects
+      if (fateValue !== 0 && window.GameMechanics) {
+        window.GameMechanics.awardPoints(playerId, fateValue, 'fate');
+        console.log(`💰 [FATE] Player ${playerId} ${fateValue > 0 ? 'gained' : 'lost'} ${Math.abs(fateValue)} points`);
+      }
+
+      // TODO: Implement other fate effects (extra-turn, move-forward, swap-card, etc.)
+      // For now, only points-based effects are applied
+
       modal.classList.add("hidden");
       modal.classList.remove("flex");
     }

@@ -205,7 +205,7 @@ function updateLigandDisplay(playerId) {
   if (!container) return;
 
   container.innerHTML = gameState.playerLigands[playerId]
-    .map(l => `<div class="w-6 h-6 rounded bg-green-500 flex items-center justify-center text-white text-xs" title="${l.name}">🧪</div>`)
+    .map(l => `<div class="w-8 h-8 rounded-lg bg-green-500" title="${l.name}"></div>`)
     .join("");
 }
 

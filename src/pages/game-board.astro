@@ -14,6 +14,28 @@ import FateModal from "../components/game/fate-modal.astro";
 
 <Layout>
   <main class="flex justify-center items-center min-h-dvh p-2 sm:p-4 overflow-hidden">
+    <!-- Landscape Mode Required Overlay (Mobile Only) -->
+    <div
+      id="rotate-overlay"
+      class="fixed inset-0 bg-gray-900 bg-opacity-95 z-[9999] flex-col items-center justify-center gap-6 p-8 hidden"
+    >
+      <div class="text-center space-y-6">
+        <!-- Rotate Icon -->
+        <div class="flex justify-center">
+          <svg class="w-24 h-24 text-amber-400 animate-[spin_3s_ease-in-out_infinite]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+        </div>
+
+        <!-- Message -->
+        <div class="space-y-3">
+          <h2 class="text-2xl font-bold text-white">Rotate Your Device</h2>
+          <p class="text-lg text-gray-300">Please rotate your device to landscape mode to play</p>
+          <p class="text-base text-amber-400 font-semibold">📱 → 🔄 → 🎮</p>
+        </div>
+      </div>
+    </div>
+
     <WinnersModel />
     <section id="game-container" class="transform-origin-center">
       <!-- Top Section: Players + Ligand Boxes -->
@@ -139,4 +161,34 @@ import FateModal from "../components/game/fate-modal.astro";
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(optimizeGameSize, 100);
   });
+
+  // ========================================
+  // MOBILE LANDSCAPE MODE ENFORCEMENT
+  // ========================================
+  function checkOrientation() {
+    const rotateOverlay = document.getElementById("rotate-overlay");
+    if (!rotateOverlay) return;
+
+    const isMobile = window.innerWidth < 640; // Tailwind 'sm' breakpoint
+    const isPortrait = window.innerHeight > window.innerWidth;
+
+    // Show overlay ONLY if mobile AND portrait
+    if (isMobile && isPortrait) {
+      rotateOverlay.style.display = "flex";
+      // Prevent game interaction
+      document.getElementById("game-container")?.style.setProperty("pointer-events", "none");
+    } else {
+      rotateOverlay.style.display = "none";
+      // Allow game interaction
+      document.getElementById("game-container")?.style.setProperty("pointer-events", "auto");
+    }
+  }
+
+  // Check on load and orientation change
+  window.addEventListener("DOMContentLoaded", checkOrientation);
+  window.addEventListener("resize", checkOrientation);
+  window.addEventListener("orientationchange", checkOrientation);
+
+  // Also check periodically for devices that don't fire orientationchange
+  setInterval(checkOrientation, 500);
 </script>

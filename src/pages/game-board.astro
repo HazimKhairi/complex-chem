@@ -16,30 +16,36 @@ import FateModal from "../components/game/fate-modal.astro";
   <main class="flex justify-center items-center min-h-dvh p-2 sm:p-4 overflow-hidden">
     <WinnersModel />
     <section id="game-container" class="transform-origin-center w-full max-w-[95vw]">
-      <!-- Top Ligand Boxes -->
-      <section class="flex justify-between gap-2 sm:gap-4 md:gap-6 w-full max-w-[400px] mx-auto mb-1 sm:mb-2">
-        <LigandBox playerId={1} />
-        <LigandBox playerId={2} />
-      </section>
+      <!-- Top Section: Players + Ligand Boxes -->
+      <section class="flex flex-col items-center mb-1 sm:mb-2 gap-1 sm:gap-2">
+        <!-- Top Ligand Boxes -->
+        <div class="flex justify-between gap-2 sm:gap-4 md:gap-6 w-full max-w-[280px] sm:max-w-[320px]">
+          <LigandBox playerId={1} />
+          <LigandBox playerId={2} />
+        </div>
 
-      <!-- Top Players -->
-      <section class="flex justify-between w-full max-w-[320px] mx-auto player-area">
-        <PlayerCard id={1} playerName="Player 1" />
-        <PlayerCard id={2} playerName="Player 2" reverse />
+        <!-- Top Players -->
+        <div class="flex justify-between w-full max-w-[280px] sm:max-w-[320px] player-area">
+          <PlayerCard id={1} playerName="Player 1" />
+          <PlayerCard id={2} playerName="Player 2" reverse />
+        </div>
       </section>
 
       <LudoBoard />
 
-      <!-- Bottom Players -->
-      <section class="flex justify-between w-full max-w-[320px] mx-auto player-area">
-        <PlayerCard id={3} playerName="Player 3" />
-        <PlayerCard id={4} playerName="Player 4" reverse />
-      </section>
+      <!-- Bottom Section: Players + Ligand Boxes -->
+      <section class="flex flex-col items-center mt-1 sm:mt-2 gap-1 sm:gap-2">
+        <!-- Bottom Players -->
+        <div class="flex justify-between w-full max-w-[280px] sm:max-w-[320px] player-area">
+          <PlayerCard id={3} playerName="Player 3" />
+          <PlayerCard id={4} playerName="Player 4" reverse />
+        </div>
 
-      <!-- Bottom Ligand Boxes -->
-      <section class="flex justify-between gap-2 sm:gap-4 md:gap-6 w-full max-w-[400px] mx-auto mt-1 sm:mt-2">
-        <LigandBox playerId={3} />
-        <LigandBox playerId={4} />
+        <!-- Bottom Ligand Boxes -->
+        <div class="flex justify-between gap-2 sm:gap-4 md:gap-6 w-full max-w-[280px] sm:max-w-[320px]">
+          <LigandBox playerId={3} />
+          <LigandBox playerId={4} />
+        </div>
       </section>
     </section>
     <GameAudio />

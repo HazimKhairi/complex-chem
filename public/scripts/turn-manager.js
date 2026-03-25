@@ -138,6 +138,15 @@
    * Highlights current player's card, dims others
    */
   function updatePlayerVisuals() {
+    // First, hide ALL dice arrows to prevent multiple arrows showing
+    for (let i = 1; i <= MAX_PLAYERS; i++) {
+      const arrow = document.getElementById(`player-${i}-dice-arrow`);
+      if (arrow) {
+        arrow.style.display = 'none';
+        arrow.style.opacity = '0';
+      }
+    }
+
     state.activePlayers.forEach(playerId => {
       const playerArea = document.getElementById(`player-${playerId}-area`);
       const playerCard = document.getElementById(`player-${playerId}`);
@@ -175,6 +184,17 @@
         } else {
           playerCard.style.boxShadow = '';
           playerCard.style.border = '';
+        }
+      }
+
+      // Update dice arrow visibility - ONLY show for current player
+      if (playerDiceArrow) {
+        if (isCurrentPlayer && playerState !== PLAYER_STATES.FINISHED) {
+          playerDiceArrow.style.display = 'block';
+          playerDiceArrow.style.opacity = '1';
+        } else {
+          playerDiceArrow.style.display = 'none';
+          playerDiceArrow.style.opacity = '0';
         }
       }
     });

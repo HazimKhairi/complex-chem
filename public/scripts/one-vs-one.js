@@ -1140,6 +1140,12 @@ function fiveMergeCode() {
   resultLocation1 = undefined;
   resultLocation2 = undefined;
 
+  // Declare exchange horse variables to avoid ReferenceError
+  let resultLocation1ExchH1 = undefined;
+  let resultLocation1ExchH2 = undefined;
+  let resultLocation2ExchH1 = undefined;
+  let resultLocation2ExchH2 = undefined;
+
   for (let i = 1; i < 52; i++) {
     if (result == undefined) {
       result = $(`.path td.r${i}`).find("img").length == 5;

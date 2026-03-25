@@ -44,10 +44,10 @@ const QUESTION_CARDS = [
 
 // Fate cards
 const FATE_CARDS_DATA = [];
-for (let i = 1; i <= 10; i++) {
+for (let i = 1; i <= 14; i++) {
   FATE_CARDS_DATA.push({
     id: `fate${i}`,
-    imageFile: `fate-${i}.png`,
+    imageFile: `${i}.png`,
     title: `Fate Card ${i}`,
     effect: i % 3 === 0 ? "bonus" : i % 2 === 0 ? "penalty" : "neutral"
   });

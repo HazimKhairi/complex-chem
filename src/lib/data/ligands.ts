@@ -7,7 +7,7 @@ export interface Ligand {
   donorAtom: string;
   nomenclature: string;
   charge: number;
-  color: string; // Tailwind color for card header
+  color: string; // Hex color for card header
 }
 
 export const LIGANDS: Ligand[] = [
@@ -20,7 +20,7 @@ export const LIGANDS: Ligand[] = [
     donorAtom: "Oxygen (O)",
     nomenclature: "Aqua",
     charge: 0,
-    color: "bg-blue-500",
+    color: "#3b82f6", // blue-500
   },
   {
     id: "nh3",
@@ -31,7 +31,7 @@ export const LIGANDS: Ligand[] = [
     donorAtom: "Nitrogen (N)",
     nomenclature: "Ammine",
     charge: 0,
-    color: "bg-purple-500",
+    color: "#a855f7", // purple-500
   },
   {
     id: "py",
@@ -42,7 +42,7 @@ export const LIGANDS: Ligand[] = [
     donorAtom: "Nitrogen (N)",
     nomenclature: "Pyridine",
     charge: 0,
-    color: "bg-indigo-500",
+    color: "#6366f1", // indigo-500
   },
   {
     id: "pph3",
@@ -53,7 +53,7 @@ export const LIGANDS: Ligand[] = [
     donorAtom: "Phosphorus (P)",
     nomenclature: "Triphenylphosphine",
     charge: 0,
-    color: "bg-orange-500",
+    color: "#f97316", // orange-500
   },
   {
     id: "cn",
@@ -64,7 +64,7 @@ export const LIGANDS: Ligand[] = [
     donorAtom: "Carbon (C)",
     nomenclature: "Cyanido/cyanide",
     charge: -1,
-    color: "bg-cyan-500",
+    color: "#06b6d4", // cyan-500
   },
   {
     id: "o2",
@@ -75,7 +75,7 @@ export const LIGANDS: Ligand[] = [
     donorAtom: "Oxygen (O)",
     nomenclature: "Oxido/oxide",
     charge: -2,
-    color: "bg-red-500",
+    color: "#ef4444", // red-500
   },
   {
     id: "cl",
@@ -86,7 +86,7 @@ export const LIGANDS: Ligand[] = [
     donorAtom: "Chlorine (Cl)",
     nomenclature: "Chlorido/chloride",
     charge: -1,
-    color: "bg-green-500",
+    color: "#22c55e", // green-500
   },
   {
     id: "ox",
@@ -97,7 +97,7 @@ export const LIGANDS: Ligand[] = [
     donorAtom: "Oxygen (O)",
     nomenclature: "Oxalato",
     charge: -2,
-    color: "bg-red-600",
+    color: "#dc2626", // red-600
   },
   {
     id: "acac",
@@ -108,7 +108,7 @@ export const LIGANDS: Ligand[] = [
     donorAtom: "Oxygen (O)",
     nomenclature: "Acetylacetonato",
     charge: -1,
-    color: "bg-rose-500",
+    color: "#f43f5e", // rose-500
   },
   {
     id: "co3",
@@ -119,7 +119,7 @@ export const LIGANDS: Ligand[] = [
     donorAtom: "Oxygen (O)",
     nomenclature: "Carbonato",
     charge: -2,
-    color: "bg-red-700",
+    color: "#b91c1c", // red-700
   },
   {
     id: "phen",
@@ -130,7 +130,7 @@ export const LIGANDS: Ligand[] = [
     donorAtom: "Nitrogen (N)",
     nomenclature: "Phenanthroline",
     charge: 0,
-    color: "bg-blue-600",
+    color: "#2563eb", // blue-600
   },
   {
     id: "bipy",
@@ -141,7 +141,7 @@ export const LIGANDS: Ligand[] = [
     donorAtom: "Nitrogen (N)",
     nomenclature: "Bipyridine",
     charge: 0,
-    color: "bg-violet-500",
+    color: "#8b5cf6", // violet-500
   },
   {
     id: "en",
@@ -152,6 +152,6 @@ export const LIGANDS: Ligand[] = [
     donorAtom: "Nitrogen (N)",
     nomenclature: "Ethylenediamine",
     charge: 0,
-    color: "bg-blue-400",
+    color: "#60a5fa", // blue-400
   },
 ];

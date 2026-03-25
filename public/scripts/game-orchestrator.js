@@ -165,10 +165,12 @@ function handlePieceLanded(playerId, landedCell) {
   switch (tileType) {
     case "ligand":
       console.log("🧪 [ORCHESTRATOR] Triggering ligand collection");
-      // Pass the landed cell so collectLigand can extract the specific ligand name
-      const cellElement = (typeof landedCell === 'string') ?
-        (tileInfo ? tileInfo.element : null) : landedCell;
-      window.GameMechanics.collectLigand(playerId, cellElement || landedCell);
+      // Pass the cell element to extract specific ligand name
+      // tileInfo.element is set when landedCell is a string (most common case)
+      // landedCell is used directly when it's already a TD element
+      const cellElement = tileInfo?.element || (landedCell?.tagName === 'TD' ? landedCell : null);
+      console.log(`   Cell element for ligand:`, cellElement);
+      window.GameMechanics.collectLigand(playerId, cellElement);
       break;
 
     case "question":

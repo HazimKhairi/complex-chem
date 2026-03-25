@@ -12,7 +12,7 @@ const LIGANDS_DATA = [
   { id: "py", name: "py", color: "#F59E0B", imageFile: "5.png" },
   { id: "nh3", name: "NH₃", color: "#06B6D4", imageFile: "6.png" },
   { id: "pph3", name: "PPh₃", color: "#EC4899", imageFile: "7.png" },
-  { id: "cl", name: "Cl⁻", color: "#14B8A6", imageFile: "8.png" },
+  { id: "cl", name: "CI", color: "#14B8A6", imageFile: "8.png" },  // Note: Board uses "CI" not "Cl⁻"
   { id: "en", name: "en", color: "#6366F1", imageFile: "9.png" },
   { id: "acac", name: "acac", color: "#F97316", imageFile: "10.png" },
   { id: "co32", name: "CO₃²⁻", color: "#84CC16", imageFile: "11.png" },
@@ -260,6 +260,11 @@ function showQuestionFeedback(isCorrect, points, difficulty) {
 }
 
 function collectLigand(playerId, landedCell = null) {
+  console.log(`\n🧪 [LIGAND] === LIGAND COLLECTION ===`);
+  console.log(`   Player: ${playerId}`);
+  console.log(`   Landed cell:`, landedCell);
+  console.log(`   Cell type:`, typeof landedCell);
+
   // Get the specific ligand from the tile the player landed on
   let ligandName = null;
 
@@ -267,44 +272,66 @@ function collectLigand(playerId, landedCell = null) {
     // If landedCell is a string (class name), get the element
     if (typeof landedCell === 'string') {
       const className = landedCell.startsWith('.') ? landedCell.substring(1) : landedCell;
+      console.log(`   Looking up class: ${className}`);
       const tileInfo = window.TileDetector?.getTileByClassName(className);
       if (tileInfo && tileInfo.element) {
         ligandName = window.TileDetector.getLigandName(tileInfo.element);
+        console.log(`   Found ligand name from tile: "${ligandName}"`);
+      } else {
+        console.warn(`   ⚠️ Could not get tileInfo for class: ${className}`);
       }
-    } else if (landedCell.tagName === 'TD') {
+    } else if (landedCell && landedCell.tagName === 'TD') {
       // It's already a cell element
       ligandName = window.TileDetector.getLigandName(landedCell);
+      console.log(`   Extracted ligand name from TD element: "${ligandName}"`);
+    } else {
+      console.warn(`   ⚠️ Landed cell is not a string or TD element:`, landedCell);
     }
+  } else {
+    console.warn(`   ⚠️ No landed cell provided!`);
   }
 
-  console.log(`🧪 [LIGAND] Player ${playerId} landed on ligand tile: "${ligandName}"`);
+  console.log(`   Ligand to find: "${ligandName}"`);
 
   // Find the specific ligand that matches the tile text
   let ligand = null;
   if (ligandName) {
     // Normalize ligand name for matching (handle subscripts/superscripts)
+    const trimmedName = ligandName.trim();
     ligand = LIGANDS_DATA.find(l => {
       // Match by name (exact match with Unicode subscripts/superscripts)
-      if (l.name === ligandName) return true;
+      if (l.name === trimmedName) return true;
       // Also try case-insensitive match for simple names
-      if (l.name.toLowerCase() === ligandName.toLowerCase()) return true;
+      if (l.name.toLowerCase() === trimmedName.toLowerCase()) return true;
+      // Also try trimmed comparison
+      if (l.name.trim() === trimmedName) return true;
       return false;
     });
 
-    if (ligand && gameState.collectedLigandIds.includes(ligand.id)) {
-      console.warn(`⚠️ [LIGAND] Ligand "${ligandName}" already collected!`);
-      // Show message that ligand was already collected
-      showLigandModal(ligand, "⚠️ Already Collected!", "This ligand has already been collected by another player");
-      return;
+    if (ligand) {
+      console.log(`   ✅ Found matching ligand: ${ligand.name} (${ligand.id})`);
+
+      if (gameState.collectedLigandIds.includes(ligand.id)) {
+        console.warn(`   ⚠️ Ligand "${ligandName}" already collected!`);
+        showLigandModal(ligand, "⚠️ Already Collected!", "This ligand has already been collected by another player");
+        return;
+      }
+    } else {
+      console.warn(`   ⚠️ No matching ligand found for "${ligandName}"`);
+      console.log(`   Available ligands:`, LIGANDS_DATA.map(l => l.name));
     }
   }
 
   // Fallback to random if ligand not found or not specified
   if (!ligand) {
-    console.warn(`⚠️ [LIGAND] Could not find ligand "${ligandName}", selecting random uncollected ligand`);
+    console.warn(`   ⚠️ Could not find ligand "${ligandName}", selecting random uncollected ligand`);
     const uncollected = LIGANDS_DATA.filter(l => !gameState.collectedLigandIds.includes(l.id));
-    if (uncollected.length === 0) return;
+    if (uncollected.length === 0) {
+      console.error(`   ❌ All ligands collected!`);
+      return;
+    }
     ligand = uncollected[Math.floor(Math.random() * uncollected.length)];
+    console.log(`   Random ligand selected: ${ligand.name}`);
   }
 
   console.log(`✅ [LIGAND] Collecting ligand: ${ligand.name} (${ligand.id})`);
@@ -316,6 +343,7 @@ function collectLigand(playerId, landedCell = null) {
   showLigandModal(ligand, "🧪 Ligand Collected!", "Click card to see details");
 
   saveState();
+  console.log(`==========================================\n`);
 }
 
 function viewLigandDetail(ligand) {

@@ -1,5 +1,4 @@
 ---
-import ShareButton from "../components/share-button.astro";
 import Layout from "../layouts/Layout.astro";
 import GameButton from "../components/game-button.astro";
 ---
@@ -22,17 +21,13 @@ import GameButton from "../components/game-button.astro";
         <a href="/pass-and-play">
           <GameButton id="pass-and-play" class="w-full" text="Pass & Play" color="#629e76" /></a
         >
-        <a href="/computer"> <GameButton id="computer" class="w-full" text="Computer" color="#3ebbf7" /></a>
+        <div class="opacity-50 cursor-not-allowed">
+          <GameButton id="computer" class="w-full pointer-events-none" text="Computer" color="#3ebbf7" />
+        </div>
       </div>
 
-      <div>
-        <p class="text-center font-medium mb-5">Share Ludon with your friends</p>
-        <ShareButton />
-      </div>
-
-      <p class="text-center">
-        Created by
-        <a class="underline font-medium" href="https://x.com/yourcodebuddy">Yourcodebuddy</a>
+      <p class="text-center text-gray-600">
+        Created by <span class="font-medium text-gray-800">HazimDev</span>
       </p>
     </div>
   </main>

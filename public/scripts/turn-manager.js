@@ -678,6 +678,9 @@
     // Initial visual update
     updatePlayerVisuals();
 
+    // Start continuous sync with game script
+    startContinuousSync();
+
     state.isInitialized = true;
 
     // Emit ready event
@@ -690,6 +693,43 @@
     console.log(`   Game mode: ${state.gameMode}`);
     console.log(`   Active players: ${state.activePlayers.join(', ')}`);
     console.log(`   Current player: ${state.currentPlayer}`);
+  }
+
+  /**
+   * Start continuous synchronization with game script's window.x variable
+   * Checks every 100ms if window.x changed and updates TurnManager
+   */
+  function startContinuousSync() {
+    setInterval(() => {
+      if (typeof window.x !== 'undefined') {
+        const gameScriptPlayer = window.x;
+
+        // If game script player differs from our current player, sync it
+        if (gameScriptPlayer !== state.currentPlayer && isValidPlayerId(gameScriptPlayer)) {
+          console.log(`🔄 [TurnManager] Syncing with game script: ${state.currentPlayer} -> ${gameScriptPlayer}`);
+
+          // Update internal state
+          state.currentPlayer = gameScriptPlayer;
+
+          // Update player states
+          for (let i = 1; i <= MAX_PLAYERS; i++) {
+            if (i === gameScriptPlayer) {
+              state.playerStates[i] = PLAYER_STATES.ROLLING;
+            } else if (isActivePlayer(i)) {
+              state.playerStates[i] = PLAYER_STATES.WAITING;
+            }
+          }
+
+          // Update visuals
+          updatePlayerVisuals();
+
+          // Sync with game-mechanics-cards.js
+          if (window.GameMechanics && typeof window.GameMechanics.setCurrentPlayer === 'function') {
+            window.GameMechanics.setCurrentPlayer(gameScriptPlayer);
+          }
+        }
+      }
+    }, 100); // Check every 100ms
   }
 
   /**

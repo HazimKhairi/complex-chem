@@ -1,0 +1,14 @@
+---
+interface Props {
+  playerId: 1 | 2 | 3 | 4;
+}
+
+const { playerId } = Astro.props;
+---
+
+<div class="bg-white rounded-lg p-3 w-32 h-24">
+  <h3 class="text-xs font-bold text-gray-800 mb-2 text-center">Ligands</h3>
+  <div id={`ligand-display-${playerId}`} class="flex flex-wrap gap-1 justify-center">
+    <!-- Ligand icons will appear here -->
+  </div>
+</div>

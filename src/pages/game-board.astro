@@ -6,20 +6,37 @@ import GameAudio from "../components/game-audio.astro";
 import WinnersModel from "../components/game-board/winners-model.astro";
 import GameStartCountdown from "../components/game-board/game-start-countdown.astro";
 import GameAssets from "../components/game-assets.astro";
+import LigandBox from "../components/game-board/ligand-box.astro";
 ---
 
 <Layout>
   <main class="flex justify-center items-center h-dvh p-2">
     <WinnersModel />
     <section id="game-container" class="transform-origin-center">
+      <!-- Top Ligand Boxes -->
+      <section class="flex justify-between w-[320px] mx-auto mb-2">
+        <LigandBox playerId={1} />
+        <LigandBox playerId={2} />
+      </section>
+
+      <!-- Top Players -->
       <section class="flex justify-between w-[320px] mx-auto player-area">
         <PlayerCard id={1} playerName="Player 1" />
         <PlayerCard id={2} playerName="Player 2" reverse />
       </section>
+
       <LudoBoard />
+
+      <!-- Bottom Players -->
       <section class="flex justify-between w-[320px] mx-auto player-area">
         <PlayerCard id={3} playerName="Player 3" />
         <PlayerCard id={4} playerName="Player 4" reverse />
+      </section>
+
+      <!-- Bottom Ligand Boxes -->
+      <section class="flex justify-between w-[320px] mx-auto mt-2">
+        <LigandBox playerId={3} />
+        <LigandBox playerId={4} />
       </section>
     </section>
     <GameAudio />

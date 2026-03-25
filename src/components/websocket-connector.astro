@@ -1,0 +1,119 @@
+---
+/**
+ * WebSocket Connector Component
+ * Drop this into any page to auto-connect to game room
+ */
+
+interface Props {
+  roomId?: string;
+  playerName?: string;
+  playerColor?: 'red' | 'blue' | 'yellow' | 'green';
+  autoConnect?: boolean;
+}
+
+const {
+  roomId = 'default-room',
+  playerName = 'Player',
+  playerColor = 'red',
+  autoConnect = true
+} = Astro.props;
+---
+
+<div id="websocket-status" class="fixed bottom-4 right-4 z-50">
+  <div class="bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2">
+    <div id="ws-indicator" class="w-3 h-3 rounded-full bg-gray-500"></div>
+    <span id="ws-status-text">Connecting...</span>
+  </div>
+</div>
+
+<script define:vars={{ roomId, playerName, playerColor, autoConnect }}>
+  // Wait for wsClient to be available
+  function initWebSocket() {
+    if (!window.wsClient) {
+      setTimeout(initWebSocket, 100);
+      return;
+    }
+
+    const indicator = document.getElementById('ws-indicator');
+    const statusText = document.getElementById('ws-status-text');
+
+    // Update UI helpers
+    function setStatus(status, color) {
+      if (indicator) indicator.style.backgroundColor = color;
+      if (statusText) statusText.textContent = status;
+    }
+
+    // Listen for connection events
+    window.wsClient.on('connected', () => {
+      setStatus('Connected', '#22c55e'); // green
+      console.log('✅ WebSocket connected');
+    });
+
+    window.wsClient.on('disconnected', () => {
+      setStatus('Disconnected', '#ef4444'); // red
+      console.log('❌ WebSocket disconnected');
+    });
+
+    window.wsClient.on('error', (error) => {
+      setStatus('Error', '#f59e0b'); // orange
+      console.error('WebSocket error:', error);
+    });
+
+    window.wsClient.on('reconnectFailed', () => {
+      setStatus('Connection Failed', '#ef4444'); // red
+      console.error('Failed to reconnect');
+    });
+
+    // Listen for game events
+    window.wsClient.on('init', (gameState) => {
+      console.log('Game state loaded:', gameState);
+
+      // Dispatch custom event for other components
+      window.dispatchEvent(new CustomEvent('game-state-loaded', {
+        detail: gameState
+      }));
+    });
+
+    // Auto-connect if enabled
+    if (autoConnect) {
+      console.log(`Connecting to room: ${roomId}`);
+      window.wsClient.connect(roomId, playerName, playerColor);
+    }
+
+    // Expose connect function globally
+    window.connectToGame = (customRoomId, customName, customColor) => {
+      const room = customRoomId || roomId;
+      const name = customName || playerName;
+      const color = customColor || playerColor;
+
+      window.wsClient.connect(room, name, color);
+    };
+
+    console.log('WebSocket connector initialized');
+    console.log('Manual connect: window.connectToGame(roomId, playerName, playerColor)');
+  }
+
+  // Initialize
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initWebSocket);
+  } else {
+    initWebSocket();
+  }
+</script>
+
+<style>
+  #websocket-status {
+    animation: slideIn 0.3s ease-out;
+  }
+
+  @keyframes slideIn {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+</style>

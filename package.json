@@ -4,8 +4,11 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
+    "dev:wrangler": "wrangler pages dev dist --compatibility-date=2024-03-01 --binding GAME_ROOM=GameRoom",
     "build": "astro build",
     "preview": "astro preview",
+    "preview:wrangler": "npm run build && wrangler pages dev dist",
+    "deploy": "npm run build && wrangler pages deploy dist",
     "format": "prettier --write .",
     "astro": "astro"
   },

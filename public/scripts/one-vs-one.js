@@ -221,6 +221,13 @@ $(`.player-dice`).click(function () {
     setTimeout(function () {
       // Condition for each random dice number
 
+      // Dispatch dice-rolled event for turn indicator
+      document.dispatchEvent(
+        new CustomEvent("dice-rolled", {
+          detail: { playerId: x, value: randomDice },
+        })
+      );
+
       switch (randomDice) {
         case 1:
           $("#" + playerDice).attr("src", "dice/dice-1.png"); //Assigns a dice 1 image

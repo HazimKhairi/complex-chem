@@ -10,6 +10,7 @@ import LigandBox from "../components/game-board/ligand-box.astro";
 import LigandModal from "../components/game/ligand-modal.astro";
 import QuestionModal from "../components/game/question-modal.astro";
 import FateModal from "../components/game/fate-modal.astro";
+import TurnIndicator from "../components/game-board/turn-indicator.astro";
 ---
 
 <Layout>
@@ -36,6 +37,7 @@ import FateModal from "../components/game/fate-modal.astro";
       </div>
     </div>
 
+    <TurnIndicator />
     <WinnersModel />
     <section id="game-container" class="transform-origin-center flex items-center gap-4 md:gap-6 lg:gap-8">
       <!-- LEFT COLUMN: Player 1 & 3 -->
@@ -106,6 +108,12 @@ import FateModal from "../components/game/fate-modal.astro";
   orchestratorScript.src = "scripts/game-orchestrator.js";
   orchestratorScript.type = "application/javascript";
   document.head.appendChild(orchestratorScript);
+
+  // Load turn indicator integration (after orchestrator)
+  const turnIndicatorScript = document.createElement("script");
+  turnIndicatorScript.src = "scripts/turn-indicator-integration.js";
+  turnIndicatorScript.type = "application/javascript";
+  document.head.appendChild(turnIndicatorScript);
 
   // Optimize game size for screen - AGGRESSIVE scaling
   function optimizeGameSize() {

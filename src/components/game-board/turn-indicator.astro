@@ -1,0 +1,120 @@
+---
+---
+
+<!-- Turn Indicator Banner -->
+<div
+  id="turn-indicator"
+  class="fixed top-4 left-1/2 -translate-x-1/2 z-40 px-6 py-3 rounded-lg shadow-lg transition-all duration-300 transform scale-0 opacity-0"
+>
+  <div class="flex items-center gap-3">
+    <!-- Player Avatar Circle -->
+    <div id="turn-indicator-avatar" class="w-10 h-10 rounded-full border-2 border-white shadow-md overflow-hidden bg-gray-200">
+      <img id="turn-indicator-image" class="w-full h-full object-cover" alt="Current Player" />
+    </div>
+
+    <!-- Turn Message -->
+    <div class="text-white">
+      <p id="turn-indicator-player" class="text-sm font-bold leading-tight">Player 1</p>
+      <p id="turn-indicator-action" class="text-xs opacity-90">Roll the dice to start</p>
+    </div>
+
+    <!-- Dice Value (shown after roll) -->
+    <div id="turn-indicator-dice" class="hidden ml-2 w-8 h-8 bg-white rounded flex items-center justify-center">
+      <span class="text-lg font-bold text-gray-800">6</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { getPlayerAvatar, getPlayerColor } from "../../lib/utils";
+
+  // Turn Indicator Controller
+  window.TurnIndicator = {
+    show(playerId: number, action: string = "roll", diceValue?: number) {
+      const indicator = document.getElementById("turn-indicator");
+      const playerNameEl = document.getElementById("turn-indicator-player");
+      const actionEl = document.getElementById("turn-indicator-action");
+      const avatarEl = document.getElementById("turn-indicator-image");
+      const diceEl = document.getElementById("turn-indicator-dice");
+      const diceValueEl = diceEl?.querySelector("span");
+
+      if (!indicator) return;
+
+      // Get player info
+      const gameMode = sessionStorage.getItem("game-option") || "one-vs-one";
+      const playerName = sessionStorage.getItem(`${gameMode}-player-${playerId}-name`) || `Player ${playerId}`;
+      const playerColor = getPlayerColor(playerId);
+
+      // Set background color based on player
+      const bgColors = {
+        1: "bg-gradient-to-r from-red-500 to-red-600",
+        2: "bg-gradient-to-r from-blue-500 to-blue-600",
+        3: "bg-gradient-to-r from-yellow-500 to-yellow-600",
+        4: "bg-gradient-to-r from-green-500 to-green-600",
+      };
+
+      indicator.className = `fixed top-4 left-1/2 -translate-x-1/2 z-40 px-6 py-3 rounded-lg shadow-lg transition-all duration-300 ${bgColors[playerId as keyof typeof bgColors]} scale-100 opacity-100`;
+
+      // Set player name
+      if (playerNameEl) playerNameEl.textContent = playerName;
+
+      // Set action message
+      if (actionEl) {
+        const messages = {
+          roll: "🎲 Roll the dice to start",
+          select: `🎯 Select your piece to move (${diceValue || 0} steps)`,
+          moving: "🏃 Moving piece...",
+          wait: "⏳ Wait for your turn",
+        };
+        actionEl.textContent = messages[action as keyof typeof messages] || "Your turn";
+      }
+
+      // Set avatar
+      if (avatarEl) {
+        const avatar = getPlayerAvatar({ playerName, playerColor });
+        avatarEl.src = avatar;
+      }
+
+      // Show/hide dice value
+      if (diceEl && diceValueEl) {
+        if (diceValue) {
+          diceValueEl.textContent = diceValue.toString();
+          diceEl.classList.remove("hidden");
+        } else {
+          diceEl.classList.add("hidden");
+        }
+      }
+    },
+
+    hide() {
+      const indicator = document.getElementById("turn-indicator");
+      if (indicator) {
+        indicator.classList.remove("scale-100", "opacity-100");
+        indicator.classList.add("scale-0", "opacity-0");
+      }
+    },
+
+    update(action: string, diceValue?: number) {
+      const actionEl = document.getElementById("turn-indicator-action");
+      const diceEl = document.getElementById("turn-indicator-dice");
+      const diceValueEl = diceEl?.querySelector("span");
+
+      if (actionEl) {
+        const messages = {
+          roll: "🎲 Roll the dice to start",
+          select: `🎯 Select your piece to move (${diceValue || 0} steps)`,
+          moving: "🏃 Moving piece...",
+          wait: "⏳ Wait for your turn",
+        };
+        actionEl.textContent = messages[action as keyof typeof messages] || "Your turn";
+      }
+
+      if (diceEl && diceValueEl && diceValue) {
+        diceValueEl.textContent = diceValue.toString();
+        diceEl.classList.remove("hidden");
+      }
+    },
+  };
+
+  console.log("✅ Turn Indicator initialized");
+</script>

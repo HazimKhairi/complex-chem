@@ -11,9 +11,9 @@ interface Props {
 const { ligand, size = "md", class: className } = Astro.props;
 
 const sizeClasses = {
-  sm: "w-full h-48",
-  md: "w-full h-56",
-  lg: "w-full h-64",
+  sm: "w-full h-auto min-h-56",
+  md: "w-full h-auto min-h-64",
+  lg: "w-full h-auto min-h-72",
 };
 ---
 
@@ -30,7 +30,7 @@ const sizeClasses = {
   </div>
 
   <!-- Card Body -->
-  <div class="p-4 text-xs leading-relaxed space-y-1">
+  <div class="p-3 pb-6 text-xs leading-relaxed space-y-1">
     <p><span class="font-semibold">Compound:</span> {ligand.fullName}</p>
     <p><span class="font-semibold">Classification:</span> {ligand.classification}</p>
     <p><span class="font-semibold">Coordination Type:</span> {ligand.coordinationType}</p>

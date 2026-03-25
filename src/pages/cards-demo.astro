@@ -25,8 +25,8 @@ import { QUESTION_CARDS } from "../lib/data/question-cards";
             13 chemistry ligand cards with detailed information
           </p>
         </div>
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-6">
-          {LIGANDS.map((ligand) => <LigandCard ligand={ligand} size="sm" class="sm:w-40 sm:h-56" />)}
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 max-w-6xl">
+          {LIGANDS.map((ligand) => <LigandCard ligand={ligand} size="sm" />)}
         </div>
       </section>
 
@@ -36,8 +36,8 @@ import { QUESTION_CARDS } from "../lib/data/question-cards";
           <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Fate Cards</h2>
           <p class="text-xs sm:text-sm text-gray-600">Random event cards that affect gameplay</p>
         </div>
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
-          {FATE_CARDS.map((card) => <FateCard card={card} size="sm" class="sm:w-40 sm:h-40" />)}
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 max-w-6xl">
+          {FATE_CARDS.map((card) => <FateCard card={card} size="sm" />)}
         </div>
       </section>
 
@@ -53,10 +53,10 @@ import { QUESTION_CARDS } from "../lib/data/question-cards";
         <!-- Easy Questions -->
         <div class="space-y-3 sm:space-y-4">
           <h3 class="text-base sm:text-lg font-bold text-green-600">Easy (3 points)</h3>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl">
             {
               QUESTION_CARDS.filter((q) => q.difficulty === "easy").map((card) => (
-                <QuestionCard card={card} size="sm" class="sm:w-64 sm:min-h-64" />
+                <QuestionCard card={card} size="sm" />
               ))
             }
           </div>
@@ -65,10 +65,10 @@ import { QUESTION_CARDS } from "../lib/data/question-cards";
         <!-- Medium Questions -->
         <div class="space-y-3 sm:space-y-4">
           <h3 class="text-base sm:text-lg font-bold text-yellow-600">Medium (4 points)</h3>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl">
             {
               QUESTION_CARDS.filter((q) => q.difficulty === "medium").map((card) => (
-                <QuestionCard card={card} size="sm" class="sm:w-64 sm:min-h-64" />
+                <QuestionCard card={card} size="sm" />
               ))
             }
           </div>
@@ -77,10 +77,10 @@ import { QUESTION_CARDS } from "../lib/data/question-cards";
         <!-- Hard Questions -->
         <div class="space-y-3 sm:space-y-4">
           <h3 class="text-base sm:text-lg font-bold text-red-600">Hard (5 points)</h3>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-5xl">
             {
               QUESTION_CARDS.filter((q) => q.difficulty === "hard").map((card) => (
-                <QuestionCard card={card} size="sm" class="sm:w-64 sm:min-h-64" />
+                <QuestionCard card={card} size="sm" />
               ))
             }
           </div>

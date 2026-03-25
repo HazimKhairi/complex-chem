@@ -1,6 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import LigandCard from "../components/cards/ligand-card.astro";
+import LigandCardFlip from "../components/cards/ligand-card-flip.astro";
 import FateCard from "../components/cards/fate-card.astro";
 import QuestionCardFlip from "../components/cards/question-card-flip.astro";
 import { LIGANDS } from "../lib/data/ligands";
@@ -20,13 +20,13 @@ import { QUESTION_CARDS_IMAGE } from "../lib/data/question-cards-image";
       <!-- Ligand Cards Section -->
       <section class="space-y-4 sm:space-y-6">
         <div class="border-b-4 border-blue-500 pb-2">
-          <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Ligand Cards</h2>
+          <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Ligand Cards (Flip Style)</h2>
           <p class="text-xs sm:text-sm text-gray-600">
-            13 chemistry ligand cards with detailed information
+            13 chemistry ligand cards - Click to flip from logo to description
           </p>
         </div>
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 mx-auto max-w-6xl px-2">
-          {LIGANDS.map((ligand) => <LigandCard ligand={ligand} size="sm" />)}
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mx-auto max-w-6xl px-2">
+          {LIGANDS.map((ligand) => <LigandCardFlip ligand={ligand} size="sm" />)}
         </div>
       </section>
 
@@ -96,15 +96,15 @@ import { QUESTION_CARDS_IMAGE } from "../lib/data/question-cards-image";
         <div class="flex items-end gap-4 sm:gap-8 flex-wrap">
           <div class="space-y-2">
             <p class="text-xs sm:text-sm font-bold text-gray-600">Small</p>
-            <LigandCard ligand={LIGANDS[0]} size="sm" />
+            <LigandCardFlip ligand={LIGANDS[0]} size="sm" />
           </div>
           <div class="space-y-2">
             <p class="text-xs sm:text-sm font-bold text-gray-600">Medium</p>
-            <LigandCard ligand={LIGANDS[0]} size="md" />
+            <LigandCardFlip ligand={LIGANDS[0]} size="md" />
           </div>
           <div class="space-y-2">
             <p class="text-xs sm:text-sm font-bold text-gray-600">Large</p>
-            <LigandCard ligand={LIGANDS[0]} size="lg" />
+            <LigandCardFlip ligand={LIGANDS[0]} size="lg" />
           </div>
         </div>
       </section>

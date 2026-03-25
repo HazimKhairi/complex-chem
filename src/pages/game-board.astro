@@ -75,6 +75,14 @@ import TurnIndicator from "../components/game-board/turn-indicator.astro";
 <script>
   // Load game script based on selected option
   const gameOption = sessionStorage.getItem("game-option");
+
+  // Redirect if no game mode selected
+  if (!gameOption) {
+    console.error("No game mode selected! Redirecting to game mode selection...");
+    window.location.href = "/pass-and-play";
+    throw new Error("No game mode selected");
+  }
+
   const script = document.createElement("script");
   script.src = `scripts/${gameOption}.js`;
   script.type = "application/javascript";

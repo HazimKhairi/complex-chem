@@ -4,20 +4,22 @@
  */
 
 // Load data from ligands.ts
+// Image files verified: 1.png=H₂O, 2.png=NH₃, 3.png=py, 4.png=PPh₃, 5.png=CN⁻, 6.png=O²⁻,
+// 7.png=CI, 8.png=ox, 9.png=acac, 10.png=CO₃²⁻, 11.png=phen, 12.png=bipy, 13.png=en
 const LIGANDS_DATA = [
-  { id: "h2o", name: "H₂O", color: "#3B82F6", imageFile: "1.png" },
-  { id: "phen", name: "phen", color: "#10B981", imageFile: "2.png" },
-  { id: "bipy", name: "bipy", color: "#8B5CF6", imageFile: "3.png" },
-  { id: "ox", name: "ox", color: "#EF4444", imageFile: "4.png" },
-  { id: "py", name: "py", color: "#F59E0B", imageFile: "5.png" },
-  { id: "nh3", name: "NH₃", color: "#06B6D4", imageFile: "6.png" },
-  { id: "pph3", name: "PPh₃", color: "#EC4899", imageFile: "7.png" },
-  { id: "cl", name: "CI", color: "#14B8A6", imageFile: "8.png" },  // Note: Board uses "CI" not "Cl⁻"
-  { id: "en", name: "en", color: "#6366F1", imageFile: "9.png" },
-  { id: "acac", name: "acac", color: "#F97316", imageFile: "10.png" },
-  { id: "co32", name: "CO₃²⁻", color: "#84CC16", imageFile: "11.png" },
-  { id: "cn", name: "CN⁻", color: "#A855F7", imageFile: "12.png" },
-  { id: "o2", name: "O²⁻", color: "#EF4444", imageFile: "13.png" }
+  { id: "h2o", name: "H₂O", color: "#3B82F6", imageFile: "1.png" },      // 1.png = H₂O
+  { id: "nh3", name: "NH₃", color: "#06B6D4", imageFile: "2.png" },      // 2.png = NH₃
+  { id: "py", name: "py", color: "#F59E0B", imageFile: "3.png" },        // 3.png = py
+  { id: "pph3", name: "PPh₃", color: "#EC4899", imageFile: "4.png" },    // 4.png = PPh₃
+  { id: "cn", name: "CN⁻", color: "#A855F7", imageFile: "5.png" },       // 5.png = CN⁻
+  { id: "o2", name: "O²⁻", color: "#EF4444", imageFile: "6.png" },       // 6.png = O²⁻
+  { id: "cl", name: "CI", color: "#14B8A6", imageFile: "7.png" },        // 7.png = CI (Board uses "CI" not "Cl⁻")
+  { id: "ox", name: "ox", color: "#EF4444", imageFile: "8.png" },        // 8.png = ox
+  { id: "acac", name: "acac", color: "#F97316", imageFile: "9.png" },    // 9.png = acac
+  { id: "co32", name: "CO₃²⁻", color: "#84CC16", imageFile: "10.png" },  // 10.png = CO₃²⁻
+  { id: "phen", name: "phen", color: "#10B981", imageFile: "11.png" },   // 11.png = phen
+  { id: "bipy", name: "bipy", color: "#8B5CF6", imageFile: "12.png" },   // 12.png = bipy
+  { id: "en", name: "en", color: "#6366F1", imageFile: "13.png" }        // 13.png = en
 ];
 
 // Question cards (6-23.png)

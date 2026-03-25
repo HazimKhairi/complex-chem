@@ -117,9 +117,16 @@ const FATE_CARDS_DATA = [
 // Game state
 const gameState = {
   playerLigands: { 1: [], 2: [], 3: [], 4: [] },
-  playerPoints: { 1: 0, 2: [], 3: 0, 4: 0 },
+  playerPoints: { 1: 0, 2: 0, 3: 0, 4: 0 }, // Question points for each player
   collectedLigandIds: [],
   currentPlayer: 1 // Track whose turn it is
+};
+
+// Question points based on difficulty
+const QUESTION_POINTS = {
+  easy: 2,    // Green
+  medium: 3,  // Yellow
+  hard: 5     // Red
 };
 
 function initGameMechanics() {
@@ -129,7 +136,11 @@ function initGameMechanics() {
   if (saved) {
     Object.assign(gameState, JSON.parse(saved));
     updateAllLigandDisplays();
+    updateAllPointsDisplays(); // Update points displays from saved state
   }
+
+  // Listen for question answered events
+  document.addEventListener("question-answered", handleQuestionAnswered);
 
   window.GameMechanics = {
     collectLigand,
@@ -137,6 +148,8 @@ function initGameMechanics() {
     showFate,
     setCurrentPlayer,
     getCurrentPlayer: () => gameState.currentPlayer,
+    awardPoints: awardQuestionPoints,
+    getPlayerPoints: (playerId) => gameState.playerPoints[playerId],
     testTile: (playerId, tileType) => {
       if (tileType === "ligand") collectLigand(playerId);
       else if (tileType === "question") showQuestion(playerId);
@@ -148,6 +161,102 @@ function initGameMechanics() {
   console.log("  window.GameMechanics.testTile(1, 'ligand') - Collect ligand for player 1");
   console.log("  window.GameMechanics.setCurrentPlayer(2) - Change turn to player 2");
   console.log("  window.GameMechanics.getCurrentPlayer() - Check whose turn it is");
+  console.log("  window.GameMechanics.getPlayerPoints(1) - Get player 1 points");
+}
+
+/**
+ * Handle question answered event - award points if correct
+ */
+function handleQuestionAnswered(event) {
+  const { answer } = event.detail;
+  const modal = document.getElementById("question-modal");
+  if (!modal) return;
+
+  const playerId = parseInt(modal.dataset.playerId);
+  const correctAnswer = parseInt(modal.dataset.correctAnswer);
+  const difficulty = modal.dataset.difficulty;
+  const points = QUESTION_POINTS[difficulty] || 0;
+
+  console.log(`🎯 Question answered: Player ${playerId}, Answer: ${answer}, Correct: ${correctAnswer}, Difficulty: ${difficulty}`);
+
+  const isCorrect = answer === correctAnswer;
+
+  if (isCorrect) {
+    awardQuestionPoints(playerId, points, difficulty);
+    console.log(`✅ Correct! Player ${playerId} earned ${points} points (${difficulty})`);
+  } else {
+    console.log(`❌ Incorrect! No points awarded`);
+  }
+
+  // Show feedback in modal
+  showQuestionFeedback(isCorrect, points, difficulty);
+}
+
+/**
+ * Award question points to a player
+ */
+function awardQuestionPoints(playerId, points, difficulty) {
+  gameState.playerPoints[playerId] += points;
+  updatePointsDisplay(playerId);
+  saveState();
+
+  console.log(`💰 Player ${playerId} total points: ${gameState.playerPoints[playerId]}`);
+}
+
+/**
+ * Update points display for a specific player
+ */
+function updatePointsDisplay(playerId) {
+  const pointsElement = document.getElementById(`player-${playerId}-points`);
+  if (pointsElement) {
+    pointsElement.textContent = gameState.playerPoints[playerId];
+  }
+}
+
+/**
+ * Update all players' points displays
+ */
+function updateAllPointsDisplays() {
+  [1, 2, 3, 4].forEach(id => updatePointsDisplay(id));
+}
+
+/**
+ * Show feedback after answering a question
+ */
+function showQuestionFeedback(isCorrect, points, difficulty) {
+  const feedbackEl = document.getElementById("question-feedback");
+  if (!feedbackEl) return;
+
+  const difficultyColors = {
+    easy: "bg-green-100 border-green-500 text-green-800",
+    medium: "bg-yellow-100 border-yellow-500 text-yellow-800",
+    hard: "bg-red-100 border-red-500 text-red-800"
+  };
+
+  const bgColor = isCorrect ? "bg-green-100 border-green-500" : "bg-red-100 border-red-500";
+  const textColor = isCorrect ? "text-green-800" : "text-red-800";
+
+  feedbackEl.className = `p-4 rounded-lg mb-4 border-2 ${bgColor} ${textColor}`;
+  feedbackEl.innerHTML = `
+    <div class="flex items-center gap-3">
+      <span class="text-3xl">${isCorrect ? '✅' : '❌'}</span>
+      <div>
+        <p class="font-bold text-lg">${isCorrect ? 'Correct!' : 'Incorrect'}</p>
+        ${isCorrect ? `<p class="text-sm">You earned <strong>${points} points</strong> (${difficulty} question)</p>` : '<p class="text-sm">Better luck next time!</p>'}
+      </div>
+    </div>
+  `;
+  feedbackEl.classList.remove("hidden");
+
+  // Auto-hide feedback after 3 seconds and close modal
+  setTimeout(() => {
+    feedbackEl.classList.add("hidden");
+    document.getElementById("question-modal")?.classList.add("hidden");
+    document.getElementById("question-modal")?.classList.remove("flex");
+
+    // Dispatch event to notify orchestrator that modal is closed
+    document.dispatchEvent(new CustomEvent("question-continue"));
+  }, 3000);
 }
 
 function collectLigand(playerId) {
@@ -214,6 +323,8 @@ function showQuestion(playerId) {
 
   modal.dataset.playerId = playerId;
   modal.dataset.points = question.points;
+  modal.dataset.difficulty = question.difficulty;
+  modal.dataset.correctAnswer = "1"; // TODO: Add correct answers to QUESTION_CARDS data
 
   const difficultyColors = {
     easy: "#10B981",

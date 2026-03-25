@@ -22,12 +22,6 @@ const difficultyColors = {
   hard: "border-red-500",
 };
 
-const difficultyBadge = {
-  easy: "bg-green-500",
-  medium: "bg-yellow-500",
-  hard: "bg-red-500",
-};
-
 // Calculate background position for the image crop
 // Each image has note on left, question on right
 const getBackgroundPosition = (side: "note" | "question") => {
@@ -50,10 +44,6 @@ const getBackgroundPosition = (side: "note" | "question") => {
         style={`background-image: url('/assets/question-cards/${card.imageFile}'); background-position: ${getBackgroundPosition("note")}; background-size: 200%;`}
       >
       </div>
-      <!-- Badge overlay -->
-      <div class="absolute top-2 right-2 px-3 py-1 rounded-full text-white text-xs font-bold" style={`background-color: ${difficultyBadge[card.difficulty]}`}>
-        {card.difficulty.toUpperCase()} - {card.points} pts
-      </div>
       <div class="absolute bottom-2 right-2 px-3 py-1 bg-black/70 text-white text-xs rounded">
         Click to flip
       </div>
@@ -70,10 +60,6 @@ const getBackgroundPosition = (side: "note" | "question") => {
         class="w-full h-full bg-no-repeat"
         style={`background-image: url('/assets/question-cards/${card.imageFile}'); background-position: ${getBackgroundPosition("question")}; background-size: 200%;`}
       >
-      </div>
-      <!-- Badge overlay -->
-      <div class="absolute top-2 right-2 px-3 py-1 rounded-full text-white text-xs font-bold" style={`background-color: ${difficultyBadge[card.difficulty]}`}>
-        {card.difficulty.toUpperCase()} - {card.points} pts
       </div>
       <div class="absolute bottom-2 right-2 px-3 py-1 bg-black/70 text-white text-xs rounded">
         Click to flip back

@@ -96,7 +96,7 @@ function transferDice() {
 //Code will transfer the dice and will set the arrow for dice
 function transferDiceCode() {
   if (x <= 4) {
-    $("#" + playerDice).attr("src", "");
+    $("#" + playerDice).attr("src", "dice/dice-rest.png");
     $("#player-" + x + "-dice-arrow").attr("src", "");
     x++;
 

@@ -73,6 +73,29 @@ import FateModal from "../components/game/fate-modal.astro";
   mechanicsScript.type = "application/javascript";
   document.head.appendChild(mechanicsScript);
 
+  // Load game orchestrator and supporting systems
+  // These coordinate all game mechanics together
+  const tileDetectorScript = document.createElement("script");
+  tileDetectorScript.src = "scripts/tile-detector.js";
+  tileDetectorScript.type = "application/javascript";
+  document.head.appendChild(tileDetectorScript);
+
+  const turnManagerScript = document.createElement("script");
+  turnManagerScript.src = "scripts/turn-manager.js";
+  turnManagerScript.type = "application/javascript";
+  document.head.appendChild(turnManagerScript);
+
+  const winCheckerScript = document.createElement("script");
+  winCheckerScript.src = "scripts/win-checker.js";
+  winCheckerScript.type = "application/javascript";
+  document.head.appendChild(winCheckerScript);
+
+  // Load orchestrator LAST (after all dependencies)
+  const orchestratorScript = document.createElement("script");
+  orchestratorScript.src = "scripts/game-orchestrator.js";
+  orchestratorScript.type = "application/javascript";
+  document.head.appendChild(orchestratorScript);
+
   // Optimize game size for screen - AGGRESSIVE scaling
   function optimizeGameSize() {
     const container = document.getElementById("game-container");

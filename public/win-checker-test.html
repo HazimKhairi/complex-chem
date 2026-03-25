@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Win Checker Test - COOR-CHEM</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      border-bottom: 3px solid #4F46E5;
+      padding-bottom: 10px;
+    }
+    h2 {
+      color: #4F46E5;
+      margin-top: 30px;
+    }
+    .test-section {
+      background: #f9f9f9;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 5px;
+      border-left: 4px solid #4F46E5;
+    }
+    .button {
+      background: #4F46E5;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      margin: 5px;
+      transition: background 0.3s;
+    }
+    .button:hover {
+      background: #4338CA;
+    }
+    .button.danger {
+      background: #EF4444;
+    }
+    .button.danger:hover {
+      background: #DC2626;
+    }
+    .button.success {
+      background: #10B981;
+    }
+    .button.success:hover {
+      background: #059669;
+    }
+    .output {
+      background: #1F2937;
+      color: #10B981;
+      padding: 15px;
+      border-radius: 5px;
+      font-family: 'Courier New', monospace;
+      margin-top: 10px;
+      white-space: pre-wrap;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .player-info {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+    .player-card {
+      background: white;
+      border: 2px solid #E5E7EB;
+      border-radius: 8px;
+      padding: 15px;
+    }
+    .player-card.winner {
+      border-color: #10B981;
+      background: #F0FDF4;
+    }
+    .player-card h3 {
+      margin: 0 0 10px 0;
+      color: #333;
+    }
+    .stat {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 0;
+      border-bottom: 1px solid #E5E7EB;
+    }
+    .stat:last-child {
+      border-bottom: none;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .badge.won {
+      background: #10B981;
+      color: white;
+    }
+    .badge.playing {
+      background: #F59E0B;
+      color: white;
+    }
+    code {
+      background: #F3F4F6;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧪 COOR-CHEM Win Checker Test Suite</h1>
+    <p>Test the Level 1 win detection and scoring system. This page simulates the game board and allows you to test win conditions.</p>
+
+    <h2>📋 Test Controls</h2>
+    <div class="test-section">
+      <h3>Setup Game State</h3>
+      <button class="button" onclick="setupMockGameState()">Initialize Mock Game State</button>
+      <button class="button success" onclick="simulateWin(1)">Simulate Player 1 Win</button>
+      <button class="button success" onclick="simulateWin(2)">Simulate Player 2 Win</button>
+      <button class="button success" onclick="simulateWin(3)">Simulate Player 3 Win</button>
+      <button class="button success" onclick="simulateWin(4)">Simulate Player 4 Win</button>
+      <button class="button danger" onclick="resetTest()">Reset All</button>
+    </div>
+
+    <div class="test-section">
+      <h3>Check Functions</h3>
+      <button class="button" onclick="testGetPiecesInHome()">Test getPiecesInHome()</button>
+      <button class="button" onclick="testCalculateScore()">Test calculateScore()</button>
+      <button class="button" onclick="testCheckWinCondition()">Test checkWinCondition()</button>
+      <button class="button" onclick="testGetGameStatus()">Test getGameStatus()</button>
+    </div>
+
+    <h2>🎮 Game Status</h2>
+    <div id="player-status" class="player-info">
+      <!-- Player cards will be inserted here -->
+    </div>
+
+    <h2>📊 Console Output</h2>
+    <div id="output" class="output">Ready to test. Click buttons above to run tests.</div>
+
+    <h2>📖 API Documentation</h2>
+    <div class="test-section">
+      <h3>Available Functions</h3>
+      <ul>
+        <li><code>WinChecker.checkWinCondition()</code> - Check for winners and update modal</li>
+        <li><code>WinChecker.getPiecesInHome(playerId)</code> - Count pieces in home for a player</li>
+        <li><code>WinChecker.calculateScore(playerId)</code> - Calculate player's score from ligands</li>
+        <li><code>WinChecker.declareWinner(playerId, score)</code> - Manually declare a winner</li>
+        <li><code>WinChecker.hasPlayerWon(playerId)</code> - Check if player has all pieces home</li>
+        <li><code>WinChecker.getGameStatus()</code> - Get complete game status</li>
+        <li><code>WinChecker.reset()</code> - Reset win checker state</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Mock game board structure -->
+  <div id="mock-board" style="display: none;">
+    <table id="win">
+      <tr>
+        <td></td>
+        <td class="b57"></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td class="r57"></td>
+        <td></td>
+        <td class="g57"></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td class="y57"></td>
+        <td></td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- Mock winners modal -->
+  <div id="winners" style="display: none;">
+    <h1>Congratulations!</h1>
+    <div id="winner-1">
+      <span id="winner-1-name">Player 1</span>
+      <img id="winner-1-image" src="" alt="Player 1" />
+    </div>
+    <div id="winner-2">
+      <span id="winner-2-name">Player 2</span>
+      <img id="winner-2-image" src="" alt="Player 2" />
+    </div>
+    <div id="winner-3">
+      <span id="winner-3-name">Player 3</span>
+      <img id="winner-3-image" src="" alt="Player 3" />
+    </div>
+    <div id="winner-4">
+      <span id="winner-4-name">Player 4</span>
+      <img id="winner-4-image" src="" alt="Player 4" />
+    </div>
+  </div>
+
+  <!-- Load win-checker.js -->
+  <script src="scripts/win-checker.js"></script>
+
+  <script>
+    // Mock game state
+    window.gameState = {
+      playerLigands: {
+        1: [],
+        2: [],
+        3: [],
+        4: []
+      },
+      playerPoints: {
+        1: 0,
+        2: 0,
+        3: 0,
+        4: 0
+      }
+    };
+
+    function log(message, isError = false) {
+      const output = document.getElementById('output');
+      const timestamp = new Date().toLocaleTimeString();
+      const color = isError ? '#EF4444' : '#10B981';
+      output.innerHTML += `<span style="color: ${color}">[${timestamp}] ${message}</span>\n`;
+      output.scrollTop = output.scrollHeight;
+    }
+
+    function setupMockGameState() {
+      // Add some random ligands for testing
+      gameState.playerLigands = {
+        1: [{ id: 'h2o', name: 'H₂O' }, { id: 'phen', name: 'phen' }],
+        2: [{ id: 'bipy', name: 'bipy' }],
+        3: [{ id: 'ox', name: 'ox' }, { id: 'py', name: 'py' }, { id: 'nh3', name: 'NH₃' }],
+        4: []
+      };
+      gameState.playerPoints = {
+        1: 5,
+        2: 0,
+        3: 2,
+        4: 0
+      };
+      log('✅ Mock game state initialized');
+      log(`Player 1: ${gameState.playerLigands[1].length} ligands + ${gameState.playerPoints[1]} bonus`);
+      log(`Player 2: ${gameState.playerLigands[2].length} ligands + ${gameState.playerPoints[2]} bonus`);
+      log(`Player 3: ${gameState.playerLigands[3].length} ligands + ${gameState.playerPoints[3]} bonus`);
+      log(`Player 4: ${gameState.playerLigands[4].length} ligands + ${gameState.playerPoints[4]} bonus`);
+      updatePlayerStatus();
+    }
+
+    function simulateWin(playerId) {
+      const colors = { 1: 'r', 2: 'b', 3: 'y', 4: 'g' };
+      const homeCell = document.querySelector(`.${colors[playerId]}57`);
+
+      if (!homeCell) {
+        log(`❌ Could not find home cell for player ${playerId}`, true);
+        return;
+      }
+
+      // Clear existing pieces
+      homeCell.innerHTML = '';
+
+      // Add 4 pieces (img elements)
+      for (let i = 0; i < 4; i++) {
+        const img = document.createElement('img');
+        img.src = '/assets/horses/' + colors[playerId] + '.png';
+        img.alt = 'Horse piece';
+        homeCell.appendChild(img);
+      }
+
+      log(`🎯 Simulated win for Player ${playerId} - placed 4 pieces in home`);
+
+      // Check win condition
+      const foundWinner = WinChecker.checkWinCondition();
+      if (foundWinner) {
+        log(`🏆 Player ${playerId} declared as winner!`);
+      }
+
+      updatePlayerStatus();
+    }
+
+    function testGetPiecesInHome() {
+      log('--- Testing getPiecesInHome() ---');
+      for (let i = 1; i <= 4; i++) {
+        const count = WinChecker.getPiecesInHome(i);
+        log(`Player ${i}: ${count} pieces in home`);
+      }
+      updatePlayerStatus();
+    }
+
+    function testCalculateScore() {
+      log('--- Testing calculateScore() ---');
+      for (let i = 1; i <= 4; i++) {
+        const score = WinChecker.calculateScore(i);
+        log(`Player ${i}: Score = ${score}`);
+      }
+    }
+
+    function testCheckWinCondition() {
+      log('--- Testing checkWinCondition() ---');
+      const newWinners = WinChecker.checkWinCondition();
+      if (newWinners) {
+        log('✅ New winners detected!');
+      } else {
+        log('ℹ️ No new winners found');
+      }
+      updatePlayerStatus();
+    }
+
+    function testGetGameStatus() {
+      log('--- Testing getGameStatus() ---');
+      const status = WinChecker.getGameStatus();
+      log(JSON.stringify(status, null, 2));
+      updatePlayerStatus();
+    }
+
+    function resetTest() {
+      // Clear all home cells
+      const homeCells = document.querySelectorAll('.r57, .b57, .y57, .g57');
+      homeCells.forEach(cell => cell.innerHTML = '');
+
+      // Reset game state
+      gameState.playerLigands = { 1: [], 2: [], 3: [], 4: [] };
+      gameState.playerPoints = { 1: 0, 2: 0, 3: 0, 4: 0 };
+
+      // Reset win checker
+      WinChecker.reset();
+
+      // Clear output
+      document.getElementById('output').innerHTML = 'Test reset complete. Ready for new tests.\n';
+
+      log('🔄 Test environment reset');
+      updatePlayerStatus();
+    }
+
+    function updatePlayerStatus() {
+      const status = WinChecker.getGameStatus();
+      const container = document.getElementById('player-status');
+
+      container.innerHTML = '';
+
+      for (let playerId = 1; playerId <= 4; playerId++) {
+        const playerStatus = status.playersStatus[playerId];
+        const isWinner = playerStatus.isWinner;
+
+        const card = document.createElement('div');
+        card.className = `player-card ${isWinner ? 'winner' : ''}`;
+
+        card.innerHTML = `
+          <h3>Player ${playerId} ${isWinner ? '<span class="badge won">WINNER</span>' : '<span class="badge playing">PLAYING</span>'}</h3>
+          <div class="stat">
+            <span>Pieces in Home:</span>
+            <strong>${playerStatus.piecesInHome}/4</strong>
+          </div>
+          <div class="stat">
+            <span>Score:</span>
+            <strong>${playerStatus.score}</strong>
+          </div>
+          <div class="stat">
+            <span>Has Won:</span>
+            <strong>${playerStatus.hasWon ? 'Yes ✅' : 'No'}</strong>
+          </div>
+        `;
+
+        container.appendChild(card);
+      }
+    }
+
+    // Initialize on load
+    window.addEventListener('DOMContentLoaded', () => {
+      log('✅ Win Checker Test Suite loaded');
+      log('ℹ️ Click "Initialize Mock Game State" to begin testing');
+      updatePlayerStatus();
+    });
+  </script>
+</body>
+</html>

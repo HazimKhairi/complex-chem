@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tile Detector Test - COOR-CHEM</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #1a1a1a;
+      color: #fff;
+    }
+    h1 {
+      color: #60a5fa;
+    }
+    .test-section {
+      background: #2a2a2a;
+      padding: 20px;
+      margin: 20px 0;
+      border-radius: 8px;
+      border: 1px solid #3a3a3a;
+    }
+    .tile-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px;
+      margin-top: 15px;
+    }
+    .tile-card {
+      background: #333;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      border: 2px solid #444;
+    }
+    .tile-card.safe { border-color: #60a5fa; }
+    .tile-card.ligand { border-color: #34d399; }
+    .tile-card.question { border-color: #f59e0b; }
+    .tile-card.fate { border-color: #ef4444; }
+    .tile-card.start { border-color: #a78bfa; }
+    .tile-card.home { border-color: #fbbf24; }
+    .tile-type {
+      font-weight: bold;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      font-size: 11px;
+      opacity: 0.7;
+    }
+    .tile-content {
+      margin-top: 5px;
+      color: #aaa;
+      font-style: italic;
+    }
+    button {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      margin: 5px;
+    }
+    button:hover {
+      background: #2563eb;
+    }
+    pre {
+      background: #1a1a1a;
+      padding: 15px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 12px;
+      border: 1px solid #333;
+    }
+    .status {
+      padding: 10px;
+      border-radius: 6px;
+      margin: 10px 0;
+    }
+    .status.success {
+      background: #065f46;
+      border: 1px solid #059669;
+    }
+    .status.error {
+      background: #7f1d1d;
+      border: 1px solid #dc2626;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔬 COOR-CHEM Tile Detector Test</h1>
+
+  <div class="test-section">
+    <h2>Quick Test</h2>
+    <p>This test page verifies the tile detector is working correctly.</p>
+    <div id="status" class="status" style="display:none;"></div>
+    <button onclick="runQuickTest()">Run Quick Test</button>
+    <button onclick="runFullTest()">Run Full Test</button>
+    <button onclick="showTileSummary()">Show Tile Summary</button>
+  </div>
+
+  <div class="test-section" id="results" style="display:none;">
+    <h2>Test Results</h2>
+    <div id="test-output"></div>
+  </div>
+
+  <div class="test-section" id="tile-display" style="display:none;">
+    <h2>Detected Tiles</h2>
+    <div id="tile-grid" class="tile-grid"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>Console Output</h2>
+    <p>Open browser console (F12) to see detailed logs.</p>
+    <pre id="console-output">Waiting for test...</pre>
+  </div>
+
+  <script>
+    let consoleOutput = '';
+
+    // Capture console.log
+    const originalLog = console.log;
+    console.log = function(...args) {
+      originalLog.apply(console, args);
+      consoleOutput += args.join(' ') + '\n';
+      document.getElementById('console-output').textContent = consoleOutput;
+    };
+
+    function showStatus(message, isError = false) {
+      const status = document.getElementById('status');
+      status.style.display = 'block';
+      status.className = `status ${isError ? 'error' : 'success'}`;
+      status.textContent = message;
+    }
+
+    function runQuickTest() {
+      consoleOutput = '';
+      document.getElementById('results').style.display = 'none';
+
+      console.log('=== Quick Tile Detector Test ===\n');
+
+      if (typeof window.TileDetector === 'undefined') {
+        showStatus('❌ ERROR: TileDetector not loaded! Make sure you are viewing this from the game board page.', true);
+        console.log('ERROR: window.TileDetector is undefined');
+        return;
+      }
+
+      showStatus('✓ TileDetector loaded successfully!');
+      console.log('✓ TileDetector is available');
+      console.log('Available methods:', Object.keys(window.TileDetector).join(', '));
+
+      // Test a few specific tiles
+      const testTiles = ['r1', 'r11', 'r4', 'r51', 'b1', 'g1', 'y1'];
+      console.log('\nTesting specific tiles:');
+
+      testTiles.forEach(className => {
+        const tile = window.TileDetector.getTileByClassName(className);
+        if (tile) {
+          console.log(`✓ ${className}: ${tile.type} ${tile.content ? `("${tile.content}")` : ''}`);
+        } else {
+          console.log(`✗ ${className}: Not found (board might not be loaded)`);
+        }
+      });
+
+      document.getElementById('results').style.display = 'block';
+      document.getElementById('test-output').innerHTML = '<pre>' + consoleOutput + '</pre>';
+    }
+
+    function runFullTest() {
+      consoleOutput = '';
+
+      if (typeof window.TileDetector === 'undefined') {
+        showStatus('❌ ERROR: TileDetector not loaded!', true);
+        return;
+      }
+
+      showStatus('✓ Running full test suite...');
+      window.TileDetector.testTileDetector();
+
+      document.getElementById('results').style.display = 'block';
+      document.getElementById('test-output').innerHTML = '<pre>' + consoleOutput + '</pre>';
+
+      // Display tiles visually
+      displayTiles();
+    }
+
+    function showTileSummary() {
+      consoleOutput = '';
+
+      if (typeof window.TileDetector === 'undefined') {
+        showStatus('❌ ERROR: TileDetector not loaded!', true);
+        return;
+      }
+
+      showStatus('✓ Generating tile summary...');
+      const summary = window.TileDetector.printTileSummary();
+
+      document.getElementById('results').style.display = 'block';
+      document.getElementById('test-output').innerHTML = '<pre>' + consoleOutput + '</pre>';
+
+      displayTiles();
+    }
+
+    function displayTiles() {
+      const tileDisplay = document.getElementById('tile-display');
+      const tileGrid = document.getElementById('tile-grid');
+
+      tileDisplay.style.display = 'block';
+      tileGrid.innerHTML = '';
+
+      const types = ['safe', 'ligand', 'question', 'fate', 'start', 'home'];
+
+      types.forEach(type => {
+        const tiles = window.TileDetector.getAllTilesOfType(type);
+        const count = tiles.length;
+
+        // Show up to 5 examples of each type
+        tiles.slice(0, 5).forEach((tile, index) => {
+          const card = document.createElement('div');
+          card.className = `tile-card ${type}`;
+          card.innerHTML = `
+            <div class="tile-type">${type} ${index + 1}/${count}</div>
+            <div>Classes: ${tile.classes.filter(c => c.match(/^[rbgy]\d+/)).join(', ')}</div>
+            ${tile.content ? `<div class="tile-content">"${tile.content}"</div>` : ''}
+          `;
+          tileGrid.appendChild(card);
+        });
+      });
+    }
+
+    // Auto-run test if on game board
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        if (typeof window.TileDetector !== 'undefined') {
+          console.log('TileDetector detected! Auto-running quick test...');
+          runQuickTest();
+        } else {
+          showStatus('⚠️ Note: This test page should be viewed from the game board page to access the board tiles.', false);
+          console.log('To test: Navigate to the game board page and include this script, or copy the game board HTML structure here.');
+        }
+      }, 500);
+    });
+  </script>
+</body>
+</html>

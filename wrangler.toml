@@ -7,14 +7,9 @@ name = "GAME_ROOM"
 class_name = "GameRoom"
 script_name = "complex-chem"
 
-[[migrations]]
-tag = "v1"
-new_classes = ["GameRoom"]
-
+# Cloudflare Pages only supports "production" and "preview" environments
 [env.production]
-routes = [
-  { pattern = "complexchem.com/*", zone_name = "complexchem.com" }
-]
+# Production environment settings
 
-[env.development]
-# Development environment variables
+[env.preview]
+# Preview environment settings

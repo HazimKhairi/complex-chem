@@ -203,11 +203,13 @@ function handleModalClosed() {
 
 /**
  * Progress to next turn and check win condition
+ * NOTE: Turn advancement is handled by movement scripts + TurnManager continuous sync
+ * This function only checks win condition after special tile modals close
  */
 function progressTurn() {
-  console.log("\n⏭️ [ORCHESTRATOR] === PROGRESSING TURN ===");
+  console.log("\n⏭️ [ORCHESTRATOR] === FINISHING TURN ===");
 
-  // Step 3: Check for win condition BEFORE advancing turn
+  // Step 3: Check for win condition
   console.log("🏆 [ORCHESTRATOR] Step 3: Checking win condition...");
   const winner = window.WinChecker.checkWinCondition();
 
@@ -217,12 +219,14 @@ function progressTurn() {
     return;
   }
 
-  // Step 4: Advance to next turn
-  console.log("🔄 [ORCHESTRATOR] Step 4: Advancing to next player...");
-  const nextPlayer = window.TurnManager.nextTurn();
-  console.log(`   Next player: ${nextPlayer}`);
+  // NOTE: We do NOT call TurnManager.nextTurn() here because:
+  // - Movement scripts already set window.x to next player after piece lands
+  // - TurnManager continuous sync (every 100ms) automatically detects this
+  // - Calling nextTurn() here would cause DOUBLE advancement (skip a player)
 
-  orchestratorState.currentPlayer = nextPlayer;
+  console.log("✅ [ORCHESTRATOR] Turn progression handled by movement script + continuous sync");
+
+  orchestratorState.currentPlayer = window.TurnManager.getCurrentPlayer();
   orchestratorState.isProcessing = false;
   orchestratorState.lastLandedCell = null;
 

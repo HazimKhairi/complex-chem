@@ -39,12 +39,12 @@ const getBackgroundPosition = (side: "note" | "question", position: "top" | "bot
 };
 ---
 
-<div class={cn("flip-card-container perspective-1000", sizeClasses[size], className)}>
-  <div class="flip-card relative w-full h-full transition-transform duration-700 transform-style-3d">
+<div class={cn("flip-card-container", sizeClasses[size], className)}>
+  <div class="flip-card w-full h-full">
     <!-- Front: Did you know? (Note) -->
     <div
       class={cn(
-        "flip-card-face flip-card-front absolute inset-0 backface-hidden rounded-lg border-4 overflow-hidden",
+        "flip-card-face flip-card-front absolute inset-0 rounded-lg border-4 overflow-hidden",
         difficultyColors[card.difficulty],
       )}
     >
@@ -65,7 +65,7 @@ const getBackgroundPosition = (side: "note" | "question", position: "top" | "bot
     <!-- Back: Question -->
     <div
       class={cn(
-        "flip-card-face flip-card-back absolute inset-0 backface-hidden rounded-lg border-4 overflow-hidden rotate-y-180",
+        "flip-card-face flip-card-back absolute inset-0 rounded-lg border-4 overflow-hidden",
         difficultyColors[card.difficulty],
       )}
     >
@@ -86,25 +86,24 @@ const getBackgroundPosition = (side: "note" | "question", position: "top" | "bot
 </div>
 
 <style>
-  .perspective-1000 {
+  .flip-card-container {
     perspective: 1000px;
+    cursor: pointer;
   }
 
-  .transform-style-3d {
+  .flip-card {
     transform-style: preserve-3d;
+    transition: transform 0.6s;
+    position: relative;
   }
 
-  .backface-hidden {
+  .flip-card-face {
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
   }
 
-  .rotate-y-180 {
+  .flip-card-back {
     transform: rotateY(180deg);
-  }
-
-  .flip-card-container:hover .flip-card {
-    cursor: pointer;
   }
 
   .flip-card-container.flipped .flip-card {

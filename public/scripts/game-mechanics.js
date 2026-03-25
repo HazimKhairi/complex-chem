@@ -49,12 +49,7 @@ const gameState = {
 function initGameMechanics() {
   console.log("Game mechanics initialized!");
 
-  // Initialize WebSocket connection if available
-  if (window.wsClient) {
-    setupWebSocketListeners();
-  }
-
-  // Fallback: Load saved state from sessionStorage
+  // Load saved state
   const saved = sessionStorage.getItem("game-state");
   if (saved) {
     try {
@@ -83,115 +78,10 @@ function initGameMechanics() {
     collectLigand,
     showQuestion,
     showFate,
-    testTile,
-    awardPoints
+    testTile
   };
 
   console.log("Test: window.GameMechanics.testTile(1, 'ligand')");
-}
-
-/**
- * Setup WebSocket event listeners
- */
-function setupWebSocketListeners() {
-  const ws = window.wsClient;
-
-  // Handle initial state sync
-  ws.on('init', (gameStateData) => {
-    console.log('Received initial game state:', gameStateData);
-    syncGameState(gameStateData);
-  });
-
-  // Handle ligand collection from other players
-  ws.on('ligandCollected', ({ playerId, ligand }) => {
-    console.log(`Player ${playerId} collected ligand:`, ligand);
-
-    // Update local state
-    const playerIdNum = parseInt(playerId.split('_')[0]) || 1;
-    if (!gameState.playerLigands[playerIdNum]) {
-      gameState.playerLigands[playerIdNum] = [];
-    }
-    gameState.playerLigands[playerIdNum].push(ligand);
-    gameState.collectedLigandIds.push(ligand.id);
-
-    updateLigandDisplay(playerIdNum);
-  });
-
-  // Handle question answers
-  ws.on('questionAnswered', ({ playerId, isCorrect, points, totalPoints }) => {
-    console.log(`Player ${playerId} answered: ${isCorrect ? 'Correct' : 'Incorrect'} (${points} pts)`);
-
-    const playerIdNum = parseInt(playerId.split('_')[0]) || 1;
-    gameState.playerPoints[playerIdNum] = totalPoints;
-  });
-
-  // Handle fate cards
-  ws.on('fateDrawn', ({ playerId, fateCard }) => {
-    console.log(`Player ${playerId} drew fate:`, fateCard);
-  });
-
-  // Handle dice rolls
-  ws.on('diceRolled', ({ playerId, value }) => {
-    console.log(`Player ${playerId} rolled: ${value}`);
-  });
-
-  // Handle piece movement
-  ws.on('pieceMoved', ({ playerId, position }) => {
-    console.log(`Player ${playerId} moved to position ${position}`);
-  });
-
-  // Handle turn changes
-  ws.on('turnChanged', ({ currentTurn }) => {
-    console.log(`Turn changed to player: ${currentTurn}`);
-    updateTurnIndicator(currentTurn);
-  });
-
-  console.log('WebSocket listeners configured');
-}
-
-/**
- * Sync local game state with server state
- */
-function syncGameState(serverState) {
-  if (!serverState || !serverState.players) return;
-
-  // Convert server format to local format
-  Object.keys(serverState.players).forEach((playerId, index) => {
-    const player = serverState.players[playerId];
-    const localId = index + 1;
-
-    gameState.playerLigands[localId] = player.ligands || [];
-    gameState.playerPoints[localId] = player.points || 0;
-  });
-
-  gameState.collectedLigandIds = serverState.collectedLigandIds || [];
-
-  updateAllLigandDisplays();
-}
-
-/**
- * Update turn indicator UI
- */
-function updateTurnIndicator(currentTurn) {
-  // Update turn indicator if element exists
-  const indicator = document.querySelector('[data-turn-indicator]');
-  if (indicator) {
-    indicator.textContent = `Current Turn: ${currentTurn}`;
-  }
-}
-
-/**
- * Award points to player (exposed for fate cards)
- */
-function awardPoints(playerId, points) {
-  gameState.playerPoints[playerId] += points;
-
-  // Sync with WebSocket if connected
-  if (window.wsClient && window.wsClient.isConnected) {
-    // Points will be synced through fate/question handlers
-  } else {
-    saveState();
-  }
 }
 
 /**
@@ -216,7 +106,7 @@ function testTile(playerId, tileType) {
 /**
  * Collect a random ligand
  */
-function collectLigand(playerId, ligandId = null) {
+function collectLigand(playerId) {
   // Get uncollected ligands
   const uncollected = LIGANDS.filter(
     (l) => !gameState.collectedLigandIds.includes(l.id)
@@ -227,26 +117,15 @@ function collectLigand(playerId, ligandId = null) {
     return;
   }
 
-  // Pick specific ligand or random
-  let ligand;
-  if (ligandId) {
-    ligand = LIGANDS.find(l => l.id === ligandId);
-  }
-  if (!ligand) {
-    ligand = uncollected[Math.floor(Math.random() * uncollected.length)];
-  }
+  // Pick random ligand
+  const ligand = uncollected[Math.floor(Math.random() * uncollected.length)];
 
-  // Update local state
+  // Add to player inventory
   gameState.playerLigands[playerId].push(ligand);
   gameState.collectedLigandIds.push(ligand.id);
-  updateLigandDisplay(playerId);
 
-  // Sync with WebSocket if connected
-  if (window.wsClient && window.wsClient.isConnected) {
-    window.wsClient.collectLigand(ligand.id, ligand);
-  } else {
-    saveState();
-  }
+  // Update display
+  updateLigandDisplay(playerId);
 
   // Show modal
   const modal = document.getElementById("ligand-modal");
@@ -264,6 +143,8 @@ function collectLigand(playerId, ligandId = null) {
     modal.classList.remove("hidden");
     modal.classList.add("flex");
   }
+
+  saveState();
 }
 
 /**
@@ -337,13 +218,6 @@ function handleQuestionAnswer(detail) {
     if (isCorrect) {
       gameState.playerPoints[playerId] += points;
 
-      // Sync with WebSocket if connected
-      if (window.wsClient && window.wsClient.isConnected) {
-        window.wsClient.answerQuestion(isCorrect, points);
-      } else {
-        saveState();
-      }
-
       feedbackEl.innerHTML = `
         <div class="bg-green-100 border-2 border-green-500 text-green-800">
           <p class="font-bold">✅ Correct!</p>
@@ -357,12 +231,9 @@ function handleQuestionAnswer(detail) {
         modal.classList.remove("flex");
         feedbackEl.classList.add("hidden");
       }, 2000);
-    } else {
-      // Sync incorrect answer too
-      if (window.wsClient && window.wsClient.isConnected) {
-        window.wsClient.answerQuestion(isCorrect, 0);
-      }
 
+      saveState();
+    } else {
       feedbackEl.innerHTML = `
         <div class="bg-red-100 border-2 border-red-500 text-red-800">
           <p class="font-bold">❌ Incorrect</p>
@@ -403,13 +274,7 @@ function showFate(playerId) {
   // Apply fate effect
   if (fate.effect === "points" && fate.points) {
     gameState.playerPoints[playerId] += fate.points;
-
-    // Sync with WebSocket if connected
-    if (window.wsClient && window.wsClient.isConnected) {
-      window.wsClient.drawFate(fate);
-    } else {
-      saveState();
-    }
+    saveState();
   }
 }
 

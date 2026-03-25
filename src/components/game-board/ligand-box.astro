@@ -6,9 +6,27 @@ interface Props {
 const { playerId } = Astro.props;
 ---
 
-<div class="bg-white rounded-lg p-3 w-32 h-24">
+<div class="bg-white rounded-lg p-3 w-40 shadow-sm">
   <h3 class="text-xs font-bold text-gray-800 mb-2 text-center">Ligands</h3>
-  <div id={`ligand-display-${playerId}`} class="flex flex-wrap gap-1 justify-center">
-    <!-- Ligand icons will appear here -->
+  <div id={`ligand-display-${playerId}`} class="grid grid-cols-3 gap-1.5 max-h-24 overflow-y-auto">
+    <!-- Ligand mini cards will appear here (max 9 visible, then scroll) -->
   </div>
 </div>
+
+<style>
+  /* Custom scrollbar for ligand display */
+  [id^="ligand-display-"]::-webkit-scrollbar {
+    width: 4px;
+  }
+  [id^="ligand-display-"]::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 2px;
+  }
+  [id^="ligand-display-"]::-webkit-scrollbar-thumb {
+    background: #10b981;
+    border-radius: 2px;
+  }
+  [id^="ligand-display-"]::-webkit-scrollbar-thumb:hover {
+    background: #059669;
+  }
+</style>

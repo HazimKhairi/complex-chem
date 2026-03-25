@@ -206,7 +206,7 @@ function updateLigandDisplay(playerId) {
 
   container.innerHTML = gameState.playerLigands[playerId]
     .map(l => `
-      <div class="w-12 h-16 rounded-lg border-2 overflow-hidden shadow-sm" style="border-color: ${l.color};" title="${l.name}">
+      <div class="aspect-[3/4] rounded border-2 overflow-hidden shadow-sm" style="border-color: ${l.color};" title="${l.name}">
         <div class="w-full h-full bg-cover bg-center" style="background-image: url('/assets/ligand-cards/${l.imageFile}'); background-position: 0% center; background-size: 200%;"></div>
       </div>
     `)

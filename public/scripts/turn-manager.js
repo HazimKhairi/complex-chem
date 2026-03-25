@@ -138,22 +138,24 @@
    * Highlights current player's card, dims others
    */
   function updatePlayerVisuals() {
-    // First, hide ALL dice arrows to prevent multiple arrows showing
+    // Update visuals for ALL players (active and inactive) to ensure arrows are properly controlled
     for (let i = 1; i <= MAX_PLAYERS; i++) {
-      const arrow = document.getElementById(`player-${i}-dice-arrow`);
-      if (arrow) {
-        arrow.style.display = 'none';
-        arrow.style.opacity = '0';
+      const playerArea = document.getElementById(`player-${i}-area`);
+      const playerCard = document.getElementById(`player-${i}`);
+      const playerDiceArrow = document.getElementById(`player-${i}-dice-arrow`);
+
+      const isActivePlayer = state.activePlayers.includes(i);
+      const isCurrentPlayer = i === state.currentPlayer;
+      const playerState = state.playerStates[i];
+
+      // Only process active players
+      if (!isActivePlayer) {
+        // Hide arrow for inactive players (players not in this game mode)
+        if (playerDiceArrow) {
+          playerDiceArrow.style.visibility = 'hidden';
+        }
+        continue;
       }
-    }
-
-    state.activePlayers.forEach(playerId => {
-      const playerArea = document.getElementById(`player-${playerId}-area`);
-      const playerCard = document.getElementById(`player-${playerId}`);
-      const playerDiceArrow = document.getElementById(`player-${playerId}-dice-arrow`);
-
-      const isCurrentPlayer = playerId === state.currentPlayer;
-      const playerState = state.playerStates[playerId];
 
       // Update player area styling
       if (playerArea) {
@@ -187,17 +189,18 @@
         }
       }
 
-      // Update dice arrow visibility - ONLY show for current player
+      // Update dice arrow visibility - show only for current player, hide for others
+      // Use visibility instead of display to avoid layout shifts
       if (playerDiceArrow) {
         if (isCurrentPlayer && playerState !== PLAYER_STATES.FINISHED) {
-          playerDiceArrow.style.display = 'block';
+          playerDiceArrow.style.visibility = 'visible';
           playerDiceArrow.style.opacity = '1';
         } else {
-          playerDiceArrow.style.display = 'none';
+          playerDiceArrow.style.visibility = 'hidden';
           playerDiceArrow.style.opacity = '0';
         }
       }
-    });
+    }
 
     // Update ligand displays to reflect current player
     if (window.GameMechanics && typeof window.GameMechanics.updateAllLigandDisplays === 'function') {

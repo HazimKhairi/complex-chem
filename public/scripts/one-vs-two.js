@@ -489,6 +489,18 @@ function moveHorse(event) {
       if (count == randomDice) {
         clearInterval(newfunc);
 
+        // 🎮 Notify game orchestrator that piece has landed
+        const landedCellClass = `${identifyPlayer}${window[`lastPos${playerHorseClassCaps}`]}`;
+        document.dispatchEvent(new CustomEvent("piece-moved", {
+          detail: {
+            playerId: x,
+            landedCell: landedCellClass,
+            position: window[`lastPos${playerHorseClassCaps}`],
+            color: identifyColor
+          }
+        }));
+        console.log(`🎮 [MOVEMENT] Player ${x} landed on ${landedCellClass}`);
+
         //Used in code for killing other player horses
         horseKillList = $(`${identifyPlayer}${window[`lastPos${playerHorseClassCaps}`]} > span:first-child`).find(
           "img"
@@ -625,6 +637,19 @@ function moveHorse(event) {
 
       if (count == randomDice) {
         clearInterval(newfunc);
+
+        // 🎮 Notify game orchestrator that piece has landed (home path)
+        const landedCellClass = `${identifyPlayer}${window[`lastPos${playerHorseClassCaps}`]}`;
+        document.dispatchEvent(new CustomEvent("piece-moved", {
+          detail: {
+            playerId: x,
+            landedCell: landedCellClass,
+            position: window[`lastPos${playerHorseClassCaps}`],
+            color: identifyColor,
+            isHome: window[`lastPos${playerHorseClassCaps}`] == 57
+          }
+        }));
+        console.log(`🎮 [MOVEMENT] Player ${x} landed on ${landedCellClass} (home path)`);
 
         if (window[`lastPos${playerHorseClassCaps}`] != 57) {
           setTimeout(transferDiceCode, 300);

@@ -29,13 +29,10 @@ const difficultyBadge = {
 };
 
 // Calculate background position for the image crop
-// Each image is a 2x2 grid, we need to show specific quadrants
-const getBackgroundPosition = (side: "note" | "question", position: "top" | "bottom") => {
-  // Left side = note (0% x), Right side = question (100% x)
-  // Top = 0% y, Bottom = 100% y
-  const x = side === "note" ? "0%" : "100%";
-  const y = position === "top" ? "0%" : "100%";
-  return `${x} ${y}`;
+// Each image has note on left, question on right
+const getBackgroundPosition = (side: "note" | "question") => {
+  // Left side = note (0%), Right side = question (100%)
+  return side === "note" ? "0% center" : "100% center";
 };
 ---
 
@@ -50,7 +47,7 @@ const getBackgroundPosition = (side: "note" | "question", position: "top" | "bot
     >
       <div
         class="w-full h-full bg-no-repeat"
-        style={`background-image: url('/assets/question-cards/${card.imageFile}'); background-position: ${getBackgroundPosition("note", card.position)}; background-size: 200% auto;`}
+        style={`background-image: url('/assets/question-cards/${card.imageFile}'); background-position: ${getBackgroundPosition("note")}; background-size: 200%;`}
       >
       </div>
       <!-- Badge overlay -->
@@ -71,7 +68,7 @@ const getBackgroundPosition = (side: "note" | "question", position: "top" | "bot
     >
       <div
         class="w-full h-full bg-no-repeat"
-        style={`background-image: url('/assets/question-cards/${card.imageFile}'); background-position: ${getBackgroundPosition("question", card.position)}; background-size: 200% auto;`}
+        style={`background-image: url('/assets/question-cards/${card.imageFile}'); background-position: ${getBackgroundPosition("question")}; background-size: 200%;`}
       >
       </div>
       <!-- Badge overlay -->

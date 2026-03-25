@@ -2,10 +2,10 @@
 import Layout from "../layouts/Layout.astro";
 import LigandCard from "../components/cards/ligand-card.astro";
 import FateCard from "../components/cards/fate-card.astro";
-import QuestionCard from "../components/cards/question-card.astro";
+import QuestionCardFlip from "../components/cards/question-card-flip.astro";
 import { LIGANDS } from "../lib/data/ligands";
 import { FATE_CARDS } from "../lib/data/fate-cards";
-import { QUESTION_CARDS } from "../lib/data/question-cards";
+import { QUESTION_CARDS_IMAGE } from "../lib/data/question-cards-image";
 ---
 
 <Layout>
@@ -44,19 +44,19 @@ import { QUESTION_CARDS } from "../lib/data/question-cards";
       <!-- Question Cards Section -->
       <section class="space-y-4 sm:space-y-6">
         <div class="border-b-4 border-purple-500 pb-2">
-          <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Question Cards</h2>
+          <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Question Cards (Flip Style)</h2>
           <p class="text-xs sm:text-sm text-gray-600">
-            Chemistry questions with 3 difficulty levels (Easy, Medium, Hard)
+            18 chemistry question cards - Click to flip from "Did you know?" notes to questions
           </p>
         </div>
 
         <!-- Easy Questions -->
         <div class="space-y-3 sm:space-y-4">
-          <h3 class="text-base sm:text-lg font-bold text-green-600">Easy (3 points)</h3>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mx-auto max-w-5xl px-2">
+          <h3 class="text-base sm:text-lg font-bold text-green-600">Easy (3 points) - 4 cards</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mx-auto max-w-6xl px-2">
             {
-              QUESTION_CARDS.filter((q) => q.difficulty === "easy").map((card) => (
-                <QuestionCard card={card} size="sm" />
+              QUESTION_CARDS_IMAGE.filter((q) => q.difficulty === "easy").map((card) => (
+                <QuestionCardFlip card={card} size="sm" />
               ))
             }
           </div>
@@ -64,11 +64,11 @@ import { QUESTION_CARDS } from "../lib/data/question-cards";
 
         <!-- Medium Questions -->
         <div class="space-y-3 sm:space-y-4">
-          <h3 class="text-base sm:text-lg font-bold text-yellow-600">Medium (4 points)</h3>
+          <h3 class="text-base sm:text-lg font-bold text-yellow-600">Medium (4 points) - 6 cards</h3>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mx-auto max-w-5xl px-2">
             {
-              QUESTION_CARDS.filter((q) => q.difficulty === "medium").map((card) => (
-                <QuestionCard card={card} size="sm" />
+              QUESTION_CARDS_IMAGE.filter((q) => q.difficulty === "medium").map((card) => (
+                <QuestionCardFlip card={card} size="sm" />
               ))
             }
           </div>
@@ -76,11 +76,11 @@ import { QUESTION_CARDS } from "../lib/data/question-cards";
 
         <!-- Hard Questions -->
         <div class="space-y-3 sm:space-y-4">
-          <h3 class="text-base sm:text-lg font-bold text-red-600">Hard (5 points)</h3>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mx-auto max-w-5xl px-2">
+          <h3 class="text-base sm:text-lg font-bold text-red-600">Hard (5 points) - 8 cards</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mx-auto max-w-6xl px-2">
             {
-              QUESTION_CARDS.filter((q) => q.difficulty === "hard").map((card) => (
-                <QuestionCard card={card} size="sm" />
+              QUESTION_CARDS_IMAGE.filter((q) => q.difficulty === "hard").map((card) => (
+                <QuestionCardFlip card={card} size="sm" />
               ))
             }
           </div>

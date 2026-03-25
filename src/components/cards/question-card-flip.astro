@@ -1,0 +1,125 @@
+---
+import { cn } from "../../lib/utils";
+import type { QuestionCardImage } from "../../lib/data/question-cards-image";
+
+interface Props {
+  card: QuestionCardImage;
+  size?: "sm" | "md" | "lg";
+  class?: string;
+}
+
+const { card, size = "md", class: className } = Astro.props;
+
+const sizeClasses = {
+  sm: "w-full h-64",
+  md: "w-full h-80",
+  lg: "w-full h-96",
+};
+
+const difficultyColors = {
+  easy: "border-green-500",
+  medium: "border-yellow-500",
+  hard: "border-red-500",
+};
+
+const difficultyBadge = {
+  easy: "bg-green-500",
+  medium: "bg-yellow-500",
+  hard: "bg-red-500",
+};
+
+// Calculate background position for the image crop
+// Each image is a 2x2 grid, we need to show specific quadrants
+const getBackgroundPosition = (side: "note" | "question", position: "top" | "bottom") => {
+  // Left side = note (0% x), Right side = question (100% x)
+  // Top = 0% y, Bottom = 100% y
+  const x = side === "note" ? "0%" : "100%";
+  const y = position === "top" ? "0%" : "100%";
+  return `${x} ${y}`;
+};
+---
+
+<div class={cn("flip-card-container perspective-1000", sizeClasses[size], className)}>
+  <div class="flip-card relative w-full h-full transition-transform duration-700 transform-style-3d">
+    <!-- Front: Did you know? (Note) -->
+    <div
+      class={cn(
+        "flip-card-face flip-card-front absolute inset-0 backface-hidden rounded-lg border-4 overflow-hidden",
+        difficultyColors[card.difficulty],
+      )}
+    >
+      <div
+        class="w-full h-full bg-cover bg-no-repeat"
+        style={`background-image: url('/assets/question-cards/${card.imageFile}'); background-position: ${getBackgroundPosition("note", card.position)}; background-size: 200% 200%;`}
+      >
+      </div>
+      <!-- Badge overlay -->
+      <div class="absolute top-2 right-2 px-3 py-1 rounded-full text-white text-xs font-bold" style={`background-color: ${difficultyBadge[card.difficulty]}`}>
+        {card.difficulty.toUpperCase()} - {card.points} pts
+      </div>
+      <div class="absolute bottom-2 right-2 px-3 py-1 bg-black/70 text-white text-xs rounded">
+        Click to flip
+      </div>
+    </div>
+
+    <!-- Back: Question -->
+    <div
+      class={cn(
+        "flip-card-face flip-card-back absolute inset-0 backface-hidden rounded-lg border-4 overflow-hidden rotate-y-180",
+        difficultyColors[card.difficulty],
+      )}
+    >
+      <div
+        class="w-full h-full bg-cover bg-no-repeat"
+        style={`background-image: url('/assets/question-cards/${card.imageFile}'); background-position: ${getBackgroundPosition("question", card.position)}; background-size: 200% 200%;`}
+      >
+      </div>
+      <!-- Badge overlay -->
+      <div class="absolute top-2 right-2 px-3 py-1 rounded-full text-white text-xs font-bold" style={`background-color: ${difficultyBadge[card.difficulty]}`}>
+        {card.difficulty.toUpperCase()} - {card.points} pts
+      </div>
+      <div class="absolute bottom-2 right-2 px-3 py-1 bg-black/70 text-white text-xs rounded">
+        Click to flip back
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .transform-style-3d {
+    transform-style: preserve-3d;
+  }
+
+  .backface-hidden {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+  }
+
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
+
+  .flip-card-container:hover .flip-card {
+    cursor: pointer;
+  }
+
+  .flip-card-container.flipped .flip-card {
+    transform: rotateY(180deg);
+  }
+</style>
+
+<script>
+  // Add click handlers to flip cards
+  document.addEventListener("DOMContentLoaded", () => {
+    const containers = document.querySelectorAll(".flip-card-container");
+    containers.forEach((container) => {
+      container.addEventListener("click", () => {
+        container.classList.toggle("flipped");
+      });
+    });
+  });
+</script>

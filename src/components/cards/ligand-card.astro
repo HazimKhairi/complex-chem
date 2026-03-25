@@ -11,9 +11,9 @@ interface Props {
 const { ligand, size = "md", class: className } = Astro.props;
 
 const sizeClasses = {
-  sm: "w-32 h-40",
-  md: "w-40 h-56",
-  lg: "w-48 h-64",
+  sm: "w-32 h-48",
+  md: "w-40 h-60",
+  lg: "w-48 h-72",
 };
 ---
 
@@ -25,12 +25,12 @@ const sizeClasses = {
   )}
 >
   <!-- Header with colored background -->
-  <div class={cn("p-3 flex items-center justify-center", ligand.color)}>
-    <h3 class="font-bold text-white text-2xl">{ligand.name}</h3>
+  <div class={cn("py-4 px-3 flex items-center justify-center", ligand.color)}>
+    <h3 class="font-bold text-white text-xl sm:text-2xl">{ligand.name}</h3>
   </div>
 
   <!-- Card Body -->
-  <div class="p-4 text-xs leading-relaxed space-y-1">
+  <div class="p-3 text-[10px] sm:text-xs leading-tight space-y-0.5">
     <p><span class="font-semibold">Compound:</span> {ligand.fullName}</p>
     <p><span class="font-semibold">Classification:</span> {ligand.classification}</p>
     <p><span class="font-semibold">Coordination Type:</span> {ligand.coordinationType}</p>

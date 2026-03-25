@@ -57,7 +57,8 @@ for (let i = 1; i <= 10; i++) {
 const gameState = {
   playerLigands: { 1: [], 2: [], 3: [], 4: [] },
   playerPoints: { 1: 0, 2: [], 3: 0, 4: 0 },
-  collectedLigandIds: []
+  collectedLigandIds: [],
+  currentPlayer: 1 // Track whose turn it is
 };
 
 function initGameMechanics() {
@@ -73,6 +74,8 @@ function initGameMechanics() {
     collectLigand,
     showQuestion,
     showFate,
+    setCurrentPlayer,
+    getCurrentPlayer: () => gameState.currentPlayer,
     testTile: (playerId, tileType) => {
       if (tileType === "ligand") collectLigand(playerId);
       else if (tileType === "question") showQuestion(playerId);
@@ -80,7 +83,10 @@ function initGameMechanics() {
     }
   };
 
-  console.log("Test: window.GameMechanics.testTile(1, 'ligand')");
+  console.log("Test commands:");
+  console.log("  window.GameMechanics.testTile(1, 'ligand') - Collect ligand for player 1");
+  console.log("  window.GameMechanics.setCurrentPlayer(2) - Change turn to player 2");
+  console.log("  window.GameMechanics.getCurrentPlayer() - Check whose turn it is");
 }
 
 function collectLigand(playerId) {
@@ -92,11 +98,26 @@ function collectLigand(playerId) {
   gameState.collectedLigandIds.push(ligand.id);
 
   updateLigandDisplay(playerId);
+  showLigandModal(ligand, "🧪 Ligand Collected!", "Click card to see details");
 
+  saveState();
+}
+
+function viewLigandDetail(ligand) {
+  showLigandModal(ligand, "🔍 Ligand Details", "Review your collected ligand");
+}
+
+function showLigandModal(ligand, title, subtitle) {
   const modal = document.getElementById("ligand-modal");
   const container = document.getElementById("ligand-card-container");
+  const modalTitle = modal?.querySelector("h2");
+  const modalSubtitle = modal?.querySelector("p");
 
   if (modal && container) {
+    // Update modal title and subtitle
+    if (modalTitle) modalTitle.textContent = title;
+    if (modalSubtitle) modalSubtitle.textContent = subtitle;
+
     // Render ligand flip card
     container.innerHTML = `
       <div class="ligand-flip-card-container w-full aspect-[3/4] cursor-pointer">
@@ -120,8 +141,6 @@ function collectLigand(playerId) {
     modal.classList.remove("hidden");
     modal.classList.add("flex");
   }
-
-  saveState();
 }
 
 function showQuestion(playerId) {
@@ -204,17 +223,46 @@ function updateLigandDisplay(playerId) {
   const container = document.getElementById(`ligand-display-${playerId}`);
   if (!container) return;
 
+  const isCurrentPlayer = gameState.currentPlayer === playerId;
+  const cursorClass = isCurrentPlayer ? 'cursor-pointer hover:scale-105' : 'cursor-not-allowed opacity-60';
+  const titleText = isCurrentPlayer ? 'Click to view' : 'Wait for your turn';
+
   container.innerHTML = gameState.playerLigands[playerId]
-    .map(l => `
-      <div class="aspect-[3/4] rounded border-2 overflow-hidden shadow-sm" style="border-color: ${l.color};" title="${l.name}">
+    .map((l, index) => `
+      <div class="ligand-mini-card aspect-[3/4] rounded border-2 overflow-hidden shadow-sm transition-transform ${cursorClass}"
+           style="border-color: ${l.color};"
+           title="${l.name} - ${titleText}"
+           data-ligand-id="${l.id}"
+           data-player-id="${playerId}"
+           data-index="${index}">
         <div class="w-full h-full bg-cover bg-center" style="background-image: url('/assets/ligand-cards/${l.imageFile}'); background-position: 0% center; background-size: 200%;"></div>
       </div>
     `)
     .join("");
+
+  // Add click listeners to mini cards - ONLY for current player
+  if (isCurrentPlayer) {
+    container.querySelectorAll('.ligand-mini-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const ligandId = card.dataset.ligandId;
+        const ligand = LIGANDS_DATA.find(l => l.id === ligandId);
+        if (ligand) {
+          viewLigandDetail(ligand);
+        }
+      });
+    });
+  }
 }
 
 function updateAllLigandDisplays() {
   [1, 2, 3, 4].forEach(id => updateLigandDisplay(id));
+}
+
+function setCurrentPlayer(playerId) {
+  gameState.currentPlayer = playerId;
+  updateAllLigandDisplays(); // Refresh all displays to update clickable state
+  saveState();
+  console.log(`Current turn: Player ${playerId}`);
 }
 
 function saveState() {

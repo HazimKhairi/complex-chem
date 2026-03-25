@@ -13,17 +13,17 @@ import FateModal from "../components/game/fate-modal.astro";
 ---
 
 <Layout>
-  <main class="flex justify-center items-center h-dvh p-2">
+  <main class="flex justify-center items-center min-h-dvh p-2 sm:p-4 overflow-hidden">
     <WinnersModel />
-    <section id="game-container" class="transform-origin-center">
+    <section id="game-container" class="transform-origin-center w-full max-w-[95vw]">
       <!-- Top Ligand Boxes -->
-      <section class="flex justify-between gap-6 w-[400px] mx-auto mb-2">
+      <section class="flex justify-between gap-2 sm:gap-4 md:gap-6 w-full max-w-[400px] mx-auto mb-1 sm:mb-2">
         <LigandBox playerId={1} />
         <LigandBox playerId={2} />
       </section>
 
       <!-- Top Players -->
-      <section class="flex justify-between w-[320px] mx-auto player-area">
+      <section class="flex justify-between w-full max-w-[320px] mx-auto player-area">
         <PlayerCard id={1} playerName="Player 1" />
         <PlayerCard id={2} playerName="Player 2" reverse />
       </section>
@@ -31,13 +31,13 @@ import FateModal from "../components/game/fate-modal.astro";
       <LudoBoard />
 
       <!-- Bottom Players -->
-      <section class="flex justify-between w-[320px] mx-auto player-area">
+      <section class="flex justify-between w-full max-w-[320px] mx-auto player-area">
         <PlayerCard id={3} playerName="Player 3" />
         <PlayerCard id={4} playerName="Player 4" reverse />
       </section>
 
       <!-- Bottom Ligand Boxes -->
-      <section class="flex justify-between gap-6 w-[400px] mx-auto mt-2">
+      <section class="flex justify-between gap-2 sm:gap-4 md:gap-6 w-full max-w-[400px] mx-auto mt-1 sm:mt-2">
         <LigandBox playerId={3} />
         <LigandBox playerId={4} />
       </section>
@@ -67,19 +67,46 @@ import FateModal from "../components/game/fate-modal.astro";
   mechanicsScript.type = "application/javascript";
   document.head.appendChild(mechanicsScript);
 
-  // Optimize game size for screen
+  // Optimize game size for screen - responsive scaling
   function optimizeGameSize() {
     const container = document.getElementById("game-container");
     if (!container) return;
 
-    // Calculate scale based on viewport and game size
-    const vHeight = window.innerHeight * 0.7;
-    const vWidth = window.innerWidth * 0.7;
-    const scale = Math.max(1, Math.min(vHeight / container.offsetHeight, vWidth / container.offsetWidth));
+    // Reset transform to get natural size
+    container.style.transform = "";
 
-    container.style.transform = `scale(${scale})`;
+    // Get viewport dimensions
+    const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
+
+    // Get container dimensions
+    const containerHeight = container.offsetHeight;
+    const containerWidth = container.offsetWidth;
+
+    // Calculate scale with padding - more aggressive on mobile
+    const isMobile = viewportWidth < 640; // Tailwind 'sm' breakpoint
+    const isTablet = viewportWidth >= 640 && viewportWidth < 1024; // Tailwind 'md' to 'lg'
+
+    const paddingFactor = isMobile ? 0.95 : isTablet ? 0.92 : 0.88;
+
+    const scaleHeight = (viewportHeight * paddingFactor) / containerHeight;
+    const scaleWidth = (viewportWidth * paddingFactor) / containerWidth;
+
+    // Use the smaller scale to ensure everything fits
+    const scale = Math.min(scaleHeight, scaleWidth);
+
+    // Apply scale (minimum 0.5 for very small screens, maximum 1.5 for large screens)
+    const finalScale = Math.max(0.5, Math.min(1.5, scale));
+    container.style.transform = `scale(${finalScale})`;
+
+    console.log(`Viewport: ${viewportWidth}x${viewportHeight}, Scale: ${finalScale.toFixed(2)}`);
   }
 
+  // Run on load and resize with debounce
+  let resizeTimeout;
   window.addEventListener("DOMContentLoaded", optimizeGameSize);
-  window.addEventListener("resize", optimizeGameSize);
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(optimizeGameSize, 100);
+  });
 </script>

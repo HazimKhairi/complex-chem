@@ -259,11 +259,56 @@ function showQuestionFeedback(isCorrect, points, difficulty) {
   }, 3000);
 }
 
-function collectLigand(playerId) {
-  const uncollected = LIGANDS_DATA.filter(l => !gameState.collectedLigandIds.includes(l.id));
-  if (uncollected.length === 0) return;
+function collectLigand(playerId, landedCell = null) {
+  // Get the specific ligand from the tile the player landed on
+  let ligandName = null;
 
-  const ligand = uncollected[Math.floor(Math.random() * uncollected.length)];
+  if (landedCell) {
+    // If landedCell is a string (class name), get the element
+    if (typeof landedCell === 'string') {
+      const className = landedCell.startsWith('.') ? landedCell.substring(1) : landedCell;
+      const tileInfo = window.TileDetector?.getTileByClassName(className);
+      if (tileInfo && tileInfo.element) {
+        ligandName = window.TileDetector.getLigandName(tileInfo.element);
+      }
+    } else if (landedCell.tagName === 'TD') {
+      // It's already a cell element
+      ligandName = window.TileDetector.getLigandName(landedCell);
+    }
+  }
+
+  console.log(`🧪 [LIGAND] Player ${playerId} landed on ligand tile: "${ligandName}"`);
+
+  // Find the specific ligand that matches the tile text
+  let ligand = null;
+  if (ligandName) {
+    // Normalize ligand name for matching (handle subscripts/superscripts)
+    ligand = LIGANDS_DATA.find(l => {
+      // Match by name (exact match with Unicode subscripts/superscripts)
+      if (l.name === ligandName) return true;
+      // Also try case-insensitive match for simple names
+      if (l.name.toLowerCase() === ligandName.toLowerCase()) return true;
+      return false;
+    });
+
+    if (ligand && gameState.collectedLigandIds.includes(ligand.id)) {
+      console.warn(`⚠️ [LIGAND] Ligand "${ligandName}" already collected!`);
+      // Show message that ligand was already collected
+      showLigandModal(ligand, "⚠️ Already Collected!", "This ligand has already been collected by another player");
+      return;
+    }
+  }
+
+  // Fallback to random if ligand not found or not specified
+  if (!ligand) {
+    console.warn(`⚠️ [LIGAND] Could not find ligand "${ligandName}", selecting random uncollected ligand`);
+    const uncollected = LIGANDS_DATA.filter(l => !gameState.collectedLigandIds.includes(l.id));
+    if (uncollected.length === 0) return;
+    ligand = uncollected[Math.floor(Math.random() * uncollected.length)];
+  }
+
+  console.log(`✅ [LIGAND] Collecting ligand: ${ligand.name} (${ligand.id})`);
+
   gameState.playerLigands[playerId].push(ligand);
   gameState.collectedLigandIds.push(ligand.id);
 

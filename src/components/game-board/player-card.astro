@@ -79,12 +79,44 @@ const { id, playerName, reverse = false } = Astro.props;
     reverse: true,
   });
 
-  playerOneImage?.setAttribute("src", playerOneAvatar);
-  playerTwoImage?.setAttribute("src", playerTwoAvatar);
-  playerThreeImage?.setAttribute("src", playerThreeAvatar);
-  playerFourImage?.setAttribute("src", playerFourAvatar);
-  winnerOneImage?.setAttribute("src", playerOneAvatar);
-  winnerTwoImage?.setAttribute("src", playerTwoAvatar);
-  winnerThreeImage?.setAttribute("src", playerThreeAvatar);
-  winnerFourImage?.setAttribute("src", playerFourAvatar);
+  // Helper function to create fallback SVG avatar
+  function createFallbackAvatar(name, color) {
+    const emojis = ["😊", "😎", "🤓", "😺"];
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = ((hash << 5) - hash) + name.charCodeAt(i);
+      hash = hash & hash;
+    }
+    const emoji = emojis[Math.abs(hash) % 4];
+
+    return `data:image/svg+xml,${encodeURIComponent(`
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+        <rect width="100" height="100" fill="#${color}" rx="12"/>
+        <text x="50" y="65" font-size="50" text-anchor="middle" fill="white">${emoji}</text>
+      </svg>
+    `)}`;
+  }
+
+  // Set avatars with error fallback
+  function setAvatarWithFallback(img, avatarUrl, name, color) {
+    if (!img) return;
+
+    img.setAttribute("src", avatarUrl);
+
+    // Add error handler to use fallback SVG if API fails
+    img.onerror = function() {
+      console.log(`⚠️ Failed to load avatar from API, using fallback for ${name}`);
+      img.src = createFallbackAvatar(name, color);
+      img.onerror = null; // Prevent infinite loop
+    };
+  }
+
+  setAvatarWithFallback(playerOneImage, playerOneAvatar, playerOneName, getPlayerColor(1));
+  setAvatarWithFallback(playerTwoImage, playerTwoAvatar, playerTwoName, getPlayerColor(2));
+  setAvatarWithFallback(playerThreeImage, playerThreeAvatar, playerThreeName, getPlayerColor(3));
+  setAvatarWithFallback(playerFourImage, playerFourAvatar, playerFourName, getPlayerColor(4));
+  setAvatarWithFallback(winnerOneImage, playerOneAvatar, playerOneName, getPlayerColor(1));
+  setAvatarWithFallback(winnerTwoImage, playerTwoAvatar, playerTwoName, getPlayerColor(2));
+  setAvatarWithFallback(winnerThreeImage, playerThreeAvatar, playerThreeName, getPlayerColor(3));
+  setAvatarWithFallback(winnerFourImage, playerFourAvatar, playerFourName, getPlayerColor(4));
 </script>

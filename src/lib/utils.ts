@@ -13,13 +13,41 @@ export function getPlayerAvatar({
   reverse?: boolean;
   playerColor?: string;
 }) {
-  const url = new URL("https://api.dicebear.com/9.x/thumbs/svg");
-  url.searchParams.set("seed", playerName);
-  url.searchParams.set("flip", String(reverse));
-  if (playerColor) {
-    url.searchParams.set("shapeColor", playerColor);
+  // Use local SVG data URI as fallback if API fails
+  // Create a simple colored avatar with emoji face
+  const color = playerColor || "808080";
+  const emoji = ["😊", "😎", "🤓", "😺"][Math.abs(hashString(playerName)) % 4];
+
+  const svgFallback = `data:image/svg+xml,${encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+      <rect width="100" height="100" fill="#${color}" rx="12"/>
+      <text x="50" y="65" font-size="50" text-anchor="middle" fill="white">${emoji}</text>
+    </svg>
+  `)}`;
+
+  // Try dicebear API first, but provide fallback
+  try {
+    const url = new URL("https://api.dicebear.com/9.x/thumbs/svg");
+    url.searchParams.set("seed", playerName);
+    url.searchParams.set("flip", String(reverse));
+    if (playerColor) {
+      url.searchParams.set("shapeColor", playerColor);
+    }
+    return url.toString();
+  } catch {
+    return svgFallback;
   }
-  return url.toString();
+}
+
+// Simple hash function for consistent emoji selection
+function hashString(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return Math.abs(hash);
 }
 
 export function getPlayerColor(id: number) {

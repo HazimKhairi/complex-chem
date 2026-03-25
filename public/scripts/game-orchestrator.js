@@ -165,7 +165,10 @@ function handlePieceLanded(playerId, landedCell) {
   switch (tileType) {
     case "ligand":
       console.log("🧪 [ORCHESTRATOR] Triggering ligand collection");
-      window.GameMechanics.collectLigand(playerId);
+      // Pass the landed cell so collectLigand can extract the specific ligand name
+      const cellElement = (typeof landedCell === 'string') ?
+        (tileInfo ? tileInfo.element : null) : landedCell;
+      window.GameMechanics.collectLigand(playerId, cellElement || landedCell);
       break;
 
     case "question":

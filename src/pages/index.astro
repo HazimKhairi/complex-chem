@@ -9,13 +9,17 @@ import GameButton from "../components/game-button.astro";
     <div class="rounded-2xl shadow-md bg-white px-5 sm:px-10 py-5 w-full max-w-lg space-y-5">
       <div>
         <img
-          class="block mx-auto min-h-28 h-28 mb-2"
+          class="block mx-auto h-40 mb-4"
           draggable="false"
-          src="/logo.png"
-          alt="Ludon logo"
+          src="/complex-chem-logo.png"
+          alt="Complex Chem Quest logo"
           loading="eager"
         />
-        <h2 class="text-center font-semibold text-lg">Roll the Dice, Rule the Board!</h2>
+        <h2 class="text-center font-bold text-2xl">
+          <span class="text-[#DC143C]">COMPLEX-CHEM</span>
+          <span class="text-[#0066CC]"> QUEST</span>
+        </h2>
+        <p class="text-center text-gray-600 text-sm mt-1">Digital Smart Board</p>
       </div>
 
       <div class="grid grid-cols-2 gap-8">
@@ -28,7 +32,7 @@ import GameButton from "../components/game-button.astro";
       </div>
 
       <div class="opacity-50 cursor-not-allowed pointer-events-none">
-        <p class="text-center font-medium mb-5">Share Ludon with your friends</p>
+        <p class="text-center font-medium mb-5">Share Complex Chem Quest with your friends</p>
         <ShareButton />
       </div>
 

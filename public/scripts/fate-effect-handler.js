@@ -146,9 +146,85 @@ window.FateEffectHandler = {
     console.log(`✅ [FATE] Eureka Moment complete - Player ${playerId} got ${ligand.name}`);
   },
 
-  applyLigandSquare(playerId, spaces) {
-    console.log(`⬆️ [FATE] Ligand Square - Not yet implemented`);
-    this.showNotification("Ligand Square feature coming soon!", 'info');
+  applyLigandSquare(playerId, spaces = 3) {
+    console.log(`⬆️ [FATE] Ligand Square - Player ${playerId}, move ${spaces} spaces`);
+
+    const playerColor = this.getPlayerColor(playerId);
+    const posVar = `lastPos${playerColor}H1`;
+
+    // Get current position
+    const currentPos = window[posVar];
+
+    if (typeof currentPos === 'undefined') {
+      console.error(`❌ [FATE] Position variable ${posVar} not found`);
+      this.showNotification("Error: Cannot find piece position", 'error');
+      return;
+    }
+
+    console.log(`   Current position: ${currentPos}`);
+
+    // Edge case: Already at finish line
+    if (currentPos >= 57) {
+      console.warn('⚠️ [FATE] Already at finish line!');
+      this.showNotification("Already at the finish line!", 'info');
+      return;
+    }
+
+    // Calculate new position (max 57)
+    const newPos = Math.min(currentPos + spaces, 57);
+    const actualMoved = newPos - currentPos;
+
+    console.log(`   New position: ${newPos} (moved ${actualMoved} spaces)`);
+
+    // Update position variable
+    window[posVar] = newPos;
+
+    // Move piece visually
+    const colorClass = this.getPlayerColorClass(playerId).charAt(0); // 'r', 'b', 'y', 'g'
+    const pieceSelector = `.path img.${colorClass}h1`;
+    const piece = $(pieceSelector).first();
+
+    if (piece.length === 0) {
+      console.warn(`⚠️ [FATE] Piece not found on path: ${pieceSelector}`);
+      this.showNotification(`Moved forward ${actualMoved} spaces!`, 'success');
+      return;
+    }
+
+    // Find target cell
+    const targetCell = $(`.${colorClass}${newPos}`).first();
+
+    if (targetCell.length === 0) {
+      console.error(`❌ [FATE] Target cell not found: .${colorClass}${newPos}`);
+      this.showNotification("Error: Cannot find target position", 'error');
+      return;
+    }
+
+    // Remove piece from current cell
+    piece.remove();
+
+    // Add piece to target cell
+    targetCell.append(piece);
+
+    // Show animation if available
+    if (window.UIAnimations) {
+      window.UIAnimations.movePiece(piece[0]);
+    }
+
+    // Check if landed on special tile
+    const tileType = window.TileDetector ? window.TileDetector.getTileType(targetCell[0]) : 'normal';
+    console.log(`   Landed on ${tileType} tile`);
+
+    // Show notification
+    this.showNotification(`⬆️ Moved forward ${actualMoved} spaces!`, 'success');
+    console.log(`✅ [FATE] Ligand Square complete - Player ${playerId} moved to position ${newPos}`);
+
+    // If landed on special tile, trigger orchestrator
+    if (tileType !== 'normal' && tileType !== 'safe' && window.GameOrchestrator) {
+      console.log(`   Triggering orchestrator for ${tileType} tile`);
+      setTimeout(() => {
+        window.GameOrchestrator.simulateLanding(playerId, `.${colorClass}${newPos}`);
+      }, 500); // Small delay for animation
+    }
   },
 
   applySecondChance(playerId) {

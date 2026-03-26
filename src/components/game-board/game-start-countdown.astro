@@ -56,13 +56,37 @@ const { countdownFrom = 3 } = Astro.props;
 </style>
 
 <script is:inline>
+  console.log('🎮 [COUNTDOWN] ========== SCRIPT STARTED ==========');
+  console.log('🎮 [COUNTDOWN] Current time:', new Date().toLocaleTimeString());
+  console.log('🎮 [COUNTDOWN] Document ready state:', document.readyState);
+
+  // Check if element exists immediately
+  const countdownCheck = document.getElementById("game-start-countdown");
+  console.log('🎮 [COUNTDOWN] Element exists on script load:', !!countdownCheck);
+  if (countdownCheck) {
+    console.log('🎮 [COUNTDOWN] Element styles:', window.getComputedStyle(countdownCheck).animation);
+  }
+
   // Pure CSS animation handles countdown (3 seconds)
   // This script just removes the element from DOM after animation completes
-  setTimeout(() => {
+  console.log('🎮 [COUNTDOWN] Setting timeout for 3100ms to remove element...');
+
+  const removalTimeout = setTimeout(() => {
+    console.log('🎮 [COUNTDOWN] ⏰ TIMEOUT FIRED! Time:', new Date().toLocaleTimeString());
     const countdown = document.getElementById("game-start-countdown");
+    console.log('🎮 [COUNTDOWN] Element still exists:', !!countdown);
+
     if (countdown) {
+      console.log('🎮 [COUNTDOWN] Removing element from DOM...');
       countdown.remove();
-      console.log('✅ [COUNTDOWN] Removed from DOM after CSS animation');
+      console.log('✅ [COUNTDOWN] Element removed successfully!');
+    } else {
+      console.log('⚠️ [COUNTDOWN] Element already gone (maybe removed elsewhere?)');
     }
+
+    console.log('🎮 [COUNTDOWN] ========== SCRIPT COMPLETE ==========');
   }, 3100); // 3 seconds animation + 100ms buffer
+
+  console.log('🎮 [COUNTDOWN] Timeout ID:', removalTimeout);
+  console.log('🎮 [COUNTDOWN] Waiting for 3100ms...');
 </script>

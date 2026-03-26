@@ -77,8 +77,13 @@ import TurnIndicator from "../components/game-board/turn-indicator.astro";
 </Layout>
 
 <script>
+  console.log('🎯 [GAME-BOARD] ========== PAGE SCRIPT STARTED ==========');
+  console.log('🎯 [GAME-BOARD] Time:', new Date().toLocaleTimeString());
+  console.log('🎯 [GAME-BOARD] Document ready state:', document.readyState);
+
   // Load game script based on selected option
   const gameOption = sessionStorage.getItem("game-option");
+  console.log('🎯 [GAME-BOARD] Game option selected:', gameOption);
 
   // Redirect if no game mode selected
   if (!gameOption) {

@@ -878,16 +878,8 @@ function accurateMoveHorse() {
 
   //Executes when clicking a horse is necessary
   if (autoHorsesLength > 1 || (playerAvailHorses >= 1 && autoHorsesLength == 1 && randomDice == 6)) {
-    $(`.path td img.${identifyColor}`).click(function (event) {
-      if (lastClick >= Date.now() - delay) {
-        return;
-      } else {
-        lastClick = Date.now();
-        playerHorseClass = event.target.classList[0];
-        selectedPathCell = $(event.target).parents(); //Used to get list of parents of clicked horse group
-        moveHorse();
-      }
-    });
+    // Highlight pieces to show they're clickable
+    $(`.path td img.${identifyColor}`).css('opacity', '1');
   }
   //Executes when horse can be moved automatically
   else if ($(`.path`).find(`img.${identifyColor}`).length >= 1 && a == 1) {
@@ -1289,6 +1281,36 @@ function fiveMergeCode() {
     }
   }
 }
+
+// Global delegated event handler for piece clicks
+// This ensures pieces can ALWAYS be clicked, even when auto-select triggers
+$(document).on('click', '.path td img', function(event) {
+  const clickedPiece = event.target;
+  const pieceColor = clickedPiece.classList[1]; // red, blue, yellow, or green
+
+  // Only allow clicking pieces of current player
+  if (pieceColor !== identifyColor) {
+    console.log(`🚫 [CLICK] Cannot click ${pieceColor} piece - not your turn (${identifyColor})`);
+    return;
+  }
+
+  // Prevent click bounce
+  if (lastClick >= Date.now() - delay) {
+    console.log(`⏱️ [CLICK] Ignoring bounce click`);
+    return;
+  }
+
+  lastClick = Date.now();
+  console.log(`🖱️ [CLICK] Piece clicked: ${clickedPiece.classList[0]} (${pieceColor})`);
+
+  playerHorseClass = clickedPiece.classList[0];
+  selectedPathCell = $(clickedPiece).parents();
+
+  console.log(`   playerHorseClass: ${playerHorseClass}`);
+  console.log(`   selectedPathCell length: ${selectedPathCell.length}`);
+
+  moveHorse();
+});
 
 function computerHorse() {
   if (lastClick >= Date.now() - delay) {

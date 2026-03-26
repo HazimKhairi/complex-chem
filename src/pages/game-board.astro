@@ -145,17 +145,8 @@ import TurnIndicator from "../components/game-board/turn-indicator.astro";
   clickDebuggerScript.type = "application/javascript";
   document.head.appendChild(clickDebuggerScript);
 
-  // Load auto move piece (direct movement without clicking)
-  const autoMovePieceScript = document.createElement("script");
-  autoMovePieceScript.src = "scripts/auto-move-piece.js";
-  autoMovePieceScript.type = "application/javascript";
-  document.head.appendChild(autoMovePieceScript);
-
-  // Load auto piece selector (triggers auto-move)
-  const autoPieceSelectorScript = document.createElement("script");
-  autoPieceSelectorScript.src = "scripts/auto-piece-selector.js";
-  autoPieceSelectorScript.type = "application/javascript";
-  document.head.appendChild(autoPieceSelectorScript);
+  // AUTO-SELECT SCRIPTS REMOVED - Players must click pieces manually
+  // Removed: auto-move-piece.js and auto-piece-selector.js
 
   // Load Fate Effect Handler
   const fateEffectHandlerScript = document.createElement("script");

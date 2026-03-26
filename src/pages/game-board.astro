@@ -149,21 +149,7 @@ import TurnIndicator from "../components/game-board/turn-indicator.astro";
   fateEffectHandlerScript.type = "application/javascript";
   document.head.appendChild(fateEffectHandlerScript);
 
-  // SAFETY: Force remove countdown after 4 seconds as backup
-  setTimeout(() => {
-    const countdown = document.getElementById("game-start-countdown");
-    if (countdown) {
-      console.warn("⚠️ [SAFETY] Countdown still visible after 4s! Force removing...");
-      countdown.style.opacity = "0";
-      countdown.style.transition = "opacity 0.3s";
-      setTimeout(() => {
-        countdown.remove();
-        console.log("✅ [SAFETY] Countdown forcefully removed");
-      }, 300);
-    } else {
-      console.log("✅ [SAFETY] Countdown already removed naturally");
-    }
-  }, 4000);
+  // Countdown now uses pure CSS animation - no JavaScript needed!
 
   // Optimize game size for screen - AGGRESSIVE scaling
   function optimizeGameSize() {

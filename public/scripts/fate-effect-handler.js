@@ -91,7 +91,35 @@ window.FateEffectHandler = {
 
     if (currentPlayerLigands.length === 0) {
       console.warn('⚠️ [FATE] Player has no ligands to swap');
+      console.log('▶ [FATE] You have no ligands to swap!');
+
+      // Show notification (for toast if available)
       this.showNotification("You have no ligands to swap!", 'info');
+
+      // Show visible modal to ensure user sees the message
+      if (window.InfoModal) {
+        window.InfoModal.showWarning(
+          'Cannot Swap Ligands',
+          'You don\'t have any ligands to swap!\n\nCollect ligands by landing on ligand tiles first.',
+          () => {
+            // On close, emit event to continue game
+            console.log('📢 [FATE] User dismissed no-ligands warning, continuing game');
+            document.dispatchEvent(new CustomEvent('swap-cancelled', {
+              detail: { playerId, reason: 'no-ligands' }
+            }));
+          }
+        );
+      } else {
+        // Fallback: browser alert
+        console.warn('⚠️ [FATE] InfoModal not available, using alert fallback');
+        alert('❌ Cannot Swap Ligands\n\nYou don\'t have any ligands to swap!\n\nCollect ligands by landing on ligand tiles first.');
+
+        // Continue game after alert dismissal
+        document.dispatchEvent(new CustomEvent('swap-cancelled', {
+          detail: { playerId, reason: 'no-ligands' }
+        }));
+      }
+
       return;
     }
 
@@ -109,7 +137,35 @@ window.FateEffectHandler = {
 
     if (!hasPlayersWithLigands) {
       console.warn('⚠️ [FATE] No other players have ligands to swap with');
+      console.log('▶ [FATE] No other players have ligands to swap with!');
+
+      // Show notification (for toast if available)
       this.showNotification("No players have ligands to swap with!", 'info');
+
+      // Show visible modal to ensure user sees the message
+      if (window.InfoModal) {
+        window.InfoModal.showWarning(
+          'Cannot Swap Ligands',
+          'No other players have ligands to swap with!\n\nYou need to wait for other players to collect ligands first.',
+          () => {
+            // On close, emit event to continue game
+            console.log('📢 [FATE] User dismissed no-other-ligands warning, continuing game');
+            document.dispatchEvent(new CustomEvent('swap-cancelled', {
+              detail: { playerId, reason: 'no-other-ligands' }
+            }));
+          }
+        );
+      } else {
+        // Fallback: browser alert
+        console.warn('⚠️ [FATE] InfoModal not available, using alert fallback');
+        alert('❌ Cannot Swap Ligands\n\nNo other players have ligands to swap with!\n\nYou need to wait for other players to collect ligands first.');
+
+        // Continue game after alert dismissal
+        document.dispatchEvent(new CustomEvent('swap-cancelled', {
+          detail: { playerId, reason: 'no-other-ligands' }
+        }));
+      }
+
       return;
     }
 

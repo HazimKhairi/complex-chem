@@ -1,0 +1,87 @@
+---
+---
+
+<div id="info-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-3 sm:p-4">
+  <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-4 sm:p-6 text-center max-h-[90vh] overflow-y-auto">
+    <div class="mb-3 sm:mb-4">
+      <h2 id="info-modal-title" class="text-xl sm:text-2xl font-bold text-gray-800 mb-2">ℹ️ Info</h2>
+      <p id="info-modal-message" class="text-sm sm:text-base text-gray-600 whitespace-pre-line">
+        <!-- Message will be inserted here -->
+      </p>
+    </div>
+
+    <button id="info-modal-ok-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2.5 sm:py-3 rounded-lg transition-colors text-sm sm:text-base">
+      OK
+    </button>
+  </div>
+</div>
+
+<script>
+  const infoModal = document.getElementById("info-modal");
+  const infoModalTitle = document.getElementById("info-modal-title");
+  const infoModalMessage = document.getElementById("info-modal-message");
+  const infoModalOkBtn = document.getElementById("info-modal-ok-btn");
+
+  let onCloseCallback = null;
+
+  // OK button closes modal and executes callback
+  infoModalOkBtn?.addEventListener("click", () => {
+    closeInfoModal();
+    if (onCloseCallback && typeof onCloseCallback === 'function') {
+      onCloseCallback();
+      onCloseCallback = null;
+    }
+  });
+
+  function closeInfoModal() {
+    if (infoModal) {
+      infoModal.classList.add("hidden");
+      infoModal.classList.remove("flex");
+    }
+  }
+
+  // Expose modal controls
+  window.InfoModal = {
+    show: (title, message, callback = null, icon = 'ℹ️') => {
+      if (!infoModal || !infoModalTitle || !infoModalMessage) {
+        console.error('❌ Info modal elements not found');
+        // Fallback to alert
+        alert(`${title}\n\n${message}`);
+        if (callback) callback();
+        return;
+      }
+
+      // Set content
+      infoModalTitle.textContent = `${icon} ${title}`;
+      infoModalMessage.textContent = message;
+
+      // Store callback
+      onCloseCallback = callback;
+
+      // Show modal
+      infoModal.classList.remove("hidden");
+      infoModal.classList.add("flex");
+
+      console.log('✅ Info modal shown:', { title, message });
+    },
+    showWarning: (title, message, callback = null) => {
+      window.InfoModal.show(title, message, callback, '⚠️');
+    },
+    showError: (title, message, callback = null) => {
+      window.InfoModal.show(title, message, callback, '❌');
+    },
+    showSuccess: (title, message, callback = null) => {
+      window.InfoModal.show(title, message, callback, '✅');
+    },
+    close: closeInfoModal
+  };
+
+  console.log('✅ Info Modal loaded');
+</script>
+
+<style>
+  /* Additional styling for better readability */
+  #info-modal-message {
+    line-height: 1.6;
+  }
+</style>

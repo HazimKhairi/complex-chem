@@ -65,7 +65,8 @@ import TurnIndicator from "../components/game-board/turn-indicator.astro";
     </section>
     <GameAudio />
     <GameAssets />
-    <GameStartCountdown />
+    <!-- Countdown disabled - game starts immediately -->
+    <!-- <GameStartCountdown /> -->
 
     <!-- Game Modals -->
     <LigandModal />
@@ -149,17 +150,7 @@ import TurnIndicator from "../components/game-board/turn-indicator.astro";
   fateEffectHandlerScript.type = "application/javascript";
   document.head.appendChild(fateEffectHandlerScript);
 
-  // SAFETY: Force remove countdown after 5 seconds (backup in case it didn't remove itself)
-  setTimeout(() => {
-    const countdown = document.getElementById("game-start-countdown");
-    if (countdown) {
-      console.warn("⚠️ [SAFETY] Countdown still exists after 5s! Force removing...");
-      countdown.style.display = "none";
-      countdown.style.pointerEvents = "none";
-      countdown.remove();
-      console.log("✅ [SAFETY] Countdown removed");
-    }
-  }, 5000);
+  // Countdown removed - game starts immediately without countdown modal
 
   // Optimize game size for screen - AGGRESSIVE scaling
   function optimizeGameSize() {

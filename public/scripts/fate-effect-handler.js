@@ -148,11 +148,11 @@ window.FateEffectHandler = {
 
     console.log(`   Selected ligand: ${ligand.name} (${ligand.id})`);
 
-    // Add to player's collection
+    // Add to player's collection (store full ligand object to match game-mechanics-cards.js)
     if (!gameState.playerLigands[playerId]) {
       gameState.playerLigands[playerId] = [];
     }
-    gameState.playerLigands[playerId].push(ligand.id);
+    gameState.playerLigands[playerId].push(ligand);
 
     // Mark as collected globally
     if (!gameState.collectedLigandIds.includes(ligand.id)) {
@@ -163,18 +163,7 @@ window.FateEffectHandler = {
     sessionStorage.setItem('game-state', JSON.stringify(gameState));
 
     // Update ligand display for this player
-    const ligandContainer = document.getElementById(`player-${playerId}-ligands`);
-    if (ligandContainer) {
-      const ligandElement = document.createElement('div');
-      ligandElement.className = 'ligand-card inline-block';
-      ligandElement.innerHTML = `
-        <img src="/cards/ligands/${ligand.id}.png"
-             alt="${ligand.name}"
-             class="w-12 h-12 sm:w-16 sm:h-16 rounded shadow-sm"
-             title="${ligand.name}">
-      `;
-      ligandContainer.appendChild(ligandElement);
-    }
+    this.updateLigandDisplay(playerId);
 
     // Show success notification
     this.showNotification(`🎉 Discovered new ligand: ${ligand.name}!`, 'success');
@@ -353,7 +342,7 @@ window.FateEffectHandler = {
       // Add back to home area
       const homeArea = $(`#player-${playerId} > table`);
       if (homeArea.length > 0) {
-        homeArea.append(piece.length > 0 ? piece : `<img src="/piece-${colorClass}.png" class="${colorClass}h1" alt="Player ${playerId} piece">`);
+        homeArea.append(piece.length > 0 ? piece : `<img src="/horses/${this.getPlayerColorClass(playerId)}.png" class="${colorClass}h1" alt="Player ${playerId} piece">`);
       }
 
       this.showNotification(`⬇️ Sent back to home! (rolled ${diceRoll})`, 'error');
@@ -432,10 +421,15 @@ window.FateEffectHandler = {
     }
 
     // Populate current player's ligands
-    currentContainer.innerHTML = currentLigands.map(ligandId => {
-      const ligand = LIGANDS_DATA.find(l => l.id === ligandId);
+    currentContainer.innerHTML = currentLigands.map(ligandItem => {
+      // Handle both ligand objects and IDs
+      const ligandId = typeof ligandItem === 'string' ? ligandItem : ligandItem.id;
+      const ligand = typeof ligandItem === 'string'
+        ? LIGANDS_DATA.find(l => l.id === ligandId)
+        : ligandItem;
+
       return `
-        <img src="/cards/ligands/${ligandId}.png"
+        <img src="/assets/ligand-cards/${ligand?.imageFile || ligandId + '.png'}"
              alt="${ligand?.name || ligandId}"
              class="w-16 h-16 sm:w-20 sm:h-20 rounded shadow-sm ligand-selectable"
              data-ligand-id="${ligandId}"
@@ -446,10 +440,15 @@ window.FateEffectHandler = {
 
     // Populate target player's ligands (if not one-way)
     if (!isOneWayDonation) {
-      targetContainer.innerHTML = targetLigands.map(ligandId => {
-        const ligand = LIGANDS_DATA.find(l => l.id === ligandId);
+      targetContainer.innerHTML = targetLigands.map(ligandItem => {
+        // Handle both ligand objects and IDs
+        const ligandId = typeof ligandItem === 'string' ? ligandItem : ligandItem.id;
+        const ligand = typeof ligandItem === 'string'
+          ? LIGANDS_DATA.find(l => l.id === ligandId)
+          : ligandItem;
+
         return `
-          <img src="/cards/ligands/${ligandId}.png"
+          <img src="/assets/ligand-cards/${ligand?.imageFile || ligandId + '.png'}"
                alt="${ligand?.name || ligandId}"
                class="w-16 h-16 sm:w-20 sm:h-20 rounded shadow-sm ligand-selectable"
                data-ligand-id="${ligandId}"
@@ -518,33 +517,41 @@ window.FateEffectHandler = {
       // One-way donation: current gives to target
       console.log(`   One-way donation: Player ${currentPlayerId} gives ${currentPlayerSelectedLigand} to Player ${targetPlayerId}`);
 
-      // Remove from current player
-      const currentIndex = currentLigands.indexOf(currentPlayerSelectedLigand);
-      if (currentIndex > -1) {
-        currentLigands.splice(currentIndex, 1);
-      }
+      // Find the ligand object to swap (handle both ID strings and objects)
+      const currentIndex = currentLigands.findIndex(l =>
+        (typeof l === 'string' ? l : l.id) === currentPlayerSelectedLigand
+      );
 
-      // Add to target player
-      targetLigands.push(currentPlayerSelectedLigand);
+      if (currentIndex > -1) {
+        const ligandToGive = currentLigands[currentIndex];
+        currentLigands.splice(currentIndex, 1);
+        targetLigands.push(ligandToGive);
+      }
 
     } else {
       // Normal swap: exchange ligands
       console.log(`   Swapping: Player ${currentPlayerId}'s ${currentPlayerSelectedLigand} ↔ Player ${targetPlayerId}'s ${targetPlayerSelectedLigand}`);
 
-      // Remove from respective players
-      const currentIndex = currentLigands.indexOf(currentPlayerSelectedLigand);
-      const targetIndex = targetLigands.indexOf(targetPlayerSelectedLigand);
+      // Find ligands to swap (handle both ID strings and objects)
+      const currentIndex = currentLigands.findIndex(l =>
+        (typeof l === 'string' ? l : l.id) === currentPlayerSelectedLigand
+      );
+      const targetIndex = targetLigands.findIndex(l =>
+        (typeof l === 'string' ? l : l.id) === targetPlayerSelectedLigand
+      );
 
-      if (currentIndex > -1) {
+      if (currentIndex > -1 && targetIndex > -1) {
+        const currentLigand = currentLigands[currentIndex];
+        const targetLigand = targetLigands[targetIndex];
+
+        // Remove from respective players
         currentLigands.splice(currentIndex, 1);
-      }
-      if (targetIndex > -1) {
         targetLigands.splice(targetIndex, 1);
-      }
 
-      // Add to opposite players
-      currentLigands.push(targetPlayerSelectedLigand);
-      targetLigands.push(currentPlayerSelectedLigand);
+        // Add to opposite players
+        currentLigands.push(targetLigand);
+        targetLigands.push(currentLigand);
+      }
     }
 
     // Update gameState
@@ -576,7 +583,7 @@ window.FateEffectHandler = {
    * @param {number} playerId - Player ID
    */
   updateLigandDisplay(playerId) {
-    const container = document.getElementById(`player-${playerId}-ligands`);
+    const container = document.getElementById(`ligand-display-${playerId}`);
     if (!container) {
       console.warn(`⚠️ [FATE] Ligand container not found for Player ${playerId}`);
       return;
@@ -584,14 +591,25 @@ window.FateEffectHandler = {
 
     const ligands = gameState.playerLigands[playerId] || [];
 
-    container.innerHTML = ligands.map(ligandId => {
-      const ligand = LIGANDS_DATA.find(l => l.id === ligandId);
+    container.innerHTML = ligands.map((ligand, index) => {
+      // Handle both ligand objects and IDs for compatibility
+      const ligandData = typeof ligand === 'string'
+        ? LIGANDS_DATA.find(l => l.id === ligand)
+        : ligand;
+
+      if (!ligandData) {
+        console.warn(`⚠️ [FATE] Ligand not found:`, ligand);
+        return '';
+      }
+
       return `
-        <div class="ligand-card inline-block">
-          <img src="/cards/ligands/${ligandId}.png"
-               alt="${ligand?.name || ligandId}"
-               class="w-12 h-12 sm:w-16 sm:h-16 rounded shadow-sm"
-               title="${ligand?.name || ligandId}">
+        <div class="ligand-mini-card aspect-[3/4] rounded border-2 overflow-hidden shadow-sm transition-transform"
+             style="border-color: ${ligandData.color};"
+             title="${ligandData.name}"
+             data-ligand-id="${ligandData.id}"
+             data-player-id="${playerId}"
+             data-index="${index}">
+          <div class="w-full h-full bg-cover bg-center" style="background-image: url('/assets/ligand-cards/${ligandData.imageFile}'); background-position: 0% center; background-size: 200%;"></div>
         </div>
       `;
     }).join('');

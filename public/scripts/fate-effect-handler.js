@@ -181,8 +181,105 @@ window.FateEffectHandler = {
   },
 
   applyDestinyDance(playerId) {
-    console.log(`⬇️ [FATE] Destiny Dance - Not yet implemented`);
-    this.showNotification("Destiny Dance feature coming soon!", 'info');
+    console.log(`⬇️ [FATE] Destiny Dance - Player ${playerId}`);
+
+    const playerColor = this.getPlayerColor(playerId);
+    const posVar = `lastPos${playerColor}H1`;
+
+    // Get current position
+    const currentPos = window[posVar];
+
+    if (typeof currentPos === 'undefined') {
+      console.error(`❌ [FATE] Position variable ${posVar} not found`);
+      this.showNotification("Error: Cannot find piece position", 'error');
+      return;
+    }
+
+    console.log(`   Current position: ${currentPos}`);
+
+    // Edge case: Piece in home
+    if (currentPos === 0) {
+      console.warn('⚠️ [FATE] Cannot move backward from home!');
+      this.showNotification("Can't move backward from home!", 'info');
+      return;
+    }
+
+    // Roll dice (1-6)
+    const diceRoll = Math.floor(Math.random() * 6) + 1;
+    console.log(`   Rolled: ${diceRoll}`);
+
+    // Show dice animation if available
+    const diceImg = document.querySelector('.dice_image');
+    if (diceImg && window.UIAnimations) {
+      window.UIAnimations.rollDice(diceImg, diceRoll);
+    } else if (diceImg) {
+      // Fallback: just update image
+      diceImg.src = `/dice/dice-${diceRoll}.png`;
+    }
+
+    // Calculate new position (min 0 = home)
+    const newPos = Math.max(currentPos - diceRoll, 0);
+    const actualMoved = currentPos - newPos;
+
+    console.log(`   New position: ${newPos} (moved backward ${actualMoved} spaces)`);
+
+    // Update position variable
+    window[posVar] = newPos;
+
+    const colorClass = this.getPlayerColorClass(playerId).charAt(0); // 'r', 'b', 'y', 'g'
+    const pieceSelector = `.path img.${colorClass}h1`;
+    const piece = $(pieceSelector).first();
+
+    // If moving back to home (position 0)
+    if (newPos === 0) {
+      console.log('   Moving piece back to home area');
+
+      // Remove from path
+      if (piece.length > 0) {
+        piece.remove();
+      }
+
+      // Add back to home area
+      const homeArea = $(`#player-${playerId} > table`);
+      if (homeArea.length > 0) {
+        homeArea.append(piece.length > 0 ? piece : `<img src="/piece-${colorClass}.png" class="${colorClass}h1" alt="Player ${playerId} piece">`);
+      }
+
+      this.showNotification(`⬇️ Sent back to home! (rolled ${diceRoll})`, 'error');
+      console.log(`✅ [FATE] Destiny Dance complete - Player ${playerId} sent back to home`);
+      return;
+    }
+
+    // Normal backward movement on path
+    if (piece.length === 0) {
+      console.warn(`⚠️ [FATE] Piece not found on path: ${pieceSelector}`);
+      this.showNotification(`Moved backward ${actualMoved} spaces!`, 'error');
+      return;
+    }
+
+    // Find target cell
+    const targetCell = $(`.${colorClass}${newPos}`).first();
+
+    if (targetCell.length === 0) {
+      console.error(`❌ [FATE] Target cell not found: .${colorClass}${newPos}`);
+      this.showNotification("Error: Cannot find target position", 'error');
+      return;
+    }
+
+    // Remove piece from current cell
+    piece.remove();
+
+    // Add piece to target cell
+    targetCell.append(piece);
+
+    // Show animation if available
+    if (window.UIAnimations) {
+      window.UIAnimations.movePiece(piece[0]);
+    }
+
+    // Show notification
+    this.showNotification(`⬇️ Moved backward ${actualMoved} spaces! (rolled ${diceRoll})`, 'error');
+    console.log(`✅ [FATE] Destiny Dance complete - Player ${playerId} moved to position ${newPos}`);
   }
 };
 

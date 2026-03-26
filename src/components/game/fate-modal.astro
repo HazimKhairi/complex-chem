@@ -38,8 +38,12 @@
         console.log(`💰 [FATE] Player ${playerId} ${fateValue > 0 ? 'gained' : 'lost'} ${Math.abs(fateValue)} points`);
       }
 
-      // TODO: Implement other fate effects (extra-turn, move-forward, swap-card, etc.)
-      // For now, only points-based effects are applied
+      // Apply other fate effects using FateEffectHandler
+      if (fateEffect && window.FateEffectHandler) {
+        window.FateEffectHandler.applyEffect(playerId, fateEffect, fateValue);
+      } else if (!window.FateEffectHandler) {
+        console.warn('⚠️ FateEffectHandler not available, only points-based effects will work');
+      }
 
       modal.classList.add("hidden");
       modal.classList.remove("flex");

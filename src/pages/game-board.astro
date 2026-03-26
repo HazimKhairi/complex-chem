@@ -94,6 +94,12 @@ import TurnIndicator from "../components/game-board/turn-indicator.astro";
   mechanicsScript.type = "application/javascript";
   document.head.appendChild(mechanicsScript);
 
+  // Load piece selection helper (before movement scripts)
+  const pieceSelectionScript = document.createElement("script");
+  pieceSelectionScript.src = "scripts/piece-selection-helper.js";
+  pieceSelectionScript.type = "application/javascript";
+  document.head.appendChild(pieceSelectionScript);
+
   // Load game orchestrator and supporting systems
   // These coordinate all game mechanics together
   const tileDetectorScript = document.createElement("script");
@@ -122,6 +128,48 @@ import TurnIndicator from "../components/game-board/turn-indicator.astro";
   turnIndicatorScript.src = "scripts/turn-indicator-integration.js";
   turnIndicatorScript.type = "application/javascript";
   document.head.appendChild(turnIndicatorScript);
+
+  // Load piece selection integration (shows which pieces can be selected)
+  const pieceSelectionIntegrationScript = document.createElement("script");
+  pieceSelectionIntegrationScript.src = "scripts/piece-selection-integration.js";
+  pieceSelectionIntegrationScript.type = "application/javascript";
+  document.head.appendChild(pieceSelectionIntegrationScript);
+
+  // TEMPORARY: Load click debugger to find what's blocking clicks
+  const clickDebuggerScript = document.createElement("script");
+  clickDebuggerScript.src = "scripts/click-debugger.js";
+  clickDebuggerScript.type = "application/javascript";
+  document.head.appendChild(clickDebuggerScript);
+
+  // Load auto move piece (direct movement without clicking)
+  const autoMovePieceScript = document.createElement("script");
+  autoMovePieceScript.src = "scripts/auto-move-piece.js";
+  autoMovePieceScript.type = "application/javascript";
+  document.head.appendChild(autoMovePieceScript);
+
+  // Load auto piece selector (triggers auto-move)
+  const autoPieceSelectorScript = document.createElement("script");
+  autoPieceSelectorScript.src = "scripts/auto-piece-selector.js";
+  autoPieceSelectorScript.type = "application/javascript";
+  document.head.appendChild(autoPieceSelectorScript);
+
+  // Load Fate Effect Handler
+  const fateEffectHandlerScript = document.createElement("script");
+  fateEffectHandlerScript.src = "scripts/fate-effect-handler.js";
+  fateEffectHandlerScript.type = "application/javascript";
+  document.head.appendChild(fateEffectHandlerScript);
+
+  // SAFETY: Force remove countdown after 5 seconds (backup in case it didn't remove itself)
+  setTimeout(() => {
+    const countdown = document.getElementById("game-start-countdown");
+    if (countdown) {
+      console.warn("⚠️ [SAFETY] Countdown still exists after 5s! Force removing...");
+      countdown.style.display = "none";
+      countdown.style.pointerEvents = "none";
+      countdown.remove();
+      console.log("✅ [SAFETY] Countdown removed");
+    }
+  }, 5000);
 
   // Optimize game size for screen - AGGRESSIVE scaling
   function optimizeGameSize() {

@@ -16,6 +16,7 @@ z = 1; //Z is used to track the number of times a user can move a token when dic
 randomDice = 0; //Used to select a random dice number
 d = 0; //D is used to restrict one dice roll at a time
 playerHorseClass = ""; // Classname or identity of selected player horse
+selectedPathCell = null; // Used to get list of parents of clicked/selected horse
 // Last positions of red horses
 lastPosRH1 = 1;
 lastPosRH2 = 1;
@@ -642,9 +643,8 @@ function moveHorse(event) {
         }));
         console.log(`🎮 [MOVEMENT] Player ${x} landed on ${landedCellClass} (home path)`);
 
-        if (window[`lastPos${playerHorseClassCaps}`] != 57) {
-          setTimeout(transferDiceCode, 300);
-        } else if (window[`lastPos${playerHorseClassCaps}`] == 57) {
+        if (window[`lastPos${playerHorseClassCaps}`] == 57) {
+          // Player reached home (position 57) - win condition
           d = 0;
           // Play sound on reaching winning home
           audio = new Audio("audio/horse-home.wav");
@@ -664,6 +664,7 @@ function moveHorse(event) {
             }, 250);
           }
         } else if (randomDice == 6) {
+          // Player rolled 6, give them another roll (don't transfer dice)
           setTimeout(function () {
             $("#player-" + x + "-dice-arrow").attr("src", "gifs/arrow1.gif");
           }, 200);
@@ -681,6 +682,9 @@ function moveHorse(event) {
               computer1Dice[0].click();
             }, 250);
           }
+        } else {
+          // Normal move (not 6, not home), transfer dice to next player
+          setTimeout(transferDiceCode, 300);
         }
       }
     }, 300);
@@ -891,6 +895,12 @@ function accurateMoveHorse() {
       return;
     } else {
       lastClick = Date.now();
+      // Find the piece on path and get its parent elements
+      const pieceOnPath = $(`.path img.${identifyColor}`).first();
+      if (pieceOnPath.length > 0) {
+        playerHorseClass = pieceOnPath.attr('class').split(' ')[0]; // Get first class (h1, h2, etc.)
+        selectedPathCell = pieceOnPath.parents();
+      }
       moveHorse();
       a++;
     }

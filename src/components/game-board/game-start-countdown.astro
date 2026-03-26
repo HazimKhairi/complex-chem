@@ -19,32 +19,52 @@ const { countdownFrom = 3 } = Astro.props;
   </div>
 </div>
 
-<script>
-  const countdownText = document.getElementById("countdown-text");
-  let count = parseInt(countdownText?.textContent || "3");
+<script is:inline>
+  console.log('🎮 [COUNTDOWN] Script loaded');
 
-  const countdown = setInterval(() => {
-    count--;
+  // Wait for DOM to be ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startCountdown);
+  } else {
+    startCountdown();
+  }
 
-    if (countdownText) {
-      countdownText.textContent = count.toString();
-    }
+  function startCountdown() {
+    console.log('🎮 [COUNTDOWN] Starting countdown...');
+    const countdownText = document.getElementById("countdown-text");
+    let count = parseInt(countdownText?.textContent || "3");
 
-    if (count <= 0) {
-      clearInterval(countdown);
+    console.log(`🎮 [COUNTDOWN] Initial count: ${count}`);
 
-      // Try to play sound (will fail if no user interaction, but won't break the game)
-      try {
-        const audio = new Audio("audio/game-start.wav");
-        audio.play().catch(err => {
-          console.log("Audio autoplay prevented (requires user interaction):", err.message);
-        });
-      } catch (err) {
-        console.log("Audio playback error:", err);
+    const countdown = setInterval(() => {
+      count--;
+      console.log(`🎮 [COUNTDOWN] Count: ${count}`);
+
+      if (countdownText) {
+        countdownText.textContent = count.toString();
       }
 
-      document.getElementById("game-start-countdown")?.remove();
-      document.dispatchEvent(new CustomEvent("game-countdown-complete"));
-    }
-  }, 1000);
+      if (count <= 0) {
+        clearInterval(countdown);
+        console.log('🎮 [COUNTDOWN] Countdown complete! Removing modal...');
+
+        // Try to play sound (will fail if no user interaction, but won't break the game)
+        try {
+          const audio = new Audio("audio/game-start.wav");
+          audio.play().catch(err => {
+            console.log("🔇 Audio autoplay prevented (requires user interaction):", err.message);
+          });
+        } catch (err) {
+          console.log("🔇 Audio playback error:", err);
+        }
+
+        const countdownEl = document.getElementById("game-start-countdown");
+        if (countdownEl) {
+          countdownEl.remove();
+          console.log('✅ [COUNTDOWN] Modal removed successfully');
+        }
+        document.dispatchEvent(new CustomEvent("game-countdown-complete"));
+      }
+    }, 1000);
+  }
 </script>

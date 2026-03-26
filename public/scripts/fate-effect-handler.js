@@ -89,8 +89,61 @@ window.FateEffectHandler = {
   },
 
   applyEurekaMoment(playerId) {
-    console.log(`🎉 [FATE] Eureka Moment - Not yet implemented`);
-    this.showNotification("Eureka Moment feature coming soon!", 'info');
+    console.log(`🎉 [FATE] Eureka Moment - Player ${playerId}`);
+
+    // Check if GameMechanics is available
+    if (!window.GameMechanics) {
+      console.error('❌ [FATE] GameMechanics not available');
+      this.showNotification("Error: Game system not ready", 'error');
+      return;
+    }
+
+    // Get global uncollected ligands
+    const uncollected = window.GameMechanics.getGlobalUncollectedLigands();
+
+    if (uncollected.length === 0) {
+      console.warn('⚠️ [FATE] All ligands have been discovered!');
+      this.showNotification("All ligands have been discovered!", 'info');
+      return;
+    }
+
+    // Pick random ligand from uncollected pool
+    const randomIndex = Math.floor(Math.random() * uncollected.length);
+    const ligand = uncollected[randomIndex];
+
+    console.log(`   Selected ligand: ${ligand.name} (${ligand.id})`);
+
+    // Add to player's collection
+    if (!gameState.playerLigands[playerId]) {
+      gameState.playerLigands[playerId] = [];
+    }
+    gameState.playerLigands[playerId].push(ligand.id);
+
+    // Mark as collected globally
+    if (!gameState.collectedLigandIds.includes(ligand.id)) {
+      gameState.collectedLigandIds.push(ligand.id);
+    }
+
+    // Save to sessionStorage
+    sessionStorage.setItem('game-state', JSON.stringify(gameState));
+
+    // Update ligand display for this player
+    const ligandContainer = document.getElementById(`player-${playerId}-ligands`);
+    if (ligandContainer) {
+      const ligandElement = document.createElement('div');
+      ligandElement.className = 'ligand-card inline-block';
+      ligandElement.innerHTML = `
+        <img src="/cards/ligands/${ligand.id}.png"
+             alt="${ligand.name}"
+             class="w-12 h-12 sm:w-16 sm:h-16 rounded shadow-sm"
+             title="${ligand.name}">
+      `;
+      ligandContainer.appendChild(ligandElement);
+    }
+
+    // Show success notification
+    this.showNotification(`🎉 Discovered new ligand: ${ligand.name}!`, 'success');
+    console.log(`✅ [FATE] Eureka Moment complete - Player ${playerId} got ${ligand.name}`);
   },
 
   applyLigandSquare(playerId, spaces) {

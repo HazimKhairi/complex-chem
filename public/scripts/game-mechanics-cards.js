@@ -26,29 +26,191 @@ const LIGANDS_DATA = [
 // Background colors: red=hard(5pts), yellow=medium(3pts), green=easy(2pts)
 // correctAnswer: 1=A, 2=B, 3=C, 4=D (1-based to match button data-answer values)
 const QUESTION_CARDS = [
-  // HARD (red background) - 5 points each
-  { id: "q1", imageFile: "6.png", difficulty: "hard", points: 5, correctAnswer: 3 },  // Answer: C
-  { id: "q2", imageFile: "7.png", difficulty: "hard", points: 5, correctAnswer: 3 },  // Answer: C
-  { id: "q3", imageFile: "8.png", difficulty: "hard", points: 5, correctAnswer: 2 },  // Answer: B
-  { id: "q4", imageFile: "9.png", difficulty: "hard", points: 5, correctAnswer: 3 },  // Answer: C
-  { id: "q5", imageFile: "10.png", difficulty: "hard", points: 5, correctAnswer: 3 }, // Answer: C
-  { id: "q6", imageFile: "11.png", difficulty: "hard", points: 5, correctAnswer: 2 }, // Answer: B
+  // ==========================================
+  // HARD QUESTIONS (Red border - 5 points)
+  // ==========================================
+  {
+    id: "q1",
+    imageFile: "6.png",
+    difficulty: "hard",
+    points: 5,
+    correctAnswer: 3, // C
+    answers: ["4", "5", "6", "7"]
+  },
+  {
+    id: "q2",
+    imageFile: "7.png",
+    difficulty: "hard",
+    points: 5,
+    correctAnswer: 3, // C
+    answers: ["+1", "+2", "+3", "+4"]
+  },
+  {
+    id: "q3",
+    imageFile: "8.png",
+    difficulty: "hard",
+    points: 5,
+    correctAnswer: 2, // B
+    answers: ["+1", "+2", "+3", "+4"]
+  },
+  {
+    id: "q4",
+    imageFile: "9.png",
+    difficulty: "hard",
+    points: 5,
+    correctAnswer: 3, // C
+    answers: ["+1", "+2", "+3", "+4"]
+  },
+  {
+    id: "q5",
+    imageFile: "10.png",
+    difficulty: "hard",
+    points: 5,
+    correctAnswer: 3, // C
+    answers: [
+      "Tetraammoniadiwater chromium (III) ion",
+      "Tetraammoniadiaquachromate (III) ion",
+      "Tetraammoniadi aquachromium (III) ion",
+      "Tetraammoniediaquachromate (III) ion"
+    ]
+  },
+  {
+    id: "q6",
+    imageFile: "11.png",
+    difficulty: "hard",
+    points: 5,
+    correctAnswer: 2, // B
+    answers: ["2", "4", "6", "8"]
+  },
 
-  // MEDIUM (yellow background) - 3 points each
-  { id: "q7", imageFile: "12.png", difficulty: "medium", points: 3, correctAnswer: 2 }, // Answer: B
-  { id: "q8", imageFile: "13.png", difficulty: "medium", points: 3, correctAnswer: 1 }, // Answer: A
-  { id: "q9", imageFile: "14.png", difficulty: "medium", points: 3, correctAnswer: 1 }, // Answer: A
-  { id: "q10", imageFile: "15.png", difficulty: "medium", points: 3, correctAnswer: 2 }, // Answer: B
-  { id: "q11", imageFile: "16.png", difficulty: "medium", points: 3, correctAnswer: 3 }, // Answer: C
-  { id: "q12", imageFile: "17.png", difficulty: "medium", points: 3, correctAnswer: 3 }, // Answer: C
+  // ==========================================
+  // MEDIUM QUESTIONS (Yellow border - 3 points)
+  // ==========================================
+  {
+    id: "q7",
+    imageFile: "12.png",
+    difficulty: "medium",
+    points: 3,
+    correctAnswer: 2, // B
+    answers: [
+      "Donates one pair of electrons to a metal ion",
+      "Forms a ring structure with the metal ion",
+      "Bonds with metal ions through hydrogen bonds",
+      "Releases electrons to become positively charged"
+    ]
+  },
+  {
+    id: "q8",
+    imageFile: "13.png",
+    difficulty: "medium",
+    points: 3,
+    correctAnswer: 1, // A
+    answers: ["K⁺", "Co³⁺", "NH₃", "Br⁻"]
+  },
+  {
+    id: "q9",
+    imageFile: "14.png",
+    difficulty: "medium",
+    points: 3,
+    correctAnswer: 1, // A
+    answers: ["4", "5", "6", "7"]
+  },
+  {
+    id: "q10",
+    imageFile: "15.png",
+    difficulty: "medium",
+    points: 3,
+    correctAnswer: 2, // B
+    answers: [
+      "[Cu(H₂O)₄]²⁺",
+      "[Co(NH₃)₆]³⁺",
+      "[Fe(CN)₆]⁴⁻",
+      "[PtCl₄]²⁻"
+    ]
+  },
+  {
+    id: "q11",
+    imageFile: "16.png",
+    difficulty: "medium",
+    points: 3,
+    correctAnswer: 3, // C
+    answers: [
+      "Cyanide (CN⁻)",
+      "Ammonia (NH₃)",
+      "Ethylenediamine (en)",
+      "Water (H₂O)"
+    ]
+  },
+  {
+    id: "q12",
+    imageFile: "17.png",
+    difficulty: "medium",
+    points: 3,
+    correctAnswer: 3, // C
+    answers: [
+      "They can only form monodentate complexes with metal ions.",
+      "They possess four donor atoms capable of coordinating to a metal ion.",
+      "They are known for their ability to form stable chelate complexes with metal ions.",
+      "They exhibit z-donor properties, facilitating the stabilization of metal complexes."
+    ]
+  },
 
-  // EASY (green background) - 2 points each
-  { id: "q13", imageFile: "18.png", difficulty: "easy", points: 2, correctAnswer: 3 }, // Answer: C
-  { id: "q14", imageFile: "19.png", difficulty: "easy", points: 2, correctAnswer: 3 }, // Answer: C
-  { id: "q15", imageFile: "20.png", difficulty: "easy", points: 2, correctAnswer: 3 }, // Answer: C
-  { id: "q16", imageFile: "21.png", difficulty: "easy", points: 2, correctAnswer: 4 }, // Answer: D
-  { id: "q17", imageFile: "22.png", difficulty: "easy", points: 2, correctAnswer: 2 }, // Answer: B
-  { id: "q18", imageFile: "23.png", difficulty: "easy", points: 2, correctAnswer: 2 }  // Answer: B
+  // ==========================================
+  // EASY QUESTIONS (Green border - 2 points)
+  // ==========================================
+  {
+    id: "q13",
+    imageFile: "18.png",
+    difficulty: "easy",
+    points: 2,
+    correctAnswer: 3, // C
+    answers: ["Square Planar", "Tetrahedral", "Octahedral", "Linear"]
+  },
+  {
+    id: "q14",
+    imageFile: "19.png",
+    difficulty: "easy",
+    points: 2,
+    correctAnswer: 3, // C
+    answers: ["CH₃COO⁻", "CO₃²⁻", "C₂O₄²⁻", "S₂O₃²⁻"]
+  },
+  {
+    id: "q15",
+    imageFile: "20.png",
+    difficulty: "easy",
+    points: 2,
+    correctAnswer: 3, // C
+    answers: ["NH₃", "H₂O", "C₂O₄²⁻", "Cl⁻"]
+  },
+  {
+    id: "q16",
+    imageFile: "21.png",
+    difficulty: "easy",
+    points: 2,
+    correctAnswer: 4, // D
+    answers: [
+      "Cationic complex",
+      "Anionic complex",
+      "Heterobimetallic complex",
+      "Homobimetallic complex"
+    ]
+  },
+  {
+    id: "q17",
+    imageFile: "22.png",
+    difficulty: "easy",
+    points: 2,
+    correctAnswer: 2, // B
+    answers: ["2", "4", "6", "8"]
+  },
+  {
+    id: "q18",
+    imageFile: "23.png",
+    difficulty: "easy",
+    points: 2,
+    correctAnswer: 2, // B
+    answers: ["I only", "I and II only", "I, II, and III"]
+  }
 ];
 
 // Fate cards
@@ -172,6 +334,7 @@ function initGameMechanics() {
     getCurrentPlayer: () => gameState.currentPlayer,
     awardPoints: awardQuestionPoints,
     getPlayerPoints: (playerId) => gameState.playerPoints[playerId],
+    getGlobalUncollectedLigands,
     testTile: (playerId, tileType) => {
       if (tileType === "ligand") collectLigand(playerId);
       else if (tileType === "question") showQuestion(playerId);
@@ -184,6 +347,16 @@ function initGameMechanics() {
   console.log("  window.GameMechanics.setCurrentPlayer(2) - Change turn to player 2");
   console.log("  window.GameMechanics.getCurrentPlayer() - Check whose turn it is");
   console.log("  window.GameMechanics.getPlayerPoints(1) - Get player 1 points");
+}
+
+/**
+ * Get ligands that haven't been collected by ANY player yet
+ * @returns {Array} Array of uncollected ligand objects
+ */
+function getGlobalUncollectedLigands() {
+  return LIGANDS_DATA.filter(ligand =>
+    !gameState.collectedLigandIds.includes(ligand.id)
+  );
 }
 
 /**
@@ -494,12 +667,12 @@ function showQuestion(playerId) {
     </div>
   `;
 
-  // Options
+  // Options - using actual answers from the question data
   optionsContainer.innerHTML = `
-    <button class="answer-option w-full p-4 bg-gray-100 hover:bg-purple-100 rounded-lg text-left transition-colors border-2 border-transparent" data-answer="1">A. Answer Option 1</button>
-    <button class="answer-option w-full p-4 bg-gray-100 hover:bg-purple-100 rounded-lg text-left transition-colors border-2 border-transparent" data-answer="2">B. Answer Option 2</button>
-    <button class="answer-option w-full p-4 bg-gray-100 hover:bg-purple-100 rounded-lg text-left transition-colors border-2 border-transparent" data-answer="3">C. Answer Option 3</button>
-    <button class="answer-option w-full p-4 bg-gray-100 hover:bg-purple-100 rounded-lg text-left transition-colors border-2 border-transparent" data-answer="4">D. Answer Option 4</button>
+    <button class="answer-option w-full p-4 bg-gray-100 hover:bg-purple-100 rounded-lg text-left transition-colors border-2 border-transparent" data-answer="1">A. ${question.answers[0]}</button>
+    <button class="answer-option w-full p-4 bg-gray-100 hover:bg-purple-100 rounded-lg text-left transition-colors border-2 border-transparent" data-answer="2">B. ${question.answers[1]}</button>
+    <button class="answer-option w-full p-4 bg-gray-100 hover:bg-purple-100 rounded-lg text-left transition-colors border-2 border-transparent" data-answer="3">C. ${question.answers[2]}</button>
+    <button class="answer-option w-full p-4 bg-gray-100 hover:bg-purple-100 rounded-lg text-left transition-colors border-2 border-transparent" data-answer="4">D. ${question.answers[3]}</button>
   `;
 
   const options = optionsContainer.querySelectorAll(".answer-option");

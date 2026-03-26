@@ -89,4 +89,21 @@ const { countdownFrom = 3 } = Astro.props;
 
   console.log('🎮 [COUNTDOWN] Timeout ID:', removalTimeout);
   console.log('🎮 [COUNTDOWN] Waiting for 3100ms...');
+
+  // Additional debugging - check every 500ms if timeout is still pending
+  let checkCount = 0;
+  const checkInterval = setInterval(() => {
+    checkCount++;
+    console.log(`🎮 [COUNTDOWN] ⏱️ Check ${checkCount} (${checkCount * 500}ms elapsed) - Element still exists:`, !!document.getElementById("game-start-countdown"));
+
+    if (checkCount >= 8) { // After 4 seconds
+      clearInterval(checkInterval);
+      console.error('🎮 [COUNTDOWN] ❌ TIMEOUT NEVER FIRED! Forcing removal...');
+      const stuck = document.getElementById("game-start-countdown");
+      if (stuck) {
+        stuck.remove();
+        console.log('🎮 [COUNTDOWN] ✅ Forcefully removed stuck countdown');
+      }
+    }
+  }, 500);
 </script>

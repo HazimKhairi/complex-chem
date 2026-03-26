@@ -50,4 +50,16 @@
     }
     document.dispatchEvent(new Event("fate-continue"));
   });
+
+  // Listen for swap completion
+  document.addEventListener("swap-complete", () => {
+    console.log("🔄 [FATE] Swap complete - continuing game");
+    document.dispatchEvent(new Event("fate-continue"));
+  });
+
+  // Listen for swap cancellation
+  document.addEventListener("swap-cancelled", () => {
+    console.log("❌ [FATE] Swap cancelled - continuing game");
+    document.dispatchEvent(new Event("fate-continue"));
+  });
 </script>

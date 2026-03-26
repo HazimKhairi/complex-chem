@@ -84,8 +84,43 @@ window.FateEffectHandler = {
 
   // Placeholder methods (to be implemented in subsequent tasks)
   applySwapCard(playerId) {
-    console.log(`🔄 [FATE] Swap Card - Not yet implemented`);
-    this.showNotification("Swap Card feature coming soon!", 'info');
+    console.log(`🔄 [FATE] Swap Card - Player ${playerId}`);
+
+    // Check if current player has ligands
+    const currentPlayerLigands = gameState.playerLigands[playerId] || [];
+
+    if (currentPlayerLigands.length === 0) {
+      console.warn('⚠️ [FATE] Player has no ligands to swap');
+      this.showNotification("You have no ligands to swap!", 'info');
+      return;
+    }
+
+    // Get other players with their ligand counts
+    const otherPlayers = [];
+    for (let i = 1; i <= 4; i++) {
+      if (i !== playerId) {
+        const ligandCount = (gameState.playerLigands[i] || []).length;
+        otherPlayers.push({ id: i, ligandCount });
+      }
+    }
+
+    // Check if any other player has ligands
+    const hasPlayersWithLigands = otherPlayers.some(p => p.ligandCount > 0);
+
+    if (!hasPlayersWithLigands) {
+      console.warn('⚠️ [FATE] No other players have ligands to swap with');
+      this.showNotification("No players have ligands to swap with!", 'info');
+      return;
+    }
+
+    // Show swap modal
+    if (window.SwapLigandModal) {
+      window.SwapLigandModal.show(playerId);
+      window.SwapLigandModal.showPlayerSelection(otherPlayers);
+    } else {
+      console.error('❌ [FATE] SwapLigandModal not available');
+      this.showNotification("Error: Swap modal not available", 'error');
+    }
   },
 
   applyEurekaMoment(playerId) {
@@ -356,6 +391,210 @@ window.FateEffectHandler = {
     // Show notification
     this.showNotification(`⬇️ Moved backward ${actualMoved} spaces! (rolled ${diceRoll})`, 'error');
     console.log(`✅ [FATE] Destiny Dance complete - Player ${playerId} moved to position ${newPos}`);
+  },
+
+  /**
+   * Populate ligands for swap selection
+   * @param {number} currentPlayerId - Current player
+   * @param {number} targetPlayerId - Target player
+   */
+  populateSwapLigands(currentPlayerId, targetPlayerId) {
+    console.log(`🔄 [FATE] Populating swap ligands: Player ${currentPlayerId} ↔ Player ${targetPlayerId}`);
+
+    const currentLigands = gameState.playerLigands[currentPlayerId] || [];
+    const targetLigands = gameState.playerLigands[targetPlayerId] || [];
+
+    console.log(`   Current player ligands:`, currentLigands);
+    console.log(`   Target player ligands:`, targetLigands);
+
+    const currentContainer = document.getElementById('current-player-ligands');
+    const targetContainer = document.getElementById('target-player-ligands');
+    const instructionEl = document.getElementById('swap-instruction');
+    const targetLabel = document.getElementById('target-player-label');
+
+    if (!currentContainer || !targetContainer) {
+      console.error('❌ [FATE] Ligand containers not found');
+      return;
+    }
+
+    // Check for one-way donation scenario
+    const isOneWayDonation = targetLigands.length === 0;
+
+    if (isOneWayDonation) {
+      // One-way donation: current player gives to target player
+      instructionEl.textContent = `Player ${targetPlayerId} has no ligands. Choose one to give:`;
+      targetLabel.textContent = `Player ${targetPlayerId} will receive:`;
+      targetContainer.innerHTML = `<p class="text-gray-400 text-sm">No ligands yet</p>`;
+    } else {
+      // Normal swap: both select
+      instructionEl.textContent = `Click one ligand from each side to swap:`;
+      targetLabel.textContent = `Player ${targetPlayerId}'s Ligands:`;
+    }
+
+    // Populate current player's ligands
+    currentContainer.innerHTML = currentLigands.map(ligandId => {
+      const ligand = LIGANDS_DATA.find(l => l.id === ligandId);
+      return `
+        <img src="/cards/ligands/${ligandId}.png"
+             alt="${ligand?.name || ligandId}"
+             class="w-16 h-16 sm:w-20 sm:h-20 rounded shadow-sm ligand-selectable"
+             data-ligand-id="${ligandId}"
+             data-player-id="${currentPlayerId}"
+             title="${ligand?.name || ligandId}">
+      `;
+    }).join('');
+
+    // Populate target player's ligands (if not one-way)
+    if (!isOneWayDonation) {
+      targetContainer.innerHTML = targetLigands.map(ligandId => {
+        const ligand = LIGANDS_DATA.find(l => l.id === ligandId);
+        return `
+          <img src="/cards/ligands/${ligandId}.png"
+               alt="${ligand?.name || ligandId}"
+               class="w-16 h-16 sm:w-20 sm:h-20 rounded shadow-sm ligand-selectable"
+               data-ligand-id="${ligandId}"
+               data-player-id="${targetPlayerId}"
+               title="${ligand?.name || ligandId}">
+        `;
+      }).join('');
+    }
+
+    // Add click handlers
+    const selectableLigands = document.querySelectorAll('.ligand-selectable');
+    selectableLigands.forEach(img => {
+      img.addEventListener('click', () => {
+        const ligandId = img.dataset.ligandId;
+        const ownerId = parseInt(img.dataset.playerId);
+
+        // Remove previous selection from same player
+        const container = ownerId === currentPlayerId ? currentContainer : targetContainer;
+        container.querySelectorAll('img').forEach(i => i.classList.remove('selected'));
+
+        // Add selection
+        img.classList.add('selected');
+
+        // Update swap data
+        if (ownerId === currentPlayerId) {
+          window.SwapLigandModal.updateSelection({
+            currentPlayerSelectedLigand: ligandId,
+            isOneWayDonation
+          });
+        } else {
+          window.SwapLigandModal.updateSelection({
+            targetPlayerSelectedLigand: ligandId
+          });
+        }
+      });
+    });
+
+    console.log(`✅ [FATE] Swap ligands populated`);
+  },
+
+  /**
+   * Execute the ligand swap
+   * @param {Object} swapData - { currentPlayerId, targetPlayerId, currentPlayerSelectedLigand, targetPlayerSelectedLigand, isOneWayDonation }
+   */
+  executeSwap(swapData) {
+    console.log(`🔄 [FATE] Executing swap:`, swapData);
+
+    const { currentPlayerId, targetPlayerId, currentPlayerSelectedLigand, targetPlayerSelectedLigand, isOneWayDonation } = swapData;
+
+    // Validation
+    if (!currentPlayerSelectedLigand) {
+      console.error('❌ [FATE] No ligand selected from current player');
+      return;
+    }
+
+    if (!isOneWayDonation && !targetPlayerSelectedLigand) {
+      console.error('❌ [FATE] No ligand selected from target player');
+      return;
+    }
+
+    // Get ligand arrays
+    const currentLigands = gameState.playerLigands[currentPlayerId] || [];
+    const targetLigands = gameState.playerLigands[targetPlayerId] || [];
+
+    if (isOneWayDonation) {
+      // One-way donation: current gives to target
+      console.log(`   One-way donation: Player ${currentPlayerId} gives ${currentPlayerSelectedLigand} to Player ${targetPlayerId}`);
+
+      // Remove from current player
+      const currentIndex = currentLigands.indexOf(currentPlayerSelectedLigand);
+      if (currentIndex > -1) {
+        currentLigands.splice(currentIndex, 1);
+      }
+
+      // Add to target player
+      targetLigands.push(currentPlayerSelectedLigand);
+
+    } else {
+      // Normal swap: exchange ligands
+      console.log(`   Swapping: Player ${currentPlayerId}'s ${currentPlayerSelectedLigand} ↔ Player ${targetPlayerId}'s ${targetPlayerSelectedLigand}`);
+
+      // Remove from respective players
+      const currentIndex = currentLigands.indexOf(currentPlayerSelectedLigand);
+      const targetIndex = targetLigands.indexOf(targetPlayerSelectedLigand);
+
+      if (currentIndex > -1) {
+        currentLigands.splice(currentIndex, 1);
+      }
+      if (targetIndex > -1) {
+        targetLigands.splice(targetIndex, 1);
+      }
+
+      // Add to opposite players
+      currentLigands.push(targetPlayerSelectedLigand);
+      targetLigands.push(currentPlayerSelectedLigand);
+    }
+
+    // Update gameState
+    gameState.playerLigands[currentPlayerId] = currentLigands;
+    gameState.playerLigands[targetPlayerId] = targetLigands;
+
+    // Save to sessionStorage
+    sessionStorage.setItem('game-state', JSON.stringify(gameState));
+
+    // Update visual displays
+    this.updateLigandDisplay(currentPlayerId);
+    this.updateLigandDisplay(targetPlayerId);
+
+    // Show notification
+    if (isOneWayDonation) {
+      this.showNotification(`✅ Gave ligand to Player ${targetPlayerId}!`, 'success');
+    } else {
+      this.showNotification(`✅ Swapped ligands with Player ${targetPlayerId}!`, 'success');
+    }
+
+    console.log(`✅ [FATE] Swap complete`);
+
+    // Dispatch event to continue game
+    document.dispatchEvent(new Event("swap-complete"));
+  },
+
+  /**
+   * Update ligand display for a player
+   * @param {number} playerId - Player ID
+   */
+  updateLigandDisplay(playerId) {
+    const container = document.getElementById(`player-${playerId}-ligands`);
+    if (!container) {
+      console.warn(`⚠️ [FATE] Ligand container not found for Player ${playerId}`);
+      return;
+    }
+
+    const ligands = gameState.playerLigands[playerId] || [];
+
+    container.innerHTML = ligands.map(ligandId => {
+      const ligand = LIGANDS_DATA.find(l => l.id === ligandId);
+      return `
+        <div class="ligand-card inline-block">
+          <img src="/cards/ligands/${ligandId}.png"
+               alt="${ligand?.name || ligandId}"
+               class="w-12 h-12 sm:w-16 sm:h-16 rounded shadow-sm"
+               title="${ligand?.name || ligandId}">
+        </div>
+      `;
+    }).join('');
   }
 };
 

@@ -139,14 +139,9 @@ import TurnIndicator from "../components/game-board/turn-indicator.astro";
   pieceSelectionIntegrationScript.type = "application/javascript";
   document.head.appendChild(pieceSelectionIntegrationScript);
 
-  // TEMPORARY: Load click debugger to find what's blocking clicks
-  const clickDebuggerScript = document.createElement("script");
-  clickDebuggerScript.src = "scripts/click-debugger.js";
-  clickDebuggerScript.type = "application/javascript";
-  document.head.appendChild(clickDebuggerScript);
-
   // AUTO-SELECT SCRIPTS REMOVED - Players must click pieces manually
   // Removed: auto-move-piece.js and auto-piece-selector.js
+  // Removed: click-debugger.js (was causing performance issues)
 
   // Load Fate Effect Handler
   const fateEffectHandlerScript = document.createElement("script");

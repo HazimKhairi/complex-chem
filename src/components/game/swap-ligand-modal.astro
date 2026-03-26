@@ -1,0 +1,188 @@
+---
+---
+
+<div id="swap-ligand-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-3 sm:p-4">
+  <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-4 sm:p-6 text-center max-h-[90vh] overflow-y-auto">
+
+    <!-- Step 1: Player Selection -->
+    <div id="swap-step-1" class="swap-step">
+      <div class="mb-3 sm:mb-4">
+        <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-2">🔄 Swap Ligand</h2>
+        <p class="text-sm sm:text-base text-gray-600">Choose a player to swap ligands with:</p>
+      </div>
+
+      <div id="player-selection" class="space-y-2 mb-4">
+        <!-- Player buttons will be inserted here -->
+      </div>
+
+      <button id="cancel-swap-btn" class="w-full bg-gray-400 hover:bg-gray-500 text-white font-bold py-2.5 sm:py-3 rounded-lg transition-colors text-sm sm:text-base">
+        Cancel
+      </button>
+    </div>
+
+    <!-- Step 2: Ligand Selection -->
+    <div id="swap-step-2" class="swap-step hidden">
+      <div class="mb-3 sm:mb-4">
+        <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-2">🔄 Select Ligands</h2>
+        <p class="text-sm sm:text-base text-gray-600" id="swap-instruction">Select ligands to swap:</p>
+      </div>
+
+      <!-- Current Player's Ligands -->
+      <div class="mb-4">
+        <h3 class="font-bold mb-2 text-sm">Your Ligands:</h3>
+        <div id="current-player-ligands" class="flex flex-wrap gap-2 justify-center min-h-[80px] border-2 border-dashed border-gray-300 rounded-lg p-2">
+          <!-- Current player's ligands will be inserted here -->
+        </div>
+      </div>
+
+      <!-- Target Player's Ligands -->
+      <div class="mb-4">
+        <h3 class="font-bold mb-2 text-sm" id="target-player-label">Their Ligands:</h3>
+        <div id="target-player-ligands" class="flex flex-wrap gap-2 justify-center min-h-[80px] border-2 border-dashed border-gray-300 rounded-lg p-2">
+          <!-- Target player's ligands will be inserted here -->
+        </div>
+      </div>
+
+      <div class="flex gap-2">
+        <button id="back-to-selection-btn" class="flex-1 bg-gray-400 hover:bg-gray-500 text-white font-bold py-2.5 rounded-lg transition-colors text-sm sm:text-base">
+          ← Back
+        </button>
+        <button id="confirm-swap-btn" class="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-2.5 rounded-lg transition-colors text-sm sm:text-base" disabled>
+          Confirm Swap
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const swapModal = document.getElementById("swap-ligand-modal");
+  const step1 = document.getElementById("swap-step-1");
+  const step2 = document.getElementById("swap-step-2");
+  const cancelBtn = document.getElementById("cancel-swap-btn");
+  const backBtn = document.getElementById("back-to-selection-btn");
+  const confirmBtn = document.getElementById("confirm-swap-btn");
+
+  let currentSwapData = {
+    currentPlayerId: null,
+    targetPlayerId: null,
+    currentPlayerSelectedLigand: null,
+    targetPlayerSelectedLigand: null
+  };
+
+  // Cancel swap
+  cancelBtn?.addEventListener("click", () => {
+    closeSwapModal();
+    // Resume game (dispatch event to continue from fate modal)
+    document.dispatchEvent(new Event("swap-cancelled"));
+  });
+
+  // Back to player selection
+  backBtn?.addEventListener("click", () => {
+    step2?.classList.add("hidden");
+    step1?.classList.remove("hidden");
+    currentSwapData.targetPlayerId = null;
+    currentSwapData.currentPlayerSelectedLigand = null;
+    currentSwapData.targetPlayerSelectedLigand = null;
+  });
+
+  // Confirm swap
+  confirmBtn?.addEventListener("click", () => {
+    if (window.FateEffectHandler) {
+      window.FateEffectHandler.executeSwap(currentSwapData);
+    }
+    closeSwapModal();
+  });
+
+  function closeSwapModal() {
+    if (swapModal) {
+      swapModal.classList.add("hidden");
+      swapModal.classList.remove("flex");
+    }
+    // Reset to step 1
+    step2?.classList.add("hidden");
+    step1?.classList.remove("hidden");
+    currentSwapData = {
+      currentPlayerId: null,
+      targetPlayerId: null,
+      currentPlayerSelectedLigand: null,
+      targetPlayerSelectedLigand: null
+    };
+  }
+
+  // Expose modal controls
+  window.SwapLigandModal = {
+    show: (currentPlayerId) => {
+      currentSwapData.currentPlayerId = currentPlayerId;
+      swapModal?.classList.remove("hidden");
+      swapModal?.classList.add("flex");
+    },
+    showPlayerSelection: (players) => {
+      const container = document.getElementById("player-selection");
+      if (!container) return;
+
+      container.innerHTML = players.map(p => `
+        <button class="player-select-btn w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 rounded-lg transition-colors"
+                data-player-id="${p.id}">
+          Player ${p.id} (${p.ligandCount} ligands)
+        </button>
+      `).join('');
+
+      // Add click handlers
+      container.querySelectorAll('.player-select-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const targetId = parseInt(btn.dataset.playerId);
+          window.SwapLigandModal.showLigandSelection(targetId);
+        });
+      });
+    },
+    showLigandSelection: (targetPlayerId) => {
+      currentSwapData.targetPlayerId = targetPlayerId;
+      step1?.classList.add("hidden");
+      step2?.classList.remove("hidden");
+
+      // Populate ligands (will be done by FateEffectHandler)
+      if (window.FateEffectHandler) {
+        window.FateEffectHandler.populateSwapLigands(currentSwapData.currentPlayerId, targetPlayerId);
+      }
+    },
+    updateSelection: (selectedData) => {
+      currentSwapData = { ...currentSwapData, ...selectedData };
+
+      // Enable confirm button only if both selected (or one-way donation scenario)
+      const canConfirm = currentSwapData.currentPlayerSelectedLigand &&
+                         (currentSwapData.targetPlayerSelectedLigand || selectedData.isOneWayDonation);
+      if (confirmBtn) {
+        confirmBtn.disabled = !canConfirm;
+      }
+    },
+    close: closeSwapModal
+  };
+
+  console.log('✅ Swap Ligand Modal loaded');
+</script>
+
+<style>
+  .swap-step {
+    transition: opacity 0.3s ease;
+  }
+
+  #current-player-ligands img,
+  #target-player-ligands img {
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  #current-player-ligands img:hover,
+  #target-player-ligands img:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  #current-player-ligands img.selected,
+  #target-player-ligands img.selected {
+    border: 3px solid #10b981;
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.5);
+  }
+</style>

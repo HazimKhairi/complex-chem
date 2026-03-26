@@ -152,8 +152,32 @@ window.FateEffectHandler = {
   },
 
   applySecondChance(playerId) {
-    console.log(`🎲 [FATE] Second Chance - Not yet implemented`);
-    this.showNotification("Second Chance feature coming soon!", 'info');
+    console.log(`🎲 [FATE] Second Chance - Player ${playerId}`);
+
+    // Unlock dice to allow immediate extra roll
+    if (typeof window.d !== 'undefined') {
+      window.d = 0; // 0 = unlocked
+      console.log('   Dice unlocked (d = 0)');
+    } else {
+      console.warn('⚠️ [FATE] Dice lock variable (d) not found');
+    }
+
+    // Update turn indicator to show "Roll Again!"
+    if (window.TurnIndicator) {
+      window.TurnIndicator.update("roll-again");
+    }
+
+    // Alternative: Update turn message directly
+    const turnMsg = document.getElementById('turn-indicator-message');
+    if (turnMsg) {
+      turnMsg.innerHTML = `
+        <span class="text-lg font-bold">🎲 You get an extra roll!</span>
+      `;
+    }
+
+    // Show notification
+    this.showNotification("🎲 You get an extra roll!", 'success');
+    console.log(`✅ [FATE] Second Chance complete - Player ${playerId} can roll again`);
   },
 
   applyDestinyDance(playerId) {

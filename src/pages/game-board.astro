@@ -92,68 +92,6 @@ import TurnIndicator from "../components/game-board/turn-indicator.astro";
   script.type = "application/javascript";
   document.head.appendChild(script);
 
-  // Load game mechanics script with beautiful cards
-  const mechanicsScript = document.createElement("script");
-  mechanicsScript.src = "scripts/game-mechanics-cards.js";
-  mechanicsScript.type = "application/javascript";
-  document.head.appendChild(mechanicsScript);
-
-  // Load game orchestrator and supporting systems
-  // These coordinate all game mechanics together
-  const tileDetectorScript = document.createElement("script");
-  tileDetectorScript.src = "scripts/tile-detector.js";
-  tileDetectorScript.type = "application/javascript";
-  document.head.appendChild(tileDetectorScript);
-
-  const turnManagerScript = document.createElement("script");
-  turnManagerScript.src = "scripts/turn-manager.js";
-  turnManagerScript.type = "application/javascript";
-  document.head.appendChild(turnManagerScript);
-
-  const winCheckerScript = document.createElement("script");
-  winCheckerScript.src = "scripts/win-checker.js";
-  winCheckerScript.type = "application/javascript";
-  document.head.appendChild(winCheckerScript);
-
-  // Load orchestrator LAST (after all dependencies)
-  const orchestratorScript = document.createElement("script");
-  orchestratorScript.src = "scripts/game-orchestrator.js";
-  orchestratorScript.type = "application/javascript";
-  document.head.appendChild(orchestratorScript);
-
-  // Load turn indicator integration (after orchestrator)
-  const turnIndicatorScript = document.createElement("script");
-  turnIndicatorScript.src = "scripts/turn-indicator-integration.js";
-  turnIndicatorScript.type = "application/javascript";
-  document.head.appendChild(turnIndicatorScript);
-
-  // Load piece selection integration (shows which pieces can be selected)
-  const pieceSelectionIntegrationScript = document.createElement("script");
-  pieceSelectionIntegrationScript.src = "scripts/piece-selection-integration.js";
-  pieceSelectionIntegrationScript.type = "application/javascript";
-  document.head.appendChild(pieceSelectionIntegrationScript);
-
-  // AUTO-SELECT SCRIPTS REMOVED - Players must click pieces manually
-  // Removed: auto-move-piece.js and auto-piece-selector.js
-
-  // Load Fate Effect Handler
-  const fateEffectHandlerScript = document.createElement("script");
-  fateEffectHandlerScript.src = "scripts/fate-effect-handler.js";
-  fateEffectHandlerScript.type = "application/javascript";
-  document.head.appendChild(fateEffectHandlerScript);
-
-  // SAFETY: Force remove countdown after 5 seconds (backup in case it didn't remove itself)
-  setTimeout(() => {
-    const countdown = document.getElementById("game-start-countdown");
-    if (countdown) {
-      console.warn("⚠️ [SAFETY] Countdown still exists after 5s! Force removing...");
-      countdown.style.display = "none";
-      countdown.style.pointerEvents = "none";
-      countdown.remove();
-      console.log("✅ [SAFETY] Countdown removed");
-    }
-  }, 5000);
-
   // Optimize game size for screen - AGGRESSIVE scaling
   function optimizeGameSize() {
     const container = document.getElementById("game-container");

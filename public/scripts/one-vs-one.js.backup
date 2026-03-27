@@ -38,33 +38,54 @@ lastPosGH2 = 1;
 lastPosGH3 = 1;
 lastPosGH4 = 1;
 
-//Code for second horse combination of onevs2
-$(`#player-${sessionStorage.getItem("one-vs-two-player-1")}-name`).text(
-  sessionStorage.getItem("one-vs-two-player-1-name")
-);
-$(`#player-${sessionStorage.getItem("one-vs-two-player-2")}-name`).text(
-  sessionStorage.getItem("one-vs-two-player-2-name")
-);
-$(`#player-${sessionStorage.getItem("one-vs-two-player-3")}-name`).text(
-  sessionStorage.getItem("one-vs-two-player-3-name")
-);
+//Code for second horse combination of onevs1
+if (sessionStorage.getItem("one-vs-one-horse-1") == "blue") {
+  x = 2;
+  $("#player-2-name").text(sessionStorage.getItem("one-vs-one-player-1-name"));
+  $("#player-3-name").text(sessionStorage.getItem("one-vs-one-player-2-name"));
+} else {
+  $("#player-1-name").text(sessionStorage.getItem("one-vs-one-player-1-name"));
+  $("#player-4-name").text(sessionStorage.getItem("one-vs-one-player-2-name"));
+}
 
 //Code for deleting content of extra players
 
-//Code for assigning dice to first player of 1v3 mode
-x = sessionStorage.getItem("one-vs-two-player-1");
+if (sessionStorage.getItem("one-vs-one-horse-1") == "red") {
+  // Code for removing extra players dice and image
+  $("#player-2-area").css("opacity", 0);
+  $("#player-3-area").css("opacity", 0);
 
-// Code for removing extra players dice and image
-$(`#player-${sessionStorage.getItem("one-vs-two-not-selected-player")}-area`).css("opacity", 0);
+  //Code for removing extra player horses & labels
+  $("#player-2 > table img").remove();
+  $("#player-3 > table img").remove();
+  $("#player-2 > p").css("opacity", 0);
+  $("#player-3 > p").css("opacity", 0);
 
-//Code for removing extra player horses & labels
-$(`#player-${sessionStorage.getItem("one-vs-two-not-selected-player")} > table img`).remove();
-$(`#player-${sessionStorage.getItem("one-vs-two-not-selected-player")} > p`).css("opacity", 0);
+  //Code for changing default player labels
+  $("#player-1 > p").text("Player 1");
+  $("#player-4 > p").text("Player 2");
 
-//Code for changing default player labels
-$(`#player-${sessionStorage.getItem("one-vs-two-player-1")} > p`).text("Player 1");
-$(`#player-${sessionStorage.getItem("one-vs-two-player-2")} > p`).text("Player 2");
-$(`#player-${sessionStorage.getItem("one-vs-two-player-3")} > p`).text("Player 3");
+  Player1Name = sessionStorage.getItem("one-vs-one-player-1-name");
+  Player4Name = sessionStorage.getItem("one-vs-one-player-2-name");
+} else if (sessionStorage.getItem("one-vs-one-horse-1") == "blue") {
+  //Code for removing extra players dice and image
+  $("#player-1-area").css("opacity", 0);
+  $("#player-4-area").css("opacity", 0);
+  $(".player-area > div:nth-of-type(5)").css("opacity", 0);
+
+  //Code for removing extra player horses & labels
+  $("#player-1 > table img").remove();
+  $("#player-4 > table img").remove();
+  $("#player-1 > p").css("opacity", 0);
+  $("#player-4 > p").css("opacity", 0);
+
+  //Code for changing default player labels
+  $("#player-2 > p").text("Player 1");
+  $("#player-3 > p").text("Player 2");
+
+  Player2Name = sessionStorage.getItem("one-vs-one-player-1-name");
+  Player3Name = sessionStorage.getItem("one-vs-one-player-2-name");
+}
 
 //Code for playing game sound on game start
 document.addEventListener("game-countdown-complete", function () {
@@ -72,11 +93,8 @@ document.addEventListener("game-countdown-complete", function () {
   $("#player-" + x + "-dice").attr("src", "dice/dice-rest.png");
 
   //Code for computer movement
-  computer1Dice = $(`#player-${x}-dice`);
-  if (
-    x == sessionStorage.getItem("one-vs-two-computer-player-1") ||
-    (x == sessionStorage.getItem("one-vs-two-computer-player-2") && sessionStorage.getItem("computer") != null)
-  ) {
+  computer1Dice = $(`#player-${sessionStorage.getItem("one-vs-one-computer-player")}-dice`);
+  if (x == sessionStorage.getItem("one-vs-one-computer-player") && sessionStorage.getItem("computer") != null) {
     setTimeout(() => {
       computer1Dice[0].click();
     }, 250);
@@ -96,55 +114,35 @@ function transferDice() {
 
 //Code will transfer the dice and will set the arrow for dice
 function transferDiceCode() {
-  if (x <= 4) {
-    $("#" + playerDice).attr("src", "dice/dice-rest.png");
-    $("#player-" + x + "-dice-arrow").attr("src", "");
-    x++;
+  $("#" + playerDice).attr("src", "dice/dice-rest.png");
+  $("#player-" + x + "-dice-arrow").attr("src", "");
+  x++;
 
-    if (x == 5 && sessionStorage.getItem("one-vs-two-player-3") == "1") {
-      x = 1;
-    } else if (x == 5 && sessionStorage.getItem("one-vs-two-player-3") == "2") {
-      x = 2;
-    } else if (x == 5) {
-      x = sessionStorage.getItem("one-vs-two-player-1");
-    }
+  //Code for transferring dice between two players
+  if (x == 2 && sessionStorage.getItem("one-vs-one-horse-1") == "red") {
+    x = 4;
+  } else if (x == 5 && sessionStorage.getItem("one-vs-one-horse-1") == "red") {
+    x = 1;
+  } else if (x == 1 && sessionStorage.getItem("one-vs-one-horse-1") == "blue") {
+    x = 2;
+  } else if (x == 4 && sessionStorage.getItem("one-vs-one-horse-1") == "blue") {
+    x = 2;
+  }
 
-    identifyPlayerInfo();
+  identifyPlayerInfo();
 
-    if ($(`td${identifyPlayer}57`).find("img").length == 4) {
-      x++;
-      identifyPlayerInfo();
-    }
+  $("#player-" + x + "-dice").attr("src", "dice/dice-rest.png");
+  $("#player-" + x + "-dice-arrow").attr("src", "gifs/arrow1.gif");
 
-    //Code for transferring dice between three players
-    if (x == 1 && sessionStorage.getItem("one-vs-two-not-selected-player") == 1) {
-      x = 2;
-    } else if (x == 2 && sessionStorage.getItem("one-vs-two-not-selected-player") == 2) {
-      x = 3;
-    } else if (x == 3 && sessionStorage.getItem("one-vs-two-not-selected-player") == 3) {
-      x = 4;
-    } else if (x == 4 && sessionStorage.getItem("one-vs-two-not-selected-player") == 4) {
-      x = 1;
-    }
+  y = 1; //Y represents number of six in a sequence
+  d = 0; //D is used to restrict one dice roll at a time
+  z = 1; //Z is used to track the number of times a user can move a token when diceNo is 6
 
-    identifyPlayerInfo();
-
-    $("#player-" + x + "-dice").attr("src", "dice/dice-rest.png");
-    $("#player-" + x + "-dice-arrow").attr("src", "gifs/arrow1.gif");
-    y = 1; //Y represents number of six in a sequence
-    d = 0; //D is used to restrict one dice roll at a time
-    z = 1; //Z is used to track the number of times a user can move a token when diceNo is 6
-
-    //Code for computer movement
-    computer1Dice = $(`#player-${x}-dice`);
-    if (
-      x == sessionStorage.getItem("one-vs-two-computer-player-1") ||
-      (x == sessionStorage.getItem("one-vs-two-computer-player-2") && sessionStorage.getItem("computer") != null)
-    ) {
-      setTimeout(() => {
-        computer1Dice[0].click();
-      }, 250);
-    }
+  //Code for computer movement
+  if (x == sessionStorage.getItem("one-vs-one-computer-player") && sessionStorage.getItem("computer") != null) {
+    setTimeout(() => {
+      computer1Dice[0].click();
+    }, 250);
   }
 
   //Code for merging 5 horses of any player in one cell
@@ -205,12 +203,10 @@ function identifyPlayerInfo() {
 }
 
 // code for providing a random dice number and base for executing other functions
-
 $(`.player-dice`).click(function () {
   if (d == 0) {
     d++;
     playerDice = $(this).attr("id"); //Player dice id of current player
-
     randomNumbers = [6, 1, 2, 3, 4, 5, 6];
     // randomDice = 6;
     randomDice = randomNumbers[Math.floor(Math.random() * 7)];
@@ -323,13 +319,10 @@ $(`.player-dice`).click(function () {
 
 //Function for highlighting horses on path
 function highlightHorses() {
-  if (
-    x != sessionStorage.getItem("one-vs-two-computer-player-1") ||
-    x != sessionStorage.getItem("one-vs-two-computer-player-2")
-  ) {
+  if (x != sessionStorage.getItem("one-vs-one-computer-player")) {
     if (
       randomDice <= 57 - window[`lastPos${identifyPlayer2}H1`] &&
-      $(`#player-${x}`).find("img").length < 1 &&
+      $(`#player-${x} > table`).find("img").length < 4 &&
       playerDice == `player-${x}-dice`
     ) {
       $(`.path img${identifyPlayer}h1`).fadeOut(250).fadeIn(250).fadeOut(250).fadeIn(250);
@@ -339,7 +332,7 @@ function highlightHorses() {
     }
     if (
       randomDice <= 57 - window[`lastPos${identifyPlayer2}H2`] &&
-      $(`#player-${x}`).find("img").length < 1 &&
+      $(`#player-${x} > table`).find("img").length < 4 &&
       playerDice == `player-${x}-dice`
     ) {
       $(`.path img${identifyPlayer}h2`).fadeOut(250).fadeIn(250).fadeOut(250).fadeIn(250);
@@ -349,7 +342,7 @@ function highlightHorses() {
     }
     if (
       randomDice <= 57 - window[`lastPos${identifyPlayer2}H3`] &&
-      $(`#player-${x}`).find("img").length < 1 &&
+      $(`#player-${x} > table`).find("img").length < 4 &&
       playerDice == `player-${x}-dice`
     ) {
       $(`.path img${identifyPlayer}h3`).fadeOut(250).fadeIn(250).fadeOut(250).fadeIn(250);
@@ -359,7 +352,7 @@ function highlightHorses() {
     }
     if (
       randomDice <= 57 - window[`lastPos${identifyPlayer2}H4`] &&
-      $(`#player-${x}`).find("img").length < 1 &&
+      $(`#player-${x} > table`).find("img").length < 4 &&
       playerDice == `player-${x}-dice`
     ) {
       $(`.path img${identifyPlayer}h4`).fadeOut(250).fadeIn(250).fadeOut(250).fadeIn(250);
@@ -417,6 +410,7 @@ function moveHorse(event) {
     if (selectedPathCell.length == 12) {
       selectedPathCellClass = selectedPathCell[2].classList[0];
       selectedPathCellChild1 = $("." + selectedPathCellClass + "> span > span:first-child").children();
+
       selectedPathCellChild2 = $("." + selectedPathCellClass + "> span > span:nth-child(2)").children();
 
       if (selectedPathCellChild1[0] != null) {
@@ -557,11 +551,7 @@ function moveHorse(event) {
           }, 200);
 
           //Code for computer movement
-          computer1Dice = $(`#player-${x}-dice`);
-          if (
-            x == sessionStorage.getItem("one-vs-two-computer-player-1") ||
-            (x == sessionStorage.getItem("one-vs-two-computer-player-2") && sessionStorage.getItem("computer") != null)
-          ) {
+          if (x == sessionStorage.getItem("one-vs-one-computer-player") && sessionStorage.getItem("computer") != null) {
             setTimeout(() => {
               computer1Dice[0].click();
             }, 250);
@@ -582,11 +572,9 @@ function moveHorse(event) {
             d = 0; //D is used to restrict one dice roll at a time
 
             //Code for computer movement
-            computer1Dice = $(`#player-${x}-dice`);
             if (
-              x == sessionStorage.getItem("one-vs-two-computer-player-1") ||
-              (x == sessionStorage.getItem("one-vs-two-computer-player-2") &&
-                sessionStorage.getItem("computer") != null)
+              x == sessionStorage.getItem("one-vs-one-computer-player") &&
+              sessionStorage.getItem("computer") != null
             ) {
               setTimeout(() => {
                 computer1Dice[0].click();
@@ -674,11 +662,7 @@ function moveHorse(event) {
           findWinner(); //Function for finding a winner
 
           //Code for computer movement
-          computer1Dice = $(`#player-${x}-dice`);
-          if (
-            x == sessionStorage.getItem("one-vs-two-computer-player-1") ||
-            (x == sessionStorage.getItem("one-vs-two-computer-player-2") && sessionStorage.getItem("computer") != null)
-          ) {
+          if (x == sessionStorage.getItem("one-vs-one-computer-player") && sessionStorage.getItem("computer") != null) {
             setTimeout(() => {
               computer1Dice[0].click();
             }, 250);
@@ -690,11 +674,7 @@ function moveHorse(event) {
           d = 0; //D is used to restrict one dice roll at a time
 
           //Code for computer movement
-          computer1Dice = $(`#player-${x}-dice`);
-          if (
-            x == sessionStorage.getItem("one-vs-two-computer-player-1") ||
-            (x == sessionStorage.getItem("one-vs-two-computer-player-2") && sessionStorage.getItem("computer") != null)
-          ) {
+          if (x == sessionStorage.getItem("one-vs-one-computer-player") && sessionStorage.getItem("computer") != null) {
             setTimeout(() => {
               computer1Dice[0].click();
             }, 250);
@@ -711,12 +691,12 @@ function autoMoveHorse() {
   //Condition for only one horse on path
   if (playerHorses.length == 1) {
     if (
-      ($(`#player-${x}`).find("img").length == 3 && randomDice != 6) ||
+      ($(`#player-${x} > table`).find("img").length == 3 && randomDice != 6) ||
       $(`${identifyPlayer}57`).find("img").length == 3 ||
-      ($(`#player-${x}`).find("img").length == 1 &&
+      ($(`#player-${x} > table`).find("img").length == 1 &&
         randomDice != 6 &&
         $(`${identifyPlayer}57`).find("img").length == 2) ||
-      ($(`#player-${x}`).find("img").length == 2 &&
+      ($(`#player-${x} > table`).find("img").length == 2 &&
         randomDice != 6 &&
         $(`${identifyPlayer}57`).find("img").length == 1)
     ) {
@@ -731,9 +711,9 @@ function autoMoveHorse() {
     randomDice > 57 - window[`lastPos${playerHorses[0].classList[0].toUpperCase()}`]
   ) {
     if (
-      ($(`#player-${x}`).find("img").length == 2 && randomDice != 6) ||
+      ($(`#player-${x} > table`).find("img").length == 2 && randomDice != 6) ||
       $(`${identifyPlayer}57`).find("img").length == 2 ||
-      ($(`#player-${x}`).find("img").length == 1 &&
+      ($(`#player-${x} > table`).find("img").length == 1 &&
         randomDice != 6 &&
         $(`${identifyPlayer}57`).find("img").length == 1)
     ) {
@@ -746,9 +726,9 @@ function autoMoveHorse() {
     randomDice > 57 - window[`lastPos${playerHorses[1].classList[0].toUpperCase()}`]
   ) {
     if (
-      ($(`#player-${x}`).find("img").length == 2 && randomDice != 6) ||
+      ($(`#player-${x} > table`).find("img").length == 2 && randomDice != 6) ||
       $(`${identifyPlayer}57`).find("img").length == 2 ||
-      ($(`#player-${x}`).find("img").length == 1 &&
+      ($(`#player-${x} > table`).find("img").length == 1 &&
         randomDice != 6 &&
         $(`${identifyPlayer}57`).find("img").length == 1)
     ) {
@@ -764,7 +744,7 @@ function autoMoveHorse() {
     randomDice > 57 - window[`lastPos${playerHorses[1].classList[0].toUpperCase()}`]
   ) {
     if (
-      ($(`#player-${x}`).find("img").length == 1 && randomDice != 6) ||
+      ($(`#player-${x} > table`).find("img").length == 1 && randomDice != 6) ||
       $(`${identifyPlayer}57`).find("img").length == 1
     ) {
       a = 1;
@@ -777,7 +757,7 @@ function autoMoveHorse() {
     randomDice > 57 - window[`lastPos${playerHorses[2].classList[0].toUpperCase()}`]
   ) {
     if (
-      ($(`#player-${x}`).find("img").length == 1 && randomDice != 6) ||
+      ($(`#player-${x} > table`).find("img").length == 1 && randomDice != 6) ||
       $(`${identifyPlayer}57`).find("img").length == 1
     ) {
       a = 1;
@@ -790,7 +770,7 @@ function autoMoveHorse() {
     randomDice > 57 - window[`lastPos${playerHorses[2].classList[0].toUpperCase()}`]
   ) {
     if (
-      ($(`#player-${x}`).find("img").length == 1 && randomDice != 6) ||
+      ($(`#player-${x} > table`).find("img").length == 1 && randomDice != 6) ||
       $(`${identifyPlayer}57`).find("img").length == 1
     ) {
       a = 1;
@@ -834,7 +814,7 @@ function accurateMoveHorse() {
   //Code for transfering dice if there is no playable horse
 
   playerHorses = $(`.path td img.${identifyColor}`); //It provides a list of horses of current player available on the path
-  playerAvailHorses = $(`#player-${x}`).find("img").length; //No of horses available at current player default location
+  playerAvailHorses = $(`#player-${x} > table`).find("img").length; //No of horses available at current player default location
 
   autoMoveHorse(); //Function for automatic horse movement
 
@@ -940,11 +920,7 @@ function moveDice() {
         mergeHorses();
 
         //Code for computer movement
-        computer1Dice = $(`#player-${x}-dice`);
-        if (
-          x == sessionStorage.getItem("one-vs-two-computer-player-1") ||
-          (x == sessionStorage.getItem("one-vs-two-computer-player-2") && sessionStorage.getItem("computer") != null)
-        ) {
+        if (x == sessionStorage.getItem("one-vs-one-computer-player") && sessionStorage.getItem("computer") != null) {
           setTimeout(() => {
             computer1Dice[0].click();
           }, 250);
@@ -1105,27 +1081,29 @@ function unMergeHorses() {
 }
 
 //This function is used to mark player with all horse at home locations as winner
+$("#winners #winner-3").remove();
 $("#winners #winner-4").remove();
 
 function findWinner() {
-  gameParticipants = []; // Game participants excludes current player or player with dice
-  gameParticipants.push(sessionStorage.getItem("game-participants-1"));
-  gameParticipants.push(sessionStorage.getItem("game-participants-2"));
-  gameParticipants.push(sessionStorage.getItem("game-participants-3"));
+  if (identifyPlayer == ".r") {
+    gameParticipants = [".r57", ".g57"]; // Game participants excludes current player or player with dice
+  } else if (identifyPlayer == ".g") {
+    gameParticipants = [".g57", ".r57"];
+  } else if (identifyPlayer == ".y") {
+    gameParticipants = [".y57", ".b57"];
+  } else if (identifyPlayer == ".b") {
+    gameParticipants = [".b57", ".y57"];
+  }
 
   //Code for showing arrow on horse entry into home
-  if ($(`td${identifyPlayer}57`).find("img").length < 1) {
+  if ($(`td${identifyPlayer}57`).find("img").length < 4) {
     setTimeout(function () {
       $("#player-" + x + "-dice-arrow").attr("src", "gifs/arrow1.gif");
     }, 200);
   }
 
   //Code for declaring first winner
-  if (
-    $(`td${gameParticipants[0]}`).find("img").length != 4 &&
-    $(`td${gameParticipants[1]}`).find("img").length != 4 &&
-    $(`td${gameParticipants[2]}`).find("img").length != 4
-  ) {
+  if ($(`td${gameParticipants[1]}`).find("img").length != 4) {
     if ($(`td${identifyPlayer}57`).find("img").length == 4) {
       $("#player-" + x + " > table > tbody").css("opacity", "0");
       $("#player-" + x + " > table").css({
@@ -1135,59 +1113,33 @@ function findWinner() {
         "background-position": "center",
       });
 
-      firstWinner = $("#player-" + x + "-name").text();
-      xOfFirst = x;
-
-      //Transfers the dice after declaring the winner
-      setTimeout(transferDiceCode, 300);
-    }
-  }
-
-  //Code for declaring second winner
-  if (
-    ($(`td${gameParticipants[0]}`).find("img").length == 4 &&
-      $(`td${gameParticipants[1]}`).find("img").length != 4 &&
-      $(`td${gameParticipants[2]}`).find("img").length != 4) ||
-    ($(`td${gameParticipants[0]}`).find("img").length != 4 &&
-      $(`td${gameParticipants[1]}`).find("img").length == 4 &&
-      $(`td${gameParticipants[2]}`).find("img").length != 4) ||
-    ($(`td${gameParticipants[0]}`).find("img").length != 4 &&
-      $(`td${gameParticipants[1]}`).find("img").length != 4 &&
-      $(`td${gameParticipants[2]}`).find("img").length == 4)
-  ) {
-    if ($(`td${identifyPlayer}57`).find("img").length == 4) {
-      $("#player-" + x + " > table > tbody").css("opacity", "0");
-      $("#player-" + x + " > table").css({
-        "background-image": 'url("crowns/second-winner.png")',
-        "background-size": "75%",
-        "background-repeat": "no-repeat",
-        "background-position": "center",
-      });
-      secondWinner = $("#player-" + x + "-name").text();
-      xOfSecond = x;
-
-      transferDiceCode();
-      //Code for finding fourth winner name
-      if ($(`td${gameParticipants[0]}`).find("img").length != 4) {
-        xOfThird = sessionStorage.getItem("one-vs-two-player-1");
-        thirdWinner = $("#player-" + xOfThird + "-name").text();
-      } else if ($(`td${gameParticipants[1]}`).find("img").length != 4) {
-        xOfThird = sessionStorage.getItem("one-vs-two-player-2");
-        thirdWinner = $("#player-" + xOfThird + "-name").text();
-      } else if ($(`td${gameParticipants[2]}`).find("img").length != 4) {
-        xOfThird = sessionStorage.getItem("one-vs-two-player-3");
-        thirdWinner = $("#player-" + xOfThird + "-name").text();
+      if (x == 1) {
+        firstWinner = Player1Name;
+        secondWinner = Player4Name;
+        xOfFirst = x;
+        xOfSecond = 4;
+      } else if (x == 4) {
+        firstWinner = Player4Name;
+        secondWinner = Player1Name;
+        xOfFirst = x;
+        xOfSecond = 1;
+      } else if (x == 2) {
+        firstWinner = Player2Name;
+        secondWinner = Player3Name;
+        xOfFirst = x;
+        xOfSecond = 3;
+      } else if (x == 3) {
+        firstWinner = Player3Name;
+        secondWinner = Player2Name;
+        xOfFirst = x;
+        xOfSecond = 2;
       }
-
-      thirdWinner = $("#player-" + x + "-name").text();
-      xOfThird = x;
 
       setTimeout(function () {
         $("#winners").removeClass("hidden");
         //Code for updating player names in final congratulations message
         $(`#winner-1-name`).text(firstWinner);
         $(`#winner-2-name`).text(secondWinner);
-        $(`#winner-3-name`).text(thirdWinner);
       }, 500);
     }
   }
@@ -1198,15 +1150,12 @@ function fiveMergeCode() {
 
   resultLocation1 = undefined;
   resultLocation2 = undefined;
-  resultLocation3 = undefined;
 
   // Declare exchange horse variables to avoid ReferenceError
   let resultLocation1ExchH1 = undefined;
   let resultLocation1ExchH2 = undefined;
   let resultLocation2ExchH1 = undefined;
   let resultLocation2ExchH2 = undefined;
-  let resultLocation3ExchH1 = undefined;
-  let resultLocation3ExchH2 = undefined;
 
   for (let i = 1; i < 52; i++) {
     if (result == undefined) {
@@ -1220,10 +1169,6 @@ function fiveMergeCode() {
           resultLocation2 = i;
           resultLocation2ExchH1 = $(`td.r${resultLocation2} > span > span:nth-child(2) > img:nth-child(2)`)[0];
           resultLocation2ExchH2 = $(`td.r${resultLocation2} > span > span:nth-child(2) > img:nth-child(3)`)[0];
-        } else if (resultLocation3 == undefined) {
-          resultLocation3 = i;
-          resultLocation3ExchH1 = $(`td.r${resultLocation3} > span > span:nth-child(2) > img:nth-child(2)`)[0];
-          resultLocation3ExchH2 = $(`td.r${resultLocation3} > span > span:nth-child(2) > img:nth-child(3)`)[0];
         }
 
         result = undefined;
@@ -1245,10 +1190,6 @@ function fiveMergeCode() {
       mergeExchClass = ".r" + resultLocation2;
       mergeExchHorse1 = resultLocation2ExchH1;
       mergeExchHorse2 = resultLocation2ExchH2;
-    } else if (resultLocation3ExchH2.classList[1] == identifyColor) {
-      mergeExchClass = ".r" + resultLocation3;
-      mergeExchHorse1 = resultLocation3ExchH1;
-      mergeExchHorse2 = resultLocation3ExchH2;
     }
   }
 }
@@ -1288,13 +1229,13 @@ function computerHorse() {
     return;
   } else {
     lastClick = Date.now();
-    if (
-      x == sessionStorage.getItem("one-vs-two-computer-player-1") ||
-      (x == sessionStorage.getItem("one-vs-two-computer-player-2") && sessionStorage.getItem("computer") != null)
-    ) {
+    if (x == sessionStorage.getItem("one-vs-one-computer-player") && sessionStorage.getItem("computer") != null) {
       setTimeout(() => {
-        if ($(`#player-${x}`).find("img").length != 0 && randomDice == 6) {
-          computerHorsesAtDefault = $(`#player-${x} img`);
+        if (
+          $(`#player-${sessionStorage.getItem("one-vs-one-computer-player")} > table`).find("img").length != 0 &&
+          randomDice == 6
+        ) {
+          computerHorsesAtDefault = $(`#player-${sessionStorage.getItem("one-vs-one-computer-player")} > table img`);
 
           if (computerHorsesAtDefault.length == 1) {
             computerHorsesAtDefault[0].click();
@@ -1306,9 +1247,12 @@ function computerHorse() {
             computerHorsesAtDefault[Math.floor(Math.random() * 4)].click();
           }
 
-          computerHorsesAtDefault = $(`#player-${x} img`);
-        } else if ($(`#player-${x}`).find("img").length == 0 || randomDice != 6) {
-          computerHorsesOnPath = $(`.path td img.${identifyColor}`);
+          computerHorsesAtDefault = $(`#player-${sessionStorage.getItem("one-vs-one-computer-player")} > table img`);
+        } else if (
+          $(`#player-${sessionStorage.getItem("one-vs-one-computer-player")} > table`).find("img").length == 0 ||
+          randomDice != 6
+        ) {
+          computerHorsesOnPath = $(`.path td img.${sessionStorage.getItem("one-vs-one-computer-player-color")}`);
           if (computerHorsesOnPath.length == 2) {
             computerHorse1 = computerHorsesOnPath[0].classList[0].toUpperCase();
             computerHorse2 = computerHorsesOnPath[1].classList[0].toUpperCase();

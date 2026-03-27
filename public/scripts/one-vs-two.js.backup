@@ -329,7 +329,7 @@ function highlightHorses() {
   ) {
     if (
       randomDice <= 57 - window[`lastPos${identifyPlayer2}H1`] &&
-      $(`#player-${x}`).find("img").length < 1 &&
+      $(`#player-${x} > table`).find("img").length < 4 &&
       playerDice == `player-${x}-dice`
     ) {
       $(`.path img${identifyPlayer}h1`).fadeOut(250).fadeIn(250).fadeOut(250).fadeIn(250);
@@ -339,7 +339,7 @@ function highlightHorses() {
     }
     if (
       randomDice <= 57 - window[`lastPos${identifyPlayer2}H2`] &&
-      $(`#player-${x}`).find("img").length < 1 &&
+      $(`#player-${x} > table`).find("img").length < 4 &&
       playerDice == `player-${x}-dice`
     ) {
       $(`.path img${identifyPlayer}h2`).fadeOut(250).fadeIn(250).fadeOut(250).fadeIn(250);
@@ -349,7 +349,7 @@ function highlightHorses() {
     }
     if (
       randomDice <= 57 - window[`lastPos${identifyPlayer2}H3`] &&
-      $(`#player-${x}`).find("img").length < 1 &&
+      $(`#player-${x} > table`).find("img").length < 4 &&
       playerDice == `player-${x}-dice`
     ) {
       $(`.path img${identifyPlayer}h3`).fadeOut(250).fadeIn(250).fadeOut(250).fadeIn(250);
@@ -359,7 +359,7 @@ function highlightHorses() {
     }
     if (
       randomDice <= 57 - window[`lastPos${identifyPlayer2}H4`] &&
-      $(`#player-${x}`).find("img").length < 1 &&
+      $(`#player-${x} > table`).find("img").length < 4 &&
       playerDice == `player-${x}-dice`
     ) {
       $(`.path img${identifyPlayer}h4`).fadeOut(250).fadeIn(250).fadeOut(250).fadeIn(250);
@@ -711,12 +711,12 @@ function autoMoveHorse() {
   //Condition for only one horse on path
   if (playerHorses.length == 1) {
     if (
-      ($(`#player-${x}`).find("img").length == 3 && randomDice != 6) ||
+      ($(`#player-${x} > table`).find("img").length == 3 && randomDice != 6) ||
       $(`${identifyPlayer}57`).find("img").length == 3 ||
-      ($(`#player-${x}`).find("img").length == 1 &&
+      ($(`#player-${x} > table`).find("img").length == 1 &&
         randomDice != 6 &&
         $(`${identifyPlayer}57`).find("img").length == 2) ||
-      ($(`#player-${x}`).find("img").length == 2 &&
+      ($(`#player-${x} > table`).find("img").length == 2 &&
         randomDice != 6 &&
         $(`${identifyPlayer}57`).find("img").length == 1)
     ) {
@@ -731,9 +731,9 @@ function autoMoveHorse() {
     randomDice > 57 - window[`lastPos${playerHorses[0].classList[0].toUpperCase()}`]
   ) {
     if (
-      ($(`#player-${x}`).find("img").length == 2 && randomDice != 6) ||
+      ($(`#player-${x} > table`).find("img").length == 2 && randomDice != 6) ||
       $(`${identifyPlayer}57`).find("img").length == 2 ||
-      ($(`#player-${x}`).find("img").length == 1 &&
+      ($(`#player-${x} > table`).find("img").length == 1 &&
         randomDice != 6 &&
         $(`${identifyPlayer}57`).find("img").length == 1)
     ) {
@@ -746,9 +746,9 @@ function autoMoveHorse() {
     randomDice > 57 - window[`lastPos${playerHorses[1].classList[0].toUpperCase()}`]
   ) {
     if (
-      ($(`#player-${x}`).find("img").length == 2 && randomDice != 6) ||
+      ($(`#player-${x} > table`).find("img").length == 2 && randomDice != 6) ||
       $(`${identifyPlayer}57`).find("img").length == 2 ||
-      ($(`#player-${x}`).find("img").length == 1 &&
+      ($(`#player-${x} > table`).find("img").length == 1 &&
         randomDice != 6 &&
         $(`${identifyPlayer}57`).find("img").length == 1)
     ) {
@@ -764,7 +764,7 @@ function autoMoveHorse() {
     randomDice > 57 - window[`lastPos${playerHorses[1].classList[0].toUpperCase()}`]
   ) {
     if (
-      ($(`#player-${x}`).find("img").length == 1 && randomDice != 6) ||
+      ($(`#player-${x} > table`).find("img").length == 1 && randomDice != 6) ||
       $(`${identifyPlayer}57`).find("img").length == 1
     ) {
       a = 1;
@@ -777,7 +777,7 @@ function autoMoveHorse() {
     randomDice > 57 - window[`lastPos${playerHorses[2].classList[0].toUpperCase()}`]
   ) {
     if (
-      ($(`#player-${x}`).find("img").length == 1 && randomDice != 6) ||
+      ($(`#player-${x} > table`).find("img").length == 1 && randomDice != 6) ||
       $(`${identifyPlayer}57`).find("img").length == 1
     ) {
       a = 1;
@@ -790,7 +790,7 @@ function autoMoveHorse() {
     randomDice > 57 - window[`lastPos${playerHorses[2].classList[0].toUpperCase()}`]
   ) {
     if (
-      ($(`#player-${x}`).find("img").length == 1 && randomDice != 6) ||
+      ($(`#player-${x} > table`).find("img").length == 1 && randomDice != 6) ||
       $(`${identifyPlayer}57`).find("img").length == 1
     ) {
       a = 1;
@@ -834,7 +834,7 @@ function accurateMoveHorse() {
   //Code for transfering dice if there is no playable horse
 
   playerHorses = $(`.path td img.${identifyColor}`); //It provides a list of horses of current player available on the path
-  playerAvailHorses = $(`#player-${x}`).find("img").length; //No of horses available at current player default location
+  playerAvailHorses = $(`#player-${x} > table`).find("img").length; //No of horses available at current player default location
 
   autoMoveHorse(); //Function for automatic horse movement
 
@@ -1114,7 +1114,7 @@ function findWinner() {
   gameParticipants.push(sessionStorage.getItem("game-participants-3"));
 
   //Code for showing arrow on horse entry into home
-  if ($(`td${identifyPlayer}57`).find("img").length < 1) {
+  if ($(`td${identifyPlayer}57`).find("img").length < 4) {
     setTimeout(function () {
       $("#player-" + x + "-dice-arrow").attr("src", "gifs/arrow1.gif");
     }, 200);
@@ -1293,8 +1293,8 @@ function computerHorse() {
       (x == sessionStorage.getItem("one-vs-two-computer-player-2") && sessionStorage.getItem("computer") != null)
     ) {
       setTimeout(() => {
-        if ($(`#player-${x}`).find("img").length != 0 && randomDice == 6) {
-          computerHorsesAtDefault = $(`#player-${x} img`);
+        if ($(`#player-${x} > table`).find("img").length != 0 && randomDice == 6) {
+          computerHorsesAtDefault = $(`#player-${x} > table img`);
 
           if (computerHorsesAtDefault.length == 1) {
             computerHorsesAtDefault[0].click();
@@ -1306,8 +1306,8 @@ function computerHorse() {
             computerHorsesAtDefault[Math.floor(Math.random() * 4)].click();
           }
 
-          computerHorsesAtDefault = $(`#player-${x} img`);
-        } else if ($(`#player-${x}`).find("img").length == 0 || randomDice != 6) {
+          computerHorsesAtDefault = $(`#player-${x} > table img`);
+        } else if ($(`#player-${x} > table`).find("img").length == 0 || randomDice != 6) {
           computerHorsesOnPath = $(`.path td img.${identifyColor}`);
           if (computerHorsesOnPath.length == 2) {
             computerHorse1 = computerHorsesOnPath[0].classList[0].toUpperCase();

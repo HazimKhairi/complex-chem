@@ -17,7 +17,7 @@
   };
 
   const HOME_POSITION = 57; // All pieces must reach position 57 to be home
-  const PIECES_PER_PLAYER = 4;
+  const PIECES_PER_PLAYER = 1;  // Single piece mode
 
   // Track winners to prevent duplicate declarations
   const winners = [];

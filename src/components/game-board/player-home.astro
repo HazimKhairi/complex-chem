@@ -23,25 +23,17 @@ const firstColorLetter = horseColor.charAt(0);
     id === 4 && "border-b-2 border-r-2 rounded-br-[5px]"
   )}
 >
-  <table
-    class={cn(
-      "block p-3.5 rounded-sm bg-white bg-shadow",
-      "[&_td]:flex [&_td]:justify-center [&_td]:items-center",
-      "[&_td]:w-12 [&_td]:h-12 [&_td]:rounded-full [&_td]:bg-gray-200",
-      "[&_img]:w-3 [&_tr]:flex"
-    )}
+  <!-- Single Piece Mode: Only 1 piece per player (h1) -->
+  <div
+    class="flex justify-center items-center p-3.5 rounded-sm bg-white bg-shadow w-20 h-20"
   >
-    <tr class="mb-1.5">
-      <td class="mr-1.5" id={`${firstColorLetter}h1`}
-        ><Image class={`${firstColorLetter}h1`} src={horseImg} alt="Player Horse" /></td
-      >
-      <td id={`${firstColorLetter}h2`}><Image class={`${firstColorLetter}h2`} src={horseImg} alt="Player Horse" /></td>
-    </tr>
-    <tr>
-      <td class="mr-1.5" id={`${firstColorLetter}h3`}
-        ><Image class={`${firstColorLetter}h3`} src={horseImg} alt="Player Horse" /></td
-      >
-      <td id={`${firstColorLetter}h4`}><Image class=`${firstColorLetter}h4` src={horseImg} alt="Player Horse" /></td>
-    </tr>
-  </table>
+    <div class="flex justify-center items-center w-14 h-14 rounded-full bg-gray-200">
+      <Image
+        class={`${firstColorLetter}h1 w-4`}
+        id={`${firstColorLetter}h1`}
+        src={horseImg}
+        alt="Player Horse"
+      />
+    </div>
+  </div>
 </div>

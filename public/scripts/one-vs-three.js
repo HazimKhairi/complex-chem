@@ -348,17 +348,9 @@ function highlightHorses() {
 
 //Code for highlighting horses at default position on random dice number 6
 function sixGif() {
-  if ($("#player-" + x + " tr:first-child td:first-child").html() != "") {
-    $("#player-" + x + " tr:first-child td:first-child").addClass("sixgif");
-  }
-  if ($("#player-" + x + " tr:first-child td:nth-child(2)").html() != "") {
-    $("#player-" + x + " tr:first-child td:nth-child(2)").addClass("sixgif");
-  }
-  if ($("#player-" + x + " tr:nth-child(2) td:first-child").html() != "") {
-    $("#player-" + x + " tr:nth-child(2) td:first-child").addClass("sixgif");
-  }
-  if ($("#player-" + x + " tr:nth-child(2) td:nth-child(2)").html() != "") {
-    $("#player-" + x + " tr:nth-child(2) td:nth-child(2)").addClass("sixgif");
+  // Single piece mode - only h1 exists in div structure
+  if ($("#player-" + x).find("img").length > 0) {
+    $("#player-" + x).find("div").first().addClass("sixgif");
   }
 }
 
@@ -456,7 +448,7 @@ function moveHorse(event) {
         '<img class="' + playerHorseClass + " " + identifyColor + '" src="horses/' + identifyColor + '.png">'
       );
 
-      $("#player-" + x + " td").removeClass("sixgif"); // Removes sixgif
+      $("#player-" + x).find("div").removeClass("sixgif"); // Removes sixgif
 
       mergeHorseClass = identifyPlayer + window[`newPos${playerHorseClassCaps}`]; // Used in mergeHorses function
       mergeHorses(); // Code for merging horses or creating a horse group when there multiple horses in the same cell
@@ -608,7 +600,7 @@ function moveHorse(event) {
         '<img class="' + playerHorseClass + " " + identifyColor + '" src="horses/' + identifyColor + '.png">'
       );
 
-      $("#player-" + x + " td").removeClass("sixgif"); // Removes sixgif
+      $("#player-" + x).find("div").removeClass("sixgif"); // Removes sixgif
 
       mergeHorseClass = identifyPlayer + window[`newPos${playerHorseClassCaps}`]; // Used in mergeHorses function
       mergeHorses(); // Code for merging horses or creating a horse group when there multiple horses in the same cell
@@ -913,7 +905,7 @@ function moveDice() {
       ) {
         z++;
         $("." + userSelectedHorse).remove();
-        $("#player-" + x + " td").removeClass("sixgif");
+        $("#player-" + x).find("div").removeClass("sixgif");
         $(identifyPlayer + 1).append(
           `<img class="${userSelectedHorse} ${identifyColor}" src="horses/${identifyColor}.png">`
         );

@@ -12,7 +12,7 @@ import QuestionModal from "../components/game/question-modal.astro";
 import FateModal from "../components/game/fate-modal.astro";
 import SwapLigandModal from "../components/game/swap-ligand-modal.astro";
 import InfoModal from "../components/game/info-modal.astro";
-import TurnIndicator from "../components/game-board/turn-indicator.astro";
+// TurnIndicator removed - user doesn't want turn badge
 ---
 
 <Layout>
@@ -39,7 +39,6 @@ import TurnIndicator from "../components/game-board/turn-indicator.astro";
       </div>
     </div>
 
-    <TurnIndicator />
     <WinnersModel />
     <section id="game-container" class="transform-origin-center flex items-center gap-4 md:gap-6 lg:gap-8">
       <!-- LEFT COLUMN: Player 1 & 3 -->
@@ -87,10 +86,51 @@ import TurnIndicator from "../components/game-board/turn-indicator.astro";
     throw new Error("No game mode selected");
   }
 
+  // Load main game script
   const script = document.createElement("script");
   script.src = `scripts/${gameOption}.js`;
   script.type = "application/javascript";
   document.head.appendChild(script);
+
+  // Load game mechanics for fate cards & ligand collection
+  const mechanicsScript = document.createElement("script");
+  mechanicsScript.src = "scripts/game-mechanics-cards.js";
+  mechanicsScript.type = "application/javascript";
+  document.head.appendChild(mechanicsScript);
+
+  // Load tile detector for ligand/fate/question detection
+  const tileDetectorScript = document.createElement("script");
+  tileDetectorScript.src = "scripts/tile-detector.js";
+  tileDetectorScript.type = "application/javascript";
+  document.head.appendChild(tileDetectorScript);
+
+  // Load turn manager for turn coordination
+  const turnManagerScript = document.createElement("script");
+  turnManagerScript.src = "scripts/turn-manager.js";
+  turnManagerScript.type = "application/javascript";
+  document.head.appendChild(turnManagerScript);
+
+  // Load win checker
+  const winCheckerScript = document.createElement("script");
+  winCheckerScript.src = "scripts/win-checker.js";
+  winCheckerScript.type = "application/javascript";
+  document.head.appendChild(winCheckerScript);
+
+  // Load game orchestrator (coordinates all systems)
+  const orchestratorScript = document.createElement("script");
+  orchestratorScript.src = "scripts/game-orchestrator.js";
+  orchestratorScript.type = "application/javascript";
+  document.head.appendChild(orchestratorScript);
+
+  // Load fate effect handler for fate cards
+  const fateEffectHandlerScript = document.createElement("script");
+  fateEffectHandlerScript.src = "scripts/fate-effect-handler.js";
+  fateEffectHandlerScript.type = "application/javascript";
+  document.head.appendChild(fateEffectHandlerScript);
+
+  // SKIPPED: turn-indicator-integration.js (user doesn't want turn indicator badge)
+  // SKIPPED: piece-selection-integration.js (auto-select not needed)
+  // SKIPPED: ui-animations.js & ui-polish.js (extra UI features)
 
   // Optimize game size for screen - AGGRESSIVE scaling
   function optimizeGameSize() {

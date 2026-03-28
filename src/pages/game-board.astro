@@ -128,8 +128,25 @@ import InfoModal from "../components/game/info-modal.astro";
   fateEffectHandlerScript.type = "application/javascript";
   document.head.appendChild(fateEffectHandlerScript);
 
+  // Load auto-piece selector (auto-selects pieces after dice roll)
+  const autoPieceSelectorScript = document.createElement("script");
+  autoPieceSelectorScript.src = "scripts/auto-piece-selector.js";
+  autoPieceSelectorScript.type = "application/javascript";
+  document.head.appendChild(autoPieceSelectorScript);
+
+  // Load piece selection integration (coordinates piece selection)
+  const pieceSelectionScript = document.createElement("script");
+  pieceSelectionScript.src = "scripts/piece-selection-integration.js";
+  pieceSelectionScript.type = "application/javascript";
+  document.head.appendChild(pieceSelectionScript);
+
+  // Load keyboard shortcuts (Spacebar = roll/move)
+  const keyboardShortcutsScript = document.createElement("script");
+  keyboardShortcutsScript.src = "scripts/keyboard-shortcuts.js";
+  keyboardShortcutsScript.type = "application/javascript";
+  document.head.appendChild(keyboardShortcutsScript);
+
   // SKIPPED: turn-indicator-integration.js (user doesn't want turn indicator badge)
-  // SKIPPED: piece-selection-integration.js (auto-select not needed)
   // SKIPPED: ui-animations.js & ui-polish.js (extra UI features)
 
   // Optimize game size for screen - AGGRESSIVE scaling

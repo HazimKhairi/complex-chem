@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Background circle -->
+  <circle cx="50" cy="50" r="48" fill="#4187a0" stroke="#ffffff" stroke-width="2"/>
+
+  <!-- Chemistry flask/beaker icon -->
+  <g transform="translate(50, 50)">
+    <!-- Flask body -->
+    <path d="M -15,-25 L -10,-10 L -15,15 Q -15,20 -10,22 L 10,22 Q 15,20 15,15 L 10,-10 L 15,-25 Z"
+          fill="#ffffff" stroke="#ffffff" stroke-width="1"/>
+
+    <!-- Liquid inside -->
+    <ellipse cx="0" cy="12" rx="12" ry="6" fill="#db5c4c" opacity="0.8"/>
+
+    <!-- Bubbles -->
+    <circle cx="-5" cy="5" r="2.5" fill="#f9c64b" opacity="0.9"/>
+    <circle cx="5" cy="8" r="2" fill="#f9c64b" opacity="0.9"/>
+    <circle cx="2" cy="0" r="1.5" fill="#f9c64b" opacity="0.9"/>
+
+    <!-- Flask opening -->
+    <rect x="-10" y="-27" width="20" height="2" fill="#ffffff" rx="1"/>
+  </g>
+</svg>

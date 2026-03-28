@@ -128,6 +128,12 @@ import InfoModal from "../components/game/info-modal.astro";
   fateEffectHandlerScript.type = "application/javascript";
   document.head.appendChild(fateEffectHandlerScript);
 
+  // Load auto-move piece (direct movement without clicking)
+  const autoMovePieceScript = document.createElement("script");
+  autoMovePieceScript.src = "scripts/auto-move-piece.js";
+  autoMovePieceScript.type = "application/javascript";
+  document.head.appendChild(autoMovePieceScript);
+
   // Load auto-piece selector (auto-selects pieces after dice roll)
   const autoPieceSelectorScript = document.createElement("script");
   autoPieceSelectorScript.src = "scripts/auto-piece-selector.js";

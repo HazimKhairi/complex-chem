@@ -279,11 +279,12 @@ window.FateEffectHandler = {
       return;
     }
 
-    // Remove piece from current cell
-    piece.remove();
+    // Detach piece from current cell (preserves element for re-attachment)
+    const detachedPiece = piece.detach();
 
-    // Add piece to target cell
-    targetCell.append(piece);
+    // Append piece to target cell
+    targetCell.append(detachedPiece);
+    console.log(`   Piece moved to target cell`);
 
     // Show animation if available
     if (window.UIAnimations) {
@@ -390,15 +391,27 @@ window.FateEffectHandler = {
     if (newPos === 0) {
       console.log('   Moving piece back to home area');
 
-      // Remove from path
-      if (piece.length > 0) {
-        piece.remove();
-      }
+      // Use detach() instead of remove() to preserve element
+      let detachedPiece = piece.length > 0 ? piece.detach() : null;
 
-      // Add back to home area
-      const homeArea = $(`#player-${playerId} > table`);
-      if (homeArea.length > 0) {
-        homeArea.append(piece.length > 0 ? piece : `<img src="/horses/${this.getPlayerColorClass(playerId)}.png" class="${colorClass}h1" alt="Player ${playerId} piece">`);
+      // Add back to home area - correct selector for single piece mode
+      // Home structure: #player-N > div > div > img
+      const homeArea = $(`#player-${playerId}`);
+      const homeInner = homeArea.find('.bg-gray-200'); // Find innermost circle div
+
+      if (homeInner.length > 0) {
+        // Append detached piece or create new one
+        if (detachedPiece && detachedPiece.length > 0) {
+          homeInner.append(detachedPiece);
+          console.log('   Reattached piece to home');
+        } else {
+          // Create new piece if original was lost
+          const playerColor = this.getPlayerColorClass(playerId);
+          homeInner.append(`<img class="${colorClass}h1 w-4" src="/horses/${playerColor}.png" alt="Player ${playerId} piece" />`);
+          console.log('   Created new piece in home');
+        }
+      } else {
+        console.error(`❌ [FATE] Home area not found for Player ${playerId}`);
       }
 
       this.showNotification(`⬇️ Sent back to home! (rolled ${diceRoll})`, 'error');
@@ -422,11 +435,12 @@ window.FateEffectHandler = {
       return;
     }
 
-    // Remove piece from current cell
-    piece.remove();
+    // Detach piece from current cell (preserves element for re-attachment)
+    const detachedPiece = piece.detach();
 
-    // Add piece to target cell
-    targetCell.append(piece);
+    // Append piece to target cell
+    targetCell.append(detachedPiece);
+    console.log(`   Piece moved to target cell`);
 
     // Show animation if available
     if (window.UIAnimations) {

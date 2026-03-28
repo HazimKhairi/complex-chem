@@ -175,7 +175,9 @@ function handlePieceLanded(playerId, landedCell) {
 
     case "question":
       console.log("❓ [ORCHESTRATOR] Triggering question card");
-      window.GameMechanics.showQuestion(playerId);
+      const tileColor = tileInfo?.backgroundColor || null;
+      if (tileColor) console.log(`   Tile color: ${tileColor}`);
+      window.GameMechanics.showQuestion(playerId, tileColor);
       break;
 
     case "fate":

@@ -489,7 +489,10 @@ function showQuestionFeedback(isCorrect, points, difficulty) {
       <span class="text-3xl">${isCorrect ? '✅' : '❌'}</span>
       <div>
         <p class="font-bold text-lg">${isCorrect ? 'Correct!' : 'Incorrect'}</p>
-        ${isCorrect ? `<p class="text-sm">You earned <strong>${points} points</strong> (${difficulty} question)</p>` : '<p class="text-sm">The correct answer is highlighted in green!</p>'}
+        ${isCorrect
+          ? `<p class="text-sm">You earned <strong>${points} points</strong> (${difficulty} question)</p>`
+          : `<p class="text-sm">You earned <strong>0 points</strong> • The correct answer is highlighted in green!</p>`
+        }
       </div>
     </div>
   `;
@@ -636,11 +639,12 @@ function showLigandModal(ligand, title, subtitle) {
   }
 }
 
-function showQuestion(playerId) {
+function showQuestion(playerId, tileColor = null) {
   const question = QUESTION_CARDS[Math.floor(Math.random() * QUESTION_CARDS.length)];
   const modal = document.getElementById("question-modal");
   const cardContainer = document.getElementById("question-card-container");
   const optionsContainer = document.getElementById("question-options");
+  const modalHeader = modal?.querySelector('.bg-gradient-to-r');
 
   if (!modal || !cardContainer || !optionsContainer) return;
 
@@ -648,6 +652,15 @@ function showQuestion(playerId) {
   modal.dataset.points = question.points;
   modal.dataset.difficulty = question.difficulty;
   modal.dataset.correctAnswer = question.correctAnswer;
+
+  // Update modal header color to match tile background (if provided)
+  if (modalHeader && tileColor) {
+    modalHeader.style.background = tileColor;
+    console.log(`🎨 [QUESTION] Modal header color: ${tileColor}`);
+  } else if (modalHeader) {
+    // Reset to default gradient
+    modalHeader.style.background = '';
+  }
 
   const difficultyColors = {
     easy: "#10B981",

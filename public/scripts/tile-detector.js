@@ -244,12 +244,23 @@
       return null;
     }
 
+    // Extract background color from Tailwind classes or inline styles
+    let backgroundColor = null;
+    const classes = cell.className;
+    if (classes.includes('bg-red-')) backgroundColor = '#EF4444';
+    else if (classes.includes('bg-blue-')) backgroundColor = '#3B82F6';
+    else if (classes.includes('bg-green-')) backgroundColor = '#10B981';
+    else if (classes.includes('bg-yellow-')) backgroundColor = '#F59E0B';
+    else if (classes.includes('bg-sky-')) backgroundColor = '#0EA5E9';
+    else if (classes.includes('bg-pink-')) backgroundColor = '#EC4899';
+
     return {
       element: cell,
       type: getTileType(cell),
       classes: Array.from(cell.classList),
       content: getCellContent(cell),
-      isSpecial: isSpecialTile(cell)
+      isSpecial: isSpecialTile(cell),
+      backgroundColor: backgroundColor
     };
   }
 

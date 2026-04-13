@@ -5,7 +5,10 @@ import { cn } from "../../lib/utils";
 <table
   class={cn(
     "middle-table path bg-gray-700",
-    "[&_td]:border [&_td]:border-black [&_td]:w-[30px] [&_td]:h-[30px] [&_td]:relative [&_img]:w-[12px] [&_img]:mx-auto [&_img]:relative [&_img]:z-10",
+    "[&_td]:border [&_td]:border-black [&_td]:relative",
+    "[&_td]:w-[36px] [&_td]:h-[36px] [&_td]:sm:w-[38px] [&_td]:sm:h-[38px] [&_td]:md:w-[40px] [&_td]:md:h-[40px] [&_td]:lg:w-[42px] [&_td]:lg:h-[42px]",
+    "[&_img]:w-[14px] [&_img]:sm:w-[15px] [&_img]:md:w-4 [&_img]:lg:w-[18px]",
+    "[&_img]:mx-auto [&_img]:relative [&_img]:z-10",
     "border-collapse m-0 p-0",
   )}
 >
@@ -37,7 +40,7 @@ import { cn } from "../../lib/utils";
       ></td
     >
   </tr>
-  <tr>
+  <tr class="middle-row-green">
     <td class="g56 bg-green-300"></td>
     <td class="g55 bg-green-300"></td>
     <td class="g54 bg-green-300"></td>

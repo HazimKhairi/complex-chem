@@ -24,8 +24,8 @@ window.AutoPieceSelector = {
 
     let selectablePieces = [];
 
-    // Check piece in home (if rolled 6)
-    if (diceValue === 6 && piecesInHome.length > 0) {
+    // Check piece in home (UPDATED: can move with any dice value)
+    if (piecesInHome.length > 0) {
       const piece = piecesInHome[0];
       if (this.isPieceClickable(piece)) {
         selectablePieces.push({ piece, location: 'home' });

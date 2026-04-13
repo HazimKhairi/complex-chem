@@ -427,34 +427,60 @@ function showQuestionFeedback(isCorrect, points, difficulty) {
   const correctAnswer = parseInt(modal.dataset.correctAnswer);
   const selectedAnswer = parseInt(modal.dataset.selectedAnswer || 0);
 
-  // Update card to show the actual question (right side of image)
+  // Update card to show the actual question (right side of image) with enhanced styling
   if (cardContainer) {
-    const difficultyColors = {
-      easy: "#10B981",
-      medium: "#F59E0B",
-      hard: "#EF4444"
+    const difficultyConfig = {
+      easy: {
+        color: "#10B981",
+        bgGradient: "from-emerald-500 to-green-600",
+        label: "EASY",
+        icon: "✨"
+      },
+      medium: {
+        color: "#F59E0B",
+        bgGradient: "from-amber-500 to-orange-600",
+        label: "MEDIUM",
+        icon: "⚡"
+      },
+      hard: {
+        color: "#EF4444",
+        bgGradient: "from-rose-500 to-red-600",
+        label: "HARD",
+        icon: "🔥"
+      }
     };
+
+    const config = difficultyConfig[difficulty] || difficultyConfig.easy;
 
     // Get the question image file from the existing card
     const existingCard = cardContainer.querySelector('.question-card');
     const bgImage = existingCard ? window.getComputedStyle(existingCard.querySelector('div')).backgroundImage : '';
 
     cardContainer.innerHTML = `
-      <div class="question-card w-full rounded-lg border-4 overflow-hidden shadow-lg" style="border-color: ${difficultyColors[difficulty]};">
+      <div class="question-card w-full rounded-2xl overflow-hidden shadow-2xl border-4 transform transition-all duration-300 hover:scale-[1.01]" style="border-color: ${config.color};">
         <!-- Show actual question (right side of card image) -->
-        <div class="w-full aspect-[7/5] bg-no-repeat relative" style="${bgImage ? 'background-image: ' + bgImage + '; ' : ''}background-position: 100% center; background-size: 200%;">
-          <div class="absolute top-2 left-2 px-3 py-1 rounded text-xs font-bold text-white" style="background-color: ${difficultyColors[difficulty]};">
-            ${difficulty.toUpperCase()} - ${points} points
+        <div class="w-full aspect-[7/5] bg-no-repeat relative group" style="${bgImage ? 'background-image: ' + bgImage + '; ' : ''}background-position: 100% center; background-size: 200%;">
+
+          <!-- Difficulty badge with modern design -->
+          <div class="absolute top-3 left-3 px-4 py-2 rounded-xl text-xs font-bold text-white backdrop-blur-md shadow-lg bg-gradient-to-r ${config.bgGradient} flex items-center gap-2 animate-slideInLeft">
+            <span class="text-base">${config.icon}</span>
+            <span>${config.label} • ${points} PTS</span>
           </div>
-          <div class="absolute bottom-2 right-2 px-3 py-1 bg-black/70 text-white text-xs rounded font-semibold">
-            ${isCorrect ? '✅ Correct Answer!' : '❌ Wrong Answer'}
+
+          <!-- Result badge with animation -->
+          <div class="absolute bottom-3 right-3 px-4 py-2 bg-black/80 backdrop-blur-md text-white text-sm rounded-xl font-bold shadow-lg flex items-center gap-2 ${isCorrect ? 'animate-bounceIn' : 'animate-shakeX'}">
+            <span class="text-lg">${isCorrect ? '✅' : '❌'}</span>
+            <span>${isCorrect ? 'Correct!' : 'Wrong'}</span>
           </div>
+
+          <!-- Gradient overlay for better readability -->
+          <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
         </div>
       </div>
     `;
   }
 
-  // Highlight correct and wrong answers
+  // Highlight correct and wrong answers with beautiful animations
   const optionsContainer = document.getElementById("question-options");
   if (optionsContainer) {
     const options = optionsContainer.querySelectorAll(".answer-option");
@@ -466,34 +492,78 @@ function showQuestionFeedback(isCorrect, points, difficulty) {
       option.style.cursor = 'not-allowed';
 
       if (answerNum === correctAnswer) {
-        // Highlight correct answer in green
-        option.className = "answer-option w-full p-4 rounded-lg text-left border-4 border-green-500 bg-green-100 text-green-900 font-bold";
-        option.innerHTML = option.innerHTML.replace(/^[A-D]\.\s/, match => `${match} ✅ `);
+        // Highlight correct answer with beautiful green design
+        option.className = "answer-option w-full p-5 rounded-2xl text-left border-4 border-green-500 bg-gradient-to-r from-green-50 to-emerald-50 text-green-900 font-bold shadow-lg transform transition-all duration-300 animate-pulse-once";
+        option.innerHTML = option.innerHTML.replace(/^[A-D]\.\s/, match => `<span class="inline-flex items-center gap-2"><span class="text-xl">✅</span>${match}</span> `);
       } else if (answerNum === selectedAnswer && !isCorrect) {
-        // Highlight wrong selected answer in red
-        option.className = "answer-option w-full p-4 rounded-lg text-left border-4 border-red-500 bg-red-100 text-red-900";
-        option.innerHTML = option.innerHTML.replace(/^[A-D]\.\s/, match => `${match} ❌ `);
+        // Highlight wrong selected answer with red design
+        option.className = "answer-option w-full p-5 rounded-2xl text-left border-4 border-red-500 bg-gradient-to-r from-red-50 to-rose-50 text-red-900 font-semibold shadow-md";
+        option.innerHTML = option.innerHTML.replace(/^[A-D]\.\s/, match => `<span class="inline-flex items-center gap-2"><span class="text-xl">❌</span>${match}</span> `);
       } else {
-        // Fade out other options
-        option.className = "answer-option w-full p-4 rounded-lg text-left border-2 border-gray-300 bg-gray-50 text-gray-500 opacity-50";
+        // Fade out other options with subtle styling
+        option.className = "answer-option w-full p-4 rounded-xl text-left border-2 border-gray-200 bg-gray-50 text-gray-400 opacity-60";
       }
     });
   }
 
-  const bgColor = isCorrect ? "bg-green-100 border-green-500" : "bg-red-100 border-red-500";
-  const textColor = isCorrect ? "text-green-800" : "text-red-800";
+  // Create celebration effect for correct answer
+  if (isCorrect && typeof window.UIAnimations !== 'undefined') {
+    window.UIAnimations.celebrateLigandCollection(feedbackEl);
+  }
 
-  feedbackEl.className = `p-4 rounded-lg mb-4 border-2 ${bgColor} ${textColor}`;
+  // Show beautiful feedback with chemistry theme
+  const feedbackDesign = isCorrect ? {
+    gradient: 'from-green-500 via-emerald-500 to-teal-500',
+    bgColor: 'bg-gradient-to-br from-green-50 to-emerald-50',
+    borderColor: 'border-green-400',
+    icon: '🎉',
+    title: 'Outstanding!',
+    emoji: '✨',
+    animation: 'animate-bounceIn'
+  } : {
+    gradient: 'from-red-500 via-rose-500 to-pink-500',
+    bgColor: 'bg-gradient-to-br from-red-50 to-rose-50',
+    borderColor: 'border-red-400',
+    icon: '💭',
+    title: 'Not quite!',
+    emoji: '🔍',
+    animation: 'animate-shakeX'
+  };
+
+  feedbackEl.className = `p-6 rounded-2xl mb-4 border-4 ${feedbackDesign.borderColor} ${feedbackDesign.bgColor} shadow-2xl ${feedbackDesign.animation} overflow-hidden relative`;
   feedbackEl.innerHTML = `
-    <div class="flex items-center gap-3">
-      <span class="text-3xl">${isCorrect ? '✅' : '❌'}</span>
-      <div>
-        <p class="font-bold text-lg">${isCorrect ? 'Correct!' : 'Incorrect'}</p>
+    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${feedbackDesign.gradient}"></div>
+    <div class="flex items-start gap-4">
+      <div class="flex-shrink-0 w-14 h-14 rounded-2xl bg-gradient-to-br ${feedbackDesign.gradient} flex items-center justify-center text-3xl shadow-lg transform hover:scale-110 transition-transform">
+        ${feedbackDesign.icon}
+      </div>
+      <div class="flex-1">
+        <div class="flex items-center gap-2 mb-2">
+          <h3 class="font-black text-2xl ${isCorrect ? 'text-green-900' : 'text-red-900'}">${feedbackDesign.title}</h3>
+          <span class="text-xl">${feedbackDesign.emoji}</span>
+        </div>
         ${isCorrect
-          ? `<p class="text-sm">You earned <strong>${points} points</strong> (${difficulty} question)</p>`
-          : `<p class="text-sm">You earned <strong>0 points</strong> • The correct answer is highlighted in green!</p>`
+          ? `<div class="space-y-1">
+              <p class="text-lg font-bold text-green-800">You earned <span class="text-2xl bg-gradient-to-r ${feedbackDesign.gradient} bg-clip-text text-transparent">+${points} points</span></p>
+              <p class="text-sm text-green-700 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                ${difficulty.toUpperCase()} difficulty question completed
+              </p>
+            </div>`
+          : `<div class="space-y-1">
+              <p class="text-lg font-bold text-red-800">No points earned this time</p>
+              <p class="text-sm text-red-700 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                The correct answer is highlighted in green above
+              </p>
+            </div>`
         }
       </div>
+    </div>
+
+    <!-- Progress bar animation -->
+    <div class="mt-4 h-2 bg-gray-200 rounded-full overflow-hidden">
+      <div class="h-full bg-gradient-to-r ${feedbackDesign.gradient} rounded-full animate-progress" style="width: 0%; animation: progress 4s linear forwards;"></div>
     </div>
   `;
   feedbackEl.classList.remove("hidden");
@@ -506,8 +576,46 @@ function showQuestionFeedback(isCorrect, points, difficulty) {
 
     // Dispatch event to notify orchestrator that modal is closed
     document.dispatchEvent(new CustomEvent("question-continue"));
-  }, 4000); // Increased to 4 seconds to give time to read feedback
+  }, 4000);
 }
+
+// Add CSS animations for feedback
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes bounceIn {
+    0% { opacity: 0; transform: scale(0.3); }
+    50% { opacity: 1; transform: scale(1.05); }
+    70% { transform: scale(0.9); }
+    100% { transform: scale(1); }
+  }
+
+  @keyframes shakeX {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+    20%, 40%, 60%, 80% { transform: translateX(10px); }
+  }
+
+  @keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  @keyframes progress {
+    from { width: 0%; }
+    to { width: 100%; }
+  }
+
+  @keyframes pulse-once {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+  }
+
+  .animate-bounceIn { animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+  .animate-shakeX { animation: shakeX 0.6s; }
+  .animate-slideInLeft { animation: slideInLeft 0.4s ease-out; }
+  .animate-pulse-once { animation: pulse-once 0.8s ease-in-out 3; }
+`;
+document.head.appendChild(style);
 
 function collectLigand(playerId, landedCell = null) {
   console.log(`\n🧪 [LIGAND] === LIGAND COLLECTION ===`);
@@ -662,30 +770,88 @@ function showQuestion(playerId, tileColor = null) {
     modalHeader.style.background = '';
   }
 
-  const difficultyColors = {
-    easy: "#10B981",
-    medium: "#F59E0B",
-    hard: "#EF4444"
+  const difficultyConfig = {
+    easy: {
+      color: "#10B981",
+      bgGradient: "from-emerald-500 to-green-600",
+      label: "EASY",
+      icon: "✨",
+      borderGlow: "shadow-green-500/50"
+    },
+    medium: {
+      color: "#F59E0B",
+      bgGradient: "from-amber-500 to-orange-600",
+      label: "MEDIUM",
+      icon: "⚡",
+      borderGlow: "shadow-amber-500/50"
+    },
+    hard: {
+      color: "#EF4444",
+      bgGradient: "from-rose-500 to-red-600",
+      label: "HARD",
+      icon: "🔥",
+      borderGlow: "shadow-red-500/50"
+    }
   };
 
-  // Render question card (static - no flip, shows "Did you know?" fact only)
+  const config = difficultyConfig[question.difficulty] || difficultyConfig.easy;
+
+  // Render beautiful question card with proper image display
   cardContainer.innerHTML = `
-    <div class="question-card w-full rounded-lg border-4 overflow-hidden shadow-lg" style="border-color: ${difficultyColors[question.difficulty]};">
-      <!-- "Did you know?" fact from left side of card image -->
-      <div class="w-full aspect-[7/5] bg-no-repeat relative" style="background-image: url('/assets/question-cards/${question.imageFile}'); background-position: 0% center; background-size: 200%;">
-        <div class="absolute top-2 left-2 px-3 py-1 rounded text-xs font-bold text-white" style="background-color: ${difficultyColors[question.difficulty]};">
-          ${question.difficulty.toUpperCase()} - ${question.points} points
+    <div class="question-card-wrapper animate-slideIn">
+      <div class="question-card w-full rounded-2xl border-4 overflow-hidden shadow-2xl ${config.borderGlow} transform transition-all duration-300 hover:scale-[1.02] group" style="border-color: ${config.color};">
+        <!-- Chemistry fact card from left side of image -->
+        <div class="relative w-full aspect-[7/5] bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
+          <!-- Background image with proper sizing -->
+          <div class="absolute inset-0 bg-no-repeat bg-cover" style="background-image: url('/assets/question-cards/${question.imageFile}'); background-position: 0% center; background-size: 200%;">
+            <!-- Overlay for better text readability -->
+            <div class="absolute inset-0 bg-gradient-to-br from-black/10 via-transparent to-black/20"></div>
+          </div>
+
+          <!-- Difficulty badge with modern glassmorphism -->
+          <div class="absolute top-3 left-3 px-4 py-2 rounded-xl text-xs font-bold text-white backdrop-blur-lg bg-gradient-to-r ${config.bgGradient} shadow-xl flex items-center gap-2 animate-slideInLeft z-10">
+            <span class="text-base">${config.icon}</span>
+            <span>${config.label}</span>
+            <span class="w-px h-4 bg-white/30"></span>
+            <span>${question.points} PTS</span>
+          </div>
+
+          <!-- Tap hint -->
+          <div class="absolute bottom-3 right-3 px-3 py-2 rounded-lg bg-black/70 backdrop-blur-md text-white text-xs font-semibold flex items-center gap-2 opacity-90 group-hover:opacity-100 transition-opacity">
+            <span>💡</span>
+            <span>Did you know?</span>
+          </div>
         </div>
       </div>
     </div>
   `;
 
-  // Options - using actual answers from the question data
+  // Modern answer options with beautiful hover effects
   optionsContainer.innerHTML = `
-    <button class="answer-option w-full p-4 bg-gray-100 hover:bg-purple-100 rounded-lg text-left transition-colors border-2 border-transparent" data-answer="1">A. ${question.answers[0]}</button>
-    <button class="answer-option w-full p-4 bg-gray-100 hover:bg-purple-100 rounded-lg text-left transition-colors border-2 border-transparent" data-answer="2">B. ${question.answers[1]}</button>
-    <button class="answer-option w-full p-4 bg-gray-100 hover:bg-purple-100 rounded-lg text-left transition-colors border-2 border-transparent" data-answer="3">C. ${question.answers[2]}</button>
-    <button class="answer-option w-full p-4 bg-gray-100 hover:bg-purple-100 rounded-lg text-left transition-colors border-2 border-transparent" data-answer="4">D. ${question.answers[3]}</button>
+    <button class="answer-option group w-full p-5 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-purple-50 hover:to-pink-50 rounded-2xl text-left transition-all duration-300 border-3 border-gray-200 hover:border-purple-400 hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]" data-answer="1">
+      <div class="flex items-center gap-3">
+        <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-white shadow-sm group-hover:bg-purple-500 group-hover:text-white flex items-center justify-center font-bold text-gray-700 group-hover:scale-110 transition-all">A</div>
+        <span class="font-medium text-gray-800 group-hover:text-purple-900 transition-colors">${question.answers[0]}</span>
+      </div>
+    </button>
+    <button class="answer-option group w-full p-5 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-purple-50 hover:to-pink-50 rounded-2xl text-left transition-all duration-300 border-3 border-gray-200 hover:border-purple-400 hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]" data-answer="2">
+      <div class="flex items-center gap-3">
+        <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-white shadow-sm group-hover:bg-purple-500 group-hover:text-white flex items-center justify-center font-bold text-gray-700 group-hover:scale-110 transition-all">B</div>
+        <span class="font-medium text-gray-800 group-hover:text-purple-900 transition-colors">${question.answers[1]}</span>
+      </div>
+    </button>
+    <button class="answer-option group w-full p-5 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-purple-50 hover:to-pink-50 rounded-2xl text-left transition-all duration-300 border-3 border-gray-200 hover:border-purple-400 hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]" data-answer="3">
+      <div class="flex items-center gap-3">
+        <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-white shadow-sm group-hover:bg-purple-500 group-hover:text-white flex items-center justify-center font-bold text-gray-700 group-hover:scale-110 transition-all">C</div>
+        <span class="font-medium text-gray-800 group-hover:text-purple-900 transition-colors">${question.answers[2]}</span>
+      </div>
+    </button>
+    <button class="answer-option group w-full p-5 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-purple-50 hover:to-pink-50 rounded-2xl text-left transition-all duration-300 border-3 border-gray-200 hover:border-purple-400 hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]" data-answer="4">
+      <div class="flex items-center gap-3">
+        <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-white shadow-sm group-hover:bg-purple-500 group-hover:text-white flex items-center justify-center font-bold text-gray-700 group-hover:scale-110 transition-all">D</div>
+        <span class="font-medium text-gray-800 group-hover:text-purple-900 transition-colors">${question.answers[3]}</span>
+      </div>
+    </button>
   `;
 
   const options = optionsContainer.querySelectorAll(".answer-option");
@@ -750,24 +916,24 @@ function showFate(playerId) {
       <style>
         .triangle-container {
           position: relative;
-          width: 60px;
-          height: 52px;
+          width: clamp(60px, 10vw, 80px);
+          height: clamp(52px, 8.5vw, 70px);
         }
         .triangle {
           position: relative;
           width: 0;
           height: 0;
-          border-left: 30px solid transparent;
-          border-right: 30px solid transparent;
-          border-bottom: 52px solid #dc2626;
+          border-left: clamp(30px, 5vw, 40px) solid transparent;
+          border-right: clamp(30px, 5vw, 40px) solid transparent;
+          border-bottom: clamp(52px, 8.5vw, 70px) solid #dc2626;
         }
         .triangle-text {
           position: absolute;
-          top: 24px;
+          top: clamp(24px, 4vw, 32px);
           left: 50%;
           transform: translateX(-50%);
           color: white;
-          font-size: 28px;
+          font-size: clamp(28px, 4.5vw, 36px);
           font-weight: 900;
           line-height: 1;
         }

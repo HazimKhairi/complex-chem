@@ -551,3 +551,219 @@
     box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
   }
 }
+
+/* ============================================
+   QUESTION MODAL ANIMATIONS
+   ============================================ */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) translateY(-50px);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes shakeX {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-10px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(10px);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-once {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes progress {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+/* Animation utility classes */
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-bounceIn {
+  animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.animate-shakeX {
+  animation: shakeX 0.6s ease-in-out;
+}
+
+.animate-slideInLeft {
+  animation: slideInLeft 0.4s ease-out;
+}
+
+.animate-slideIn {
+  animation: slideIn 0.4s ease-out;
+}
+
+.animate-pulse-once {
+  animation: pulse-once 0.4s ease-in-out;
+}
+
+.animate-progress {
+  animation: progress 4s linear forwards;
+}
+/* ============================================
+   BOARD MIDDLE PATH RESPONSIVE ALIGNMENT
+   ============================================ */
+
+/* Ensure ALL path cells are square and consistent */
+.path td {
+  aspect-ratio: 1 / 1;
+  box-sizing: border-box;
+}
+
+/* Mobile Landscape (up to 640px) */
+@media (max-width: 640px) and (orientation: landscape) {
+  .path td {
+    min-width: 36px !important;
+    min-height: 36px !important;
+  }
+}
+
+/* Tablet (641px - 1024px) */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .path td {
+    min-width: 38px !important;
+    min-height: 38px !important;
+  }
+}
+
+/* Desktop (1025px and up) */
+@media (min-width: 1025px) {
+  .path td {
+    min-width: 40px !important;
+    min-height: 40px !important;
+  }
+}
+
+/* Extra large desktop (1440px and up) */
+@media (min-width: 1440px) {
+  .path td {
+    min-width: 42px !important;
+    min-height: 42px !important;
+  }
+}
+
+/* Ensure middle row extends properly on all devices */
+.middle-row-red,
+.middle-row-green {
+  white-space: nowrap;
+}
+
+
+/* ============================================
+   PLAYER HOME & WINNING CELLS RESPONSIVE
+   ============================================ */
+
+/* Winning cells (center finish area) */
+.winning-cell {
+  aspect-ratio: 1 / 1;
+  box-sizing: border-box;
+}
+
+.winning-cells-table {
+  border-collapse: collapse;
+}
+
+/* Player home areas (starting positions) */
+.player-home-area {
+  transition: all 0.3s ease;
+}
+
+/* Mobile Landscape */
+@media (max-width: 640px) and (orientation: landscape) {
+  .winning-cell {
+    min-width: 36px !important;
+    min-height: 36px !important;
+  }
+}
+
+/* Tablet */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .winning-cell {
+    min-width: 38px !important;
+    min-height: 38px !important;
+  }
+}
+
+/* Desktop */
+@media (min-width: 1025px) {
+  .winning-cell {
+    min-width: 40px !important;
+    min-height: 40px !important;
+  }
+}
+
+/* Large Desktop */
+@media (min-width: 1440px) {
+  .winning-cell {
+    min-width: 42px !important;
+    min-height: 42px !important;
+  }
+}
+

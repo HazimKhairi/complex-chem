@@ -1,32 +1,84 @@
 ---
 ---
 
-<div id="question-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-3 sm:p-4">
-  <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-    <div class="sticky top-0 bg-gradient-to-r from-purple-600 to-pink-600 text-white p-3 sm:p-4 rounded-t-2xl">
-      <h2 class="text-xl sm:text-2xl font-bold">🧬 Chemistry Question</h2>
-      <p class="text-xs sm:text-sm opacity-90">Click card to flip • Answer correctly to earn points!</p>
+<div id="question-modal" class="fixed inset-0 bg-gradient-to-br from-indigo-900/95 via-purple-900/95 to-pink-900/95 backdrop-blur-sm hidden items-center justify-center z-50 p-3 sm:p-4 animate-fadeIn">
+  <div class="bg-white rounded-3xl shadow-2xl max-w-3xl w-full max-h-[95vh] overflow-hidden relative">
+
+    <!-- Decorative chemistry background pattern -->
+    <div class="absolute inset-0 opacity-5 pointer-events-none">
+      <div class="absolute top-4 left-4 text-6xl">⚛️</div>
+      <div class="absolute top-20 right-8 text-5xl">🧪</div>
+      <div class="absolute bottom-16 left-12 text-4xl">🔬</div>
+      <div class="absolute bottom-8 right-16 text-5xl">⚗️</div>
     </div>
 
-    <div class="p-4 sm:p-6">
-      <div id="question-card-container" class="mb-4 sm:mb-6">
+    <!-- Header with gradient and glow effect -->
+    <div class="relative bg-gradient-to-r from-purple-600 via-pink-500 to-rose-500 text-white p-4 sm:p-6 overflow-hidden">
+      <div class="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
+      <div class="relative z-10">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-2xl animate-pulse">
+            🧬
+          </div>
+          <div>
+            <h2 class="text-2xl sm:text-3xl font-bold tracking-tight">Chemistry Challenge</h2>
+            <p class="text-xs sm:text-sm text-white/90 mt-1">Test your knowledge and earn points!</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Animated wave decoration -->
+      <svg class="absolute bottom-0 left-0 w-full h-6" viewBox="0 0 1200 120" preserveAspectRatio="none">
+        <path d="M0,0 C150,80 350,0 600,50 C850,100 1050,20 1200,60 L1200,120 L0,120 Z" fill="white" opacity="0.3"/>
+      </svg>
+    </div>
+
+    <div class="p-4 sm:p-6 overflow-y-auto max-h-[calc(95vh-120px)]">
+      <!-- Question Card Container with enhanced styling -->
+      <div id="question-card-container" class="mb-5 sm:mb-7">
         <!-- Question flip card will be inserted here -->
       </div>
 
-      <div id="question-options" class="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
+      <!-- Answer Options with modern card style -->
+      <div id="question-options" class="space-y-3 mb-5">
         <!-- Answer options will be inserted here -->
       </div>
 
-      <div id="question-feedback" class="hidden p-3 sm:p-4 rounded-lg mb-3 sm:mb-4">
+      <!-- Feedback Container with celebration animations -->
+      <div id="question-feedback" class="hidden mb-4">
         <!-- Feedback will be shown here -->
       </div>
 
-      <button id="submit-answer-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2.5 sm:py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base">
-        Submit Answer
+      <!-- Submit Button with modern styling -->
+      <button id="submit-answer-btn" class="group relative w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-3.5 sm:py-4 rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] overflow-hidden">
+        <span class="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></span>
+        <span class="relative flex items-center justify-center gap-2">
+          <span>Submit Answer</span>
+          <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+          </svg>
+        </span>
       </button>
     </div>
   </div>
 </div>
+
+<style>
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .animate-fadeIn {
+    animation: fadeIn 0.3s ease-out;
+  }
+</style>
 
 <script>
   let selectedAnswer: number | null = null;

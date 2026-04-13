@@ -14,13 +14,11 @@ window.AutoMovePiece = {
     console.log(`🚀 [AUTO-MOVE] Moving Player ${playerId} from home...`);
 
     // Check conditions
-    if (window.randomDice !== 6) {
-      console.warn(`⚠️ [AUTO-MOVE] Can only move from home with a 6 (rolled: ${window.randomDice})`);
-      return false;
-    }
+    // REMOVED: No longer require rolling 6 to move from home
+    // Players can now start with any dice value
 
     if (window.z >= 2) {
-      console.warn(`⚠️ [AUTO-MOVE] Already used 6 (z=${window.z})`);
+      console.warn(`⚠️ [AUTO-MOVE] Already used dice (z=${window.z})`);
       return false;
     }
 
@@ -55,16 +53,17 @@ window.AutoMovePiece = {
       // Remove sixgif class
       $(`#player-${playerId}`).find("div").removeClass("sixgif");
 
-      // Append to first path cell
-      const firstPathCell = `${identifyPlayer}1`;
-      console.log(`   Moving to: ${firstPathCell}`);
+      // UPDATED: Move to position based on dice value (not always 1)
+      const diceValue = window.randomDice || 1;
+      const targetPathCell = `${identifyPlayer}${diceValue}`;
+      console.log(`   Moving to position ${diceValue}: ${targetPathCell}`);
 
-      $(firstPathCell).append(
+      $(targetPathCell).append(
         `<img class="${horseClass} ${identifyColor}" src="horses/${identifyColor}.png">`
       );
 
       // Fix opacity issue
-      $(`${firstPathCell} > img`).css("opacity", "");
+      $(`${targetPathCell} > img`).css("opacity", "");
 
       // Re-enable dice arrow after delay
       setTimeout(function () {
@@ -75,15 +74,15 @@ window.AutoMovePiece = {
       window.d = 0;
 
       // Merge horses if needed
-      window.mergeHorseClass = firstPathCell;
+      window.mergeHorseClass = targetPathCell;
       if (typeof window.mergeHorses === 'function') {
         window.mergeHorses();
       }
 
-      // Update position tracking
+      // Update position tracking with actual dice value
       const posVarName = `lastPos${identifyPlayer.toUpperCase().substring(1)}H1`;
-      window[posVarName] = 1;
-      console.log(`   Updated ${posVarName} = 1`);
+      window[posVarName] = diceValue;
+      console.log(`   Updated ${posVarName} = ${diceValue}`);
 
       console.log(`✅ [AUTO-MOVE] Move complete!`);
       return true;

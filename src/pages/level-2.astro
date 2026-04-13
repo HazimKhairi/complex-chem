@@ -1,0 +1,88 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout>
+  <main class="min-h-screen p-4 flex flex-col items-center">
+    <!-- Header -->
+    <div class="w-full max-w-2xl mb-4">
+      <h1 class="text-2xl sm:text-3xl font-bold text-center text-ludon-blue">
+        LEVEL 2 — Build Your Complex
+      </h1>
+      <p id="player-info" class="text-center text-gray-600 mt-1 text-sm"></p>
+    </div>
+
+    <!-- Step Indicator -->
+    <div class="flex items-center justify-center gap-0 mb-6 w-full max-w-md">
+      {[1, 2, 3, 4, 5, 6].map((n, i) => (
+        <>
+          <div
+            class="step-dot flex items-center justify-center rounded-full text-white font-bold text-sm shrink-0"
+            data-step={n}
+          >
+            {n}
+          </div>
+          {i < 5 && <div class="step-line flex-1" />}
+        </>
+      ))}
+    </div>
+
+    <!-- Step Content Container -->
+    <div
+      id="step-container"
+      class="w-full max-w-2xl bg-white rounded-2xl shadow-md p-6 sm:p-8"
+      style="min-height:400px;"
+    >
+      <p class="text-gray-400 text-center mt-20">Loading...</p>
+    </div>
+
+    <!-- Score Bar -->
+    <div class="w-full max-w-2xl mt-4 bg-white rounded-xl shadow-sm p-4 flex justify-around text-center">
+      <div>
+        <p class="text-xs text-gray-500 uppercase tracking-wide">Level 1</p>
+        <p id="l1-score" class="text-xl font-bold text-ludon-blue">0</p>
+      </div>
+      <div class="border-l border-gray-200"></div>
+      <div>
+        <p class="text-xs text-gray-500 uppercase tracking-wide">Level 2</p>
+        <p id="l2-score" class="text-xl font-bold text-ludon-green">0</p>
+      </div>
+      <div class="border-l border-gray-200"></div>
+      <div>
+        <p class="text-xs text-gray-500 uppercase tracking-wide">Grand Total</p>
+        <p id="total-score" class="text-2xl font-bold text-ludon-red">0</p>
+      </div>
+    </div>
+  </main>
+
+  <script is:inline>
+    if (!sessionStorage.getItem("game-state")) {
+      window.location.href = "/pass-and-play";
+    }
+  </script>
+  <script is:inline src="/scripts/level-2-game.js"></script>
+</Layout>
+
+<style>
+  .step-dot {
+    width: 32px;
+    height: 32px;
+    background-color: #d1d5db;
+    transition: background-color 0.3s, transform 0.3s;
+  }
+  .step-dot.active {
+    background-color: #4187a0;
+    transform: scale(1.15);
+  }
+  .step-dot.done {
+    background-color: #10b981;
+  }
+  .step-line {
+    height: 3px;
+    background-color: #d1d5db;
+    transition: background-color 0.3s;
+  }
+  .step-line.done {
+    background-color: #10b981;
+  }
+</style>

@@ -17,7 +17,7 @@ import { getPlayerAvatar, getPlayerColor } from "../../lib/utils";
         <span class="text-lg font-bold">1</span>
       </div>
       <div class="flex items-center gap-2 flex-1">
-        <img id="winner-1-image" class="w-[35px] h-[35px] rounded-full object-cover" alt="Player 1" />
+        <img id="winner-1-image" class="w-9 h-9 sm:w-10 sm:h-10 md:w-11 md:h-11 lg:w-12 lg:h-12 rounded-full object-cover" alt="Player 1" />
         <span id="winner-1-name" class="text-lg font-semibold">Player 1</span>
       </div>
       <div class="flex-shrink-0">
@@ -33,7 +33,7 @@ import { getPlayerAvatar, getPlayerColor } from "../../lib/utils";
         <span class="text-lg font-bold">2</span>
       </div>
       <div class="flex items-center gap-2 flex-1">
-        <img id="winner-2-image" class="w-[35px] h-[35px] rounded-full object-cover" alt="Player 2" />
+        <img id="winner-2-image" class="w-9 h-9 sm:w-10 sm:h-10 md:w-11 md:h-11 lg:w-12 lg:h-12 rounded-full object-cover" alt="Player 2" />
         <span id="winner-2-name" class="text-lg font-semibold">Player 2</span>
       </div>
       <div class="flex-shrink-0">
@@ -49,7 +49,7 @@ import { getPlayerAvatar, getPlayerColor } from "../../lib/utils";
         <span class="text-lg font-bold">3</span>
       </div>
       <div class="flex items-center gap-2 flex-1">
-        <img id="winner-3-image" class="w-[35px] h-[35px] rounded-full object-cover" alt="Player 3" />
+        <img id="winner-3-image" class="w-9 h-9 sm:w-10 sm:h-10 md:w-11 md:h-11 lg:w-12 lg:h-12 rounded-full object-cover" alt="Player 3" />
         <span id="winner-3-name" class="text-lg font-semibold">Player 3</span>
       </div>
       <div class="flex-shrink-0">
@@ -65,7 +65,7 @@ import { getPlayerAvatar, getPlayerColor } from "../../lib/utils";
         <span class="text-lg font-bold">4</span>
       </div>
       <div class="flex items-center gap-2 flex-1">
-        <img id="winner-4-image" class="w-[35px] h-[35px] rounded-full object-cover" alt="Player 4" />
+        <img id="winner-4-image" class="w-9 h-9 sm:w-10 sm:h-10 md:w-11 md:h-11 lg:w-12 lg:h-12 rounded-full object-cover" alt="Player 4" />
         <span id="winner-4-name" class="text-lg font-semibold">Player 4</span>
       </div>
     </div>
@@ -74,7 +74,13 @@ import { getPlayerAvatar, getPlayerColor } from "../../lib/utils";
     <button
       type="button"
       onclick="location.href='/'"
-      class="bg-ludon-blue text-white px-4 py-2 rounded-lg font-medium transition-colors">Menu</button
+      class="bg-gray-400 text-white px-4 py-2 rounded-lg font-medium transition-colors">Menu</button
+    >
+    <button
+      type="button"
+      id="continue-level-2"
+      onclick="location.href='/level-2'"
+      class="bg-ludon-blue text-white px-4 py-2 rounded-lg font-medium transition-colors animate-pulse">Continue to Level 2 →</button
     >
   </div>
 </div>

@@ -431,11 +431,23 @@
     }
   }
 
+  function validateBuild() {
+    // Check that placed ligands produce correct CN for the chosen geometry
+    var placed = window.BoneBuilder.getPlacedLigands();
+    var totalDent = 0;
+    placed.forEach(function (lig) {
+      var chem = LIGAND_CHEMISTRY[lig.id] || LIGAND_CHEMISTRY[(lig.id || '').toLowerCase()];
+      if (chem) totalDent += chem.denticity; else totalDent += 1;
+    });
+    var expectedSlots = window.BoneBuilder.getTotalSlots();
+    // Valid if all slots filled AND total denticity matches slot count
+    return placed.length === expectedSlots && totalDent === expectedSlots;
+  }
+
   function handleBuildSubmit() {
     level2State.buildAttempts++;
+    var valid = validateBuild();
     var placed = window.BoneBuilder.getPlacedLigands();
-    var expectedSlots = window.BoneBuilder.getTotalSlots();
-    var valid = (placed.length === expectedSlots);
 
     if (valid) {
       var pts = level2State.buildAttempts === 1 ? 6 : (level2State.buildAttempts === 2 ? 4 : 2);
@@ -524,23 +536,42 @@
   }
 
   function generateDistractors(correct) {
-    var distractors = [];
+    var candidates = [];
     var metals = ["cobalt", "chromium", "iron", "copper", "nickel", "zinc"];
-    var prefixes = ["di", "tri", "tetra", "hexa"];
+    var prefixes = ["di", "tri", "tetra", "penta", "hexa"];
 
+    // Strategy 1: wrong metal
     var wrongMetal = metals.find(function (m) { return correct.indexOf(m) === -1 && correct.indexOf(m + 'ate') === -1; }) || "manganese";
-    distractors.push(correct.replace(/cobalt|chromium|iron|copper|nickel|zinc|cobaltate|chromate|ferrate|cuprate|nickelate|zincate/i, wrongMetal));
+    candidates.push(correct.replace(/cobalt|chromium|iron|copper|nickel|zinc|cobaltate|chromate|ferrate|cuprate|nickelate|zincate/i, wrongMetal));
 
-    distractors.push(correct.replace(/di|tri|tetra|penta|hexa/, function (m) {
+    // Strategy 2: wrong prefix
+    candidates.push(correct.replace(/di|tri|tetra|penta|hexa/, function (m) {
       var idx = prefixes.indexOf(m);
       return prefixes[(idx + 1) % prefixes.length];
     }));
 
-    distractors.push(correct.replace(/\(I+V?\)/, function (m) {
+    // Strategy 3: wrong oxidation state
+    candidates.push(correct.replace(/\(I+V?\)/, function (m) {
       return m === "(III)" ? "(II)" : "(III)";
     }));
 
-    return distractors.filter(function (d) { return d !== correct; }).slice(0, 3);
+    // Strategy 4: second wrong metal (fallback)
+    var wrongMetal2 = metals.find(function (m) { return m !== wrongMetal && correct.indexOf(m) === -1 && correct.indexOf(m + 'ate') === -1; }) || "titanium";
+    candidates.push(correct.replace(/cobalt|chromium|iron|copper|nickel|zinc|cobaltate|chromate|ferrate|cuprate|nickelate|zincate/i, wrongMetal2));
+
+    // Strategy 5: swap prefix direction
+    candidates.push(correct.replace(/di|tri|tetra|penta|hexa/, function (m) {
+      var idx = prefixes.indexOf(m);
+      return prefixes[(idx + 2) % prefixes.length];
+    }));
+
+    // Deduplicate and remove any that match correct answer
+    var unique = [];
+    candidates.forEach(function (d) {
+      if (d !== correct && unique.indexOf(d) === -1) unique.push(d);
+    });
+
+    return unique.slice(0, 3);
   }
 
   function renderStep4() {
@@ -549,13 +580,20 @@
 
     var c = $("step-container");
     var correct = generateIUPACName();
-    var distractors = generateDistractors(correct);
 
-    var options = [correct].concat(distractors);
-    for (var i = options.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var tmp = options[i]; options[i] = options[j]; options[j] = tmp;
+    // Cache shuffled options so they don't move on re-render
+    if (!level2State._namingOptions) {
+      var distractors = generateDistractors(correct);
+      var options = [correct].concat(distractors);
+      for (var i = options.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = options[i]; options[i] = options[j]; options[j] = tmp;
+      }
+      level2State._namingOptions = options;
+      level2State._namingCorrect = correct;
     }
+
+    var options = level2State._namingOptions;
 
     var done = level2State.namingDone;
 

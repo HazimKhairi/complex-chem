@@ -14,7 +14,7 @@ import Layout from "../layouts/Layout.astro";
 
     <!-- Step Indicator -->
     <div class="flex items-center justify-center gap-0 mb-6 w-full max-w-md">
-      {[1, 2, 3, 4, 5, 6].map((n, i) => (
+      {[1, 2, 3, 4].map((n, i) => (
         <>
           <div
             class="step-dot flex items-center justify-center rounded-full text-white font-bold text-sm shrink-0"
@@ -22,7 +22,7 @@ import Layout from "../layouts/Layout.astro";
           >
             {n}
           </div>
-          {i < 5 && <div class="step-line flex-1" />}
+          {i < 3 && <div class="step-line flex-1" />}
         </>
       ))}
     </div>
@@ -34,6 +34,24 @@ import Layout from "../layouts/Layout.astro";
       style="min-height:400px;"
     >
       <p class="text-gray-400 text-center mt-20">Loading...</p>
+    </div>
+
+    <!-- 3D Canvas (hidden until Step 3) -->
+    <div id="builder-container" class="w-full max-w-2xl mt-4 hidden">
+      <div class="bg-white rounded-2xl shadow-md overflow-hidden">
+        <canvas id="three-canvas" class="w-full" style="height:350px; touch-action:none;"></canvas>
+        <div class="p-4 border-t border-gray-100">
+          <p class="text-xs text-gray-500 uppercase tracking-wide mb-2">Your Ligands — drag onto empty slots</p>
+          <div id="ligand-inventory" class="flex flex-wrap gap-2 justify-center min-h-[60px]"></div>
+        </div>
+        <div class="p-4 border-t border-gray-100 flex justify-between items-center">
+          <div class="text-sm text-gray-600">Slots filled: <strong id="slots-filled">0</strong> / <strong id="slots-total">0</strong></div>
+          <div class="flex gap-2">
+            <button id="btn-reset-3d" class="px-4 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 text-sm font-semibold">Reset</button>
+            <button id="btn-submit-3d" class="px-4 py-2 rounded-lg bg-[#4187a0] text-white font-semibold text-sm hover:bg-[#357a91] disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed" disabled>Submit</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Score Bar -->
@@ -60,6 +78,9 @@ import Layout from "../layouts/Layout.astro";
       window.location.href = "/pass-and-play";
     }
   </script>
+  <script is:inline src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script is:inline src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+  <script is:inline src="/scripts/level-2-3d-builder.js"></script>
   <script is:inline src="/scripts/level-2-game.js"></script>
 </Layout>
 

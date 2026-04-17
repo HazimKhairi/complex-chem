@@ -321,6 +321,7 @@ function initGameMechanics() {
   document.addEventListener("question-answered", handleQuestionAnswered);
 
   // Listen for piece movement to save positions
+  // Tile handling (ligand/fate/question modals) is done by the inline script in game-board.astro
   document.addEventListener("piece-moved", (event) => {
     console.log("🎯 Piece moved, saving positions...");
     savePiecePositions();
@@ -453,13 +454,14 @@ function showQuestionFeedback(isCorrect, points, difficulty) {
     const config = difficultyConfig[difficulty] || difficultyConfig.easy;
 
     // Get the question image file from the existing card
-    const existingCard = cardContainer.querySelector('.question-card');
-    const bgImage = existingCard ? window.getComputedStyle(existingCard.querySelector('div')).backgroundImage : '';
+    // The bg image is on the inner div (absolute inset-0), not the outer wrapper div
+    // Use imageFile from modal data attribute (stored in showQuestion)
+    const imageFile = modal.dataset.imageFile || '';
 
     cardContainer.innerHTML = `
       <div class="question-card w-full rounded-2xl overflow-hidden shadow-2xl border-4 transform transition-all duration-300 hover:scale-[1.01]" style="border-color: ${config.color};">
         <!-- Show actual question (right side of card image) -->
-        <div class="w-full aspect-[7/5] bg-no-repeat relative group" style="${bgImage ? 'background-image: ' + bgImage + '; ' : ''}background-position: 100% center; background-size: 200%;">
+        <div class="w-full aspect-[7/5] bg-no-repeat relative group" style="${imageFile ? "background-image: url('/assets/question-cards/" + imageFile + "'); " : ''}background-position: 100% center; background-size: 200%;">
 
           <!-- Difficulty badge with modern design -->
           <div class="absolute top-3 left-3 px-4 py-2 rounded-xl text-xs font-bold text-white backdrop-blur-md shadow-lg bg-gradient-to-r ${config.bgGradient} flex items-center gap-2 animate-slideInLeft">
@@ -639,8 +641,15 @@ function collectLigand(playerId, landedCell = null) {
         console.warn(`   ⚠️ Could not get tileInfo for class: ${className}`);
       }
     } else if (landedCell && landedCell.tagName === 'TD') {
-      // It's already a cell element
-      ligandName = window.TileDetector.getLigandName(landedCell);
+      // It's already a cell element - try TileDetector first, fallback to direct extraction
+      if (window.TileDetector) {
+        ligandName = window.TileDetector.getLigandName(landedCell);
+      }
+      if (!ligandName) {
+        // Direct extraction: get span text content from the cell
+        const span = landedCell.querySelector('span');
+        ligandName = span ? span.textContent.trim() : null;
+      }
       console.log(`   Extracted ligand name from TD element: "${ligandName}"`);
     } else {
       console.warn(`   ⚠️ Landed cell is not a string or TD element:`, landedCell);
@@ -748,7 +757,27 @@ function showLigandModal(ligand, title, subtitle) {
 }
 
 function showQuestion(playerId, tileColor = null) {
-  const question = QUESTION_CARDS[Math.floor(Math.random() * QUESTION_CARDS.length)];
+  // Map tile background color to question difficulty
+  // Red zone (#ef4444) = hard, Yellow zone (#eab308) = medium,
+  // Green zone (#10b981) = easy, Blue zone (#3b82f6) = medium
+  let targetDifficulty = null;
+  if (tileColor) {
+    const colorLower = tileColor.toLowerCase();
+    if (colorLower === '#ef4444') targetDifficulty = 'hard';
+    else if (colorLower === '#eab308') targetDifficulty = 'medium';
+    else if (colorLower === '#10b981') targetDifficulty = 'easy';
+    else if (colorLower === '#3b82f6') targetDifficulty = 'medium';
+  }
+
+  // Filter questions by zone difficulty, fallback to all if no match
+  let pool = QUESTION_CARDS;
+  if (targetDifficulty) {
+    const filtered = QUESTION_CARDS.filter(q => q.difficulty === targetDifficulty);
+    if (filtered.length > 0) pool = filtered;
+    console.log(`🎯 [QUESTION] Zone color: ${tileColor} → difficulty: ${targetDifficulty} (${pool.length} questions)`);
+  }
+
+  const question = pool[Math.floor(Math.random() * pool.length)];
   const modal = document.getElementById("question-modal");
   const cardContainer = document.getElementById("question-card-container");
   const optionsContainer = document.getElementById("question-options");
@@ -760,6 +789,7 @@ function showQuestion(playerId, tileColor = null) {
   modal.dataset.points = question.points;
   modal.dataset.difficulty = question.difficulty;
   modal.dataset.correctAnswer = question.correctAnswer;
+  modal.dataset.imageFile = question.imageFile;
 
   // Update modal header color to match tile background (if provided)
   if (modalHeader && tileColor) {
@@ -803,7 +833,7 @@ function showQuestion(playerId, tileColor = null) {
         <!-- Chemistry fact card from left side of image -->
         <div class="relative w-full aspect-[7/5] bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
           <!-- Background image with proper sizing -->
-          <div class="absolute inset-0 bg-no-repeat bg-cover" style="background-image: url('/assets/question-cards/${question.imageFile}'); background-position: 0% center; background-size: 200%;">
+          <div class="absolute inset-0 bg-no-repeat" style="background-image: url('/assets/question-cards/${question.imageFile}'); background-position: 0% center; background-size: 200%;">
             <!-- Overlay for better text readability -->
             <div class="absolute inset-0 bg-gradient-to-br from-black/10 via-transparent to-black/20"></div>
           </div>
@@ -1115,8 +1145,8 @@ window.savePiecePositions = savePiecePositions;
 window.restorePiecePositions = restorePiecePositions;
 
 // CSS for flip cards
-const style = document.createElement("style");
-style.textContent = `
+const flipCardStyle = document.createElement("style");
+flipCardStyle.textContent = `
   .ligand-flip-card-container, .question-flip-card-container {
     perspective: 1000px;
   }
@@ -1137,7 +1167,7 @@ style.textContent = `
     transform: rotateY(180deg);
   }
 `;
-document.head.appendChild(style);
+document.head.appendChild(flipCardStyle);
 
 if (typeof window !== "undefined") {
   if (document.readyState === "loading") {

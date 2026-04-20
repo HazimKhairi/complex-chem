@@ -697,7 +697,12 @@ function collectLigand(playerId, landedCell = null) {
     console.warn(`   ⚠️ Could not find ligand "${ligandName}", selecting random uncollected ligand`);
     const uncollected = LIGANDS_DATA.filter(l => !gameState.collectedLigandIds.includes(l.id));
     if (uncollected.length === 0) {
-      console.error(`   ❌ All ligands collected!`);
+      console.error(`   All ligands collected!`);
+      showLigandModal(
+        { name: "—", color: "#9CA3AF", imageFile: "" },
+        "No More Ligands",
+        "All ligands have been collected. Keep moving!"
+      );
       return;
     }
     ligand = uncollected[Math.floor(Math.random() * uncollected.length)];

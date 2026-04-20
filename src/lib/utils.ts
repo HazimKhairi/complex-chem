@@ -14,14 +14,14 @@ export function getPlayerAvatar({
   playerColor?: string;
 }) {
   // Use local SVG data URI as fallback if API fails
-  // Create a simple colored avatar with emoji face
+  // Create a simple colored avatar with player initials
   const color = playerColor || "808080";
-  const emoji = ["😊", "😎", "🤓", "😺"][Math.abs(hashString(playerName)) % 4];
+  const initials = playerName.slice(0, 2).toUpperCase();
 
   const svgFallback = `data:image/svg+xml,${encodeURIComponent(`
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
       <rect width="100" height="100" fill="#${color}" rx="12"/>
-      <text x="50" y="65" font-size="50" text-anchor="middle" fill="white">${emoji}</text>
+      <text x="50" y="65" font-size="40" text-anchor="middle" fill="white" font-family="sans-serif" font-weight="bold">${initials}</text>
     </svg>
   `)}`;
 

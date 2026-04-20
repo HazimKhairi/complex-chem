@@ -61,10 +61,10 @@
       // Set action message
       if (actionEl) {
         const messages = {
-          roll: "🎲 Roll the dice to start",
-          select: `🎯 Select your piece to move (${diceValue || 0} steps)`,
-          moving: "🏃 Moving piece...",
-          wait: "⏳ Wait for your turn",
+          roll: "Roll the dice to start",
+          select: `Select your piece to move (${diceValue || 0} steps)`,
+          moving: "Moving piece...",
+          wait: "Wait for your turn",
         };
         actionEl.textContent = messages[action as keyof typeof messages] || "Your turn";
       }
@@ -101,10 +101,10 @@
 
       if (actionEl) {
         const messages = {
-          roll: "🎲 Roll the dice to start",
-          select: `🎯 Select your piece to move (${diceValue || 0} steps)`,
-          moving: "🏃 Moving piece...",
-          wait: "⏳ Wait for your turn",
+          roll: "Roll the dice to start",
+          select: `Select your piece to move (${diceValue || 0} steps)`,
+          moving: "Moving piece...",
+          wait: "Wait for your turn",
         };
         actionEl.textContent = messages[action as keyof typeof messages] || "Your turn";
       }

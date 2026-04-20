@@ -4,7 +4,7 @@
 <div id="info-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-3 sm:p-4">
   <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-4 sm:p-6 text-center max-h-[90vh] overflow-y-auto">
     <div class="mb-3 sm:mb-4">
-      <h2 id="info-modal-title" class="text-xl sm:text-2xl font-bold text-gray-800 mb-2">ℹ️ Info</h2>
+      <h2 id="info-modal-title" class="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Info</h2>
       <p id="info-modal-message" class="text-sm sm:text-base text-gray-600 whitespace-pre-line">
         <!-- Message will be inserted here -->
       </p>
@@ -42,7 +42,7 @@
 
   // Expose modal controls
   window.InfoModal = {
-    show: (title, message, callback = null, icon = 'ℹ️') => {
+    show: (title, message, callback = null, icon = '') => {
       if (!infoModal || !infoModalTitle || !infoModalMessage) {
         console.error('❌ Info modal elements not found');
         // Fallback to alert
@@ -52,7 +52,7 @@
       }
 
       // Set content
-      infoModalTitle.textContent = `${icon} ${title}`;
+      infoModalTitle.textContent = icon ? `${icon} ${title}` : title;
       infoModalMessage.textContent = message;
 
       // Store callback
@@ -65,13 +65,13 @@
       console.log('✅ Info modal shown:', { title, message });
     },
     showWarning: (title, message, callback = null) => {
-      window.InfoModal.show(title, message, callback, '⚠️');
+      window.InfoModal.show(title, message, callback, '');
     },
     showError: (title, message, callback = null) => {
-      window.InfoModal.show(title, message, callback, '❌');
+      window.InfoModal.show(title, message, callback, '');
     },
     showSuccess: (title, message, callback = null) => {
-      window.InfoModal.show(title, message, callback, '✅');
+      window.InfoModal.show(title, message, callback, '');
     },
     close: closeInfoModal
   };

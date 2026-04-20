@@ -207,7 +207,7 @@
     // Update title to show Level 1 completion
     const title = modal.querySelector('h1');
     if (title) {
-      title.textContent = 'Level 1 Complete! 🎉';
+      title.textContent = 'Level 1 Complete!';
     }
 
     // Update each winner slot

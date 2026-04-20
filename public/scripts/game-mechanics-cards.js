@@ -435,19 +435,19 @@ function showQuestionFeedback(isCorrect, points, difficulty) {
         color: "#10B981",
         bgGradient: "from-emerald-500 to-green-600",
         label: "EASY",
-        icon: "✨"
+        icon: ""
       },
       medium: {
         color: "#F59E0B",
         bgGradient: "from-amber-500 to-orange-600",
         label: "MEDIUM",
-        icon: "⚡"
+        icon: ""
       },
       hard: {
         color: "#EF4444",
         bgGradient: "from-rose-500 to-red-600",
         label: "HARD",
-        icon: "🔥"
+        icon: ""
       }
     };
 
@@ -471,7 +471,7 @@ function showQuestionFeedback(isCorrect, points, difficulty) {
 
           <!-- Result badge with animation -->
           <div class="absolute bottom-3 right-3 px-4 py-2 bg-black/80 backdrop-blur-md text-white text-sm rounded-xl font-bold shadow-lg flex items-center gap-2 ${isCorrect ? 'animate-bounceIn' : 'animate-shakeX'}">
-            <span class="text-lg">${isCorrect ? '✅' : '❌'}</span>
+            <span class="text-lg font-bold">${isCorrect ? 'Correct' : 'Wrong'}</span>
             <span>${isCorrect ? 'Correct!' : 'Wrong'}</span>
           </div>
 
@@ -496,11 +496,11 @@ function showQuestionFeedback(isCorrect, points, difficulty) {
       if (answerNum === correctAnswer) {
         // Highlight correct answer with beautiful green design
         option.className = "answer-option w-full p-5 rounded-2xl text-left border-4 border-green-500 bg-gradient-to-r from-green-50 to-emerald-50 text-green-900 font-bold shadow-lg transform transition-all duration-300 animate-pulse-once";
-        option.innerHTML = option.innerHTML.replace(/^[A-D]\.\s/, match => `<span class="inline-flex items-center gap-2"><span class="text-xl">✅</span>${match}</span> `);
+        option.innerHTML = option.innerHTML.replace(/^[A-D]\.\s/, match => `<span class="inline-flex items-center gap-2"><span class="text-xl font-bold text-green-600">&#10003;</span>${match}</span> `);
       } else if (answerNum === selectedAnswer && !isCorrect) {
         // Highlight wrong selected answer with red design
         option.className = "answer-option w-full p-5 rounded-2xl text-left border-4 border-red-500 bg-gradient-to-r from-red-50 to-rose-50 text-red-900 font-semibold shadow-md";
-        option.innerHTML = option.innerHTML.replace(/^[A-D]\.\s/, match => `<span class="inline-flex items-center gap-2"><span class="text-xl">❌</span>${match}</span> `);
+        option.innerHTML = option.innerHTML.replace(/^[A-D]\.\s/, match => `<span class="inline-flex items-center gap-2"><span class="text-xl font-bold text-red-600">&#10007;</span>${match}</span> `);
       } else {
         // Fade out other options with subtle styling
         option.className = "answer-option w-full p-4 rounded-xl text-left border-2 border-gray-200 bg-gray-50 text-gray-400 opacity-60";
@@ -518,17 +518,17 @@ function showQuestionFeedback(isCorrect, points, difficulty) {
     gradient: 'from-green-500 via-emerald-500 to-teal-500',
     bgColor: 'bg-gradient-to-br from-green-50 to-emerald-50',
     borderColor: 'border-green-400',
-    icon: '🎉',
+    icon: '',
     title: 'Outstanding!',
-    emoji: '✨',
+    emoji: '',
     animation: 'animate-bounceIn'
   } : {
     gradient: 'from-red-500 via-rose-500 to-pink-500',
     bgColor: 'bg-gradient-to-br from-red-50 to-rose-50',
     borderColor: 'border-red-400',
-    icon: '💭',
+    icon: '',
     title: 'Not quite!',
-    emoji: '🔍',
+    emoji: '',
     animation: 'animate-shakeX'
   };
 

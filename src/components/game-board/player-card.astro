@@ -81,18 +81,12 @@ const { id, playerName, reverse = false } = Astro.props;
 
   // Helper function to create fallback SVG avatar
   function createFallbackAvatar(name, color) {
-    const emojis = ["😊", "😎", "🤓", "😺"];
-    let hash = 0;
-    for (let i = 0; i < name.length; i++) {
-      hash = ((hash << 5) - hash) + name.charCodeAt(i);
-      hash = hash & hash;
-    }
-    const emoji = emojis[Math.abs(hash) % 4];
+    const initials = name.slice(0, 2).toUpperCase();
 
     return `data:image/svg+xml,${encodeURIComponent(`
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
         <rect width="100" height="100" fill="#${color}" rx="12"/>
-        <text x="50" y="65" font-size="50" text-anchor="middle" fill="white">${emoji}</text>
+        <text x="50" y="65" font-size="40" text-anchor="middle" fill="white" font-family="sans-serif" font-weight="bold">${initials}</text>
       </svg>
     `)}`;
   }

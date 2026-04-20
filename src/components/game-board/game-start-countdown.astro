@@ -33,15 +33,7 @@ const { countdownFrom = 3 } = Astro.props;
     if (count <= 0) {
       clearInterval(countdown);
 
-      // Try to play sound (will fail if no user interaction, but won't break the game)
-      try {
-        const audio = new Audio("audio/game-start.wav");
-        audio.play().catch(err => {
-          console.log("Audio autoplay prevented (requires user interaction):", err.message);
-        });
-      } catch (err) {
-        console.log("Audio playback error:", err);
-      }
+      if (window.AudioManager) window.AudioManager.play("game-start");
 
       document.getElementById("game-start-countdown")?.remove();
       document.dispatchEvent(new CustomEvent("game-countdown-complete"));

@@ -254,15 +254,8 @@
     modal.classList.remove('hidden');
     modal.style.display = 'block';
 
-    // Play celebration sound if available
-    if (typeof Audio !== 'undefined') {
-      try {
-        const celebrationSound = new Audio('audio/winner.wav');
-        celebrationSound.play().catch(err => console.log('Could not play celebration sound:', err));
-      } catch (err) {
-        console.log('Celebration sound not available');
-      }
-    }
+    // Play celebration sound
+    if (window.AudioManager) window.AudioManager.play("horse-home");
   }
 
   /**

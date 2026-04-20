@@ -200,8 +200,7 @@ $(`.player-dice`).click(function () {
 
     //Dice roll audio
     setTimeout(function () {
-      audio = new Audio("audio/dice-roll.wav");
-      audio.play();
+      if (window.AudioManager) window.AudioManager.play("dice-roll");
     }, 800);
 
     setTimeout(function () {
@@ -463,8 +462,7 @@ function moveHorse(event) {
       $(`${identifyPlayer}${window[`lastPos${playerHorseClassCaps}`]} img.` + playerHorseClass).remove();
 
       //Horse move sound
-      audio = new Audio("audio/horse-move.wav");
-      audio.play();
+      if (window.AudioManager) window.AudioManager.play("horse-move");
 
       mergeHorseClassLast = identifyPlayer + window[`lastPos${playerHorseClassCaps}`]; // Used in unMergeHorses function
       unMergeHorses(); // Code for unmerging horses when one or more horses leaves the horse group
@@ -520,8 +518,7 @@ function moveHorse(event) {
           window[`lastPos${horseKillList[0].classList[0].toUpperCase()}`] = 1; //Resets the last position of killed horse
 
           //Horse kill sound
-          audio = new Audio("audio/horse-kill.wav");
-          audio.play();
+          if (window.AudioManager) window.AudioManager.play("horse-kill");
 
           $(`${identifyPlayer}${window[`lastPos${playerHorseClassCaps}`]}`).append(horseKillList[1]); //Moves killer horse outside of the span
           $(`${identifyPlayer}${window[`lastPos${playerHorseClassCaps}`]} > span`).remove(); // Removes the span created by mergeHorses function
@@ -584,8 +581,7 @@ function moveHorse(event) {
           window[`lastPos${playerHorseClassCaps}`] == 27 ||
           window[`lastPos${playerHorseClassCaps}`] == 40
         ) {
-          audio = new Audio("audio/horse-safe.wav");
-          audio.play();
+          if (window.AudioManager) window.AudioManager.play("horse-safe");
         }
       }
     }, 300);
@@ -623,8 +619,7 @@ function moveHorse(event) {
       $(`${identifyPlayer}${window[`lastPos${playerHorseClassCaps}`]} img.` + playerHorseClass).remove();
 
       //Horse move sound
-      audio = new Audio("audio/horse-move.wav");
-      audio.play();
+      if (window.AudioManager) window.AudioManager.play("horse-move");
 
       mergeHorseClassLast = identifyPlayer + window[`lastPos${playerHorseClassCaps}`]; // Used in unMergeHorses function
       unMergeHorses(); // Code for unmerging horses when one or more horses leaves the horse group
@@ -655,8 +650,7 @@ function moveHorse(event) {
           // Player reached home (position 57) - win condition
           d = 0;
           // Play sound on reaching winning home
-          audio = new Audio("audio/horse-home.wav");
-          audio.play();
+          if (window.AudioManager) window.AudioManager.play("horse-home");
           findWinner(); //Function for finding a winner
 
           //Code for computer movement

@@ -47,10 +47,10 @@
 
       // Set background color based on player
       const bgColors = {
-        1: "bg-gradient-to-r from-red-500 to-red-600",
-        2: "bg-gradient-to-r from-blue-500 to-blue-600",
-        3: "bg-gradient-to-r from-yellow-500 to-yellow-600",
-        4: "bg-gradient-to-r from-green-500 to-green-600",
+        1: "bg-red-500",
+        2: "bg-blue-500",
+        3: "bg-yellow-500",
+        4: "bg-green-500",
       };
 
       indicator.className = `fixed top-4 left-1/2 -translate-x-1/2 z-40 px-6 py-3 rounded-lg shadow-lg transition-all duration-300 ${bgColors[playerId as keyof typeof bgColors]} scale-100 opacity-100`;

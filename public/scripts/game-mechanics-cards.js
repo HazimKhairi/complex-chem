@@ -433,19 +433,19 @@ function showQuestionFeedback(isCorrect, points, difficulty) {
     const difficultyConfig = {
       easy: {
         color: "#10B981",
-        bgGradient: "from-emerald-500 to-green-600",
+        bgSolid: "bg-green-500",
         label: "EASY",
         icon: ""
       },
       medium: {
         color: "#F59E0B",
-        bgGradient: "from-amber-500 to-orange-600",
+        bgSolid: "bg-amber-500",
         label: "MEDIUM",
         icon: ""
       },
       hard: {
         color: "#EF4444",
-        bgGradient: "from-rose-500 to-red-600",
+        bgSolid: "bg-red-500",
         label: "HARD",
         icon: ""
       }
@@ -464,7 +464,7 @@ function showQuestionFeedback(isCorrect, points, difficulty) {
         <div class="w-full aspect-[7/5] bg-no-repeat relative group" style="${imageFile ? "background-image: url('/assets/question-cards/" + imageFile + "'); " : ''}background-position: 100% center; background-size: 200%;">
 
           <!-- Difficulty badge with modern design -->
-          <div class="absolute top-3 left-3 px-4 py-2 rounded-xl text-xs font-bold text-white backdrop-blur-md shadow-lg bg-gradient-to-r ${config.bgGradient} flex items-center gap-2 animate-slideInLeft">
+          <div class="absolute top-3 left-3 px-4 py-2 rounded-xl text-xs font-bold text-white backdrop-blur-md shadow-lg ${config.bgSolid} flex items-center gap-2 animate-slideInLeft">
             <span class="text-base">${config.icon}</span>
             <span>${config.label} • ${points} PTS</span>
           </div>
@@ -475,8 +475,8 @@ function showQuestionFeedback(isCorrect, points, difficulty) {
             <span>${isCorrect ? 'Correct!' : 'Wrong'}</span>
           </div>
 
-          <!-- Gradient overlay for better readability -->
-          <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <!-- Solid overlay for better readability -->
+          <div class="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
         </div>
       </div>
     `;
@@ -495,11 +495,11 @@ function showQuestionFeedback(isCorrect, points, difficulty) {
 
       if (answerNum === correctAnswer) {
         // Highlight correct answer with beautiful green design
-        option.className = "answer-option w-full p-5 rounded-2xl text-left border-4 border-green-500 bg-gradient-to-r from-green-50 to-emerald-50 text-green-900 font-bold shadow-lg transform transition-all duration-300 animate-pulse-once";
+        option.className = "answer-option w-full p-5 rounded-2xl text-left border-4 border-green-500 bg-green-50 text-green-900 font-bold shadow-lg transform transition-all duration-300 animate-pulse-once";
         option.innerHTML = option.innerHTML.replace(/^[A-D]\.\s/, match => `<span class="inline-flex items-center gap-2"><span class="text-xl font-bold text-green-600">&#10003;</span>${match}</span> `);
       } else if (answerNum === selectedAnswer && !isCorrect) {
         // Highlight wrong selected answer with red design
-        option.className = "answer-option w-full p-5 rounded-2xl text-left border-4 border-red-500 bg-gradient-to-r from-red-50 to-rose-50 text-red-900 font-semibold shadow-md";
+        option.className = "answer-option w-full p-5 rounded-2xl text-left border-4 border-red-500 bg-red-50 text-red-900 font-semibold shadow-md";
         option.innerHTML = option.innerHTML.replace(/^[A-D]\.\s/, match => `<span class="inline-flex items-center gap-2"><span class="text-xl font-bold text-red-600">&#10007;</span>${match}</span> `);
       } else {
         // Fade out other options with subtle styling
@@ -515,17 +515,19 @@ function showQuestionFeedback(isCorrect, points, difficulty) {
 
   // Show beautiful feedback with chemistry theme
   const feedbackDesign = isCorrect ? {
-    gradient: 'from-green-500 via-emerald-500 to-teal-500',
-    bgColor: 'bg-gradient-to-br from-green-50 to-emerald-50',
+    solidColor: 'bg-green-500',
+    bgColor: 'bg-green-50',
     borderColor: 'border-green-400',
+    textColor: 'text-green-600',
     icon: '',
     title: 'Outstanding!',
     emoji: '',
     animation: 'animate-bounceIn'
   } : {
-    gradient: 'from-red-500 via-rose-500 to-pink-500',
-    bgColor: 'bg-gradient-to-br from-red-50 to-rose-50',
+    solidColor: 'bg-red-500',
+    bgColor: 'bg-red-50',
     borderColor: 'border-red-400',
+    textColor: 'text-red-600',
     icon: '',
     title: 'Not quite!',
     emoji: '',
@@ -534,9 +536,9 @@ function showQuestionFeedback(isCorrect, points, difficulty) {
 
   feedbackEl.className = `p-6 rounded-2xl mb-4 border-4 ${feedbackDesign.borderColor} ${feedbackDesign.bgColor} shadow-2xl ${feedbackDesign.animation} overflow-hidden relative`;
   feedbackEl.innerHTML = `
-    <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${feedbackDesign.gradient}"></div>
+    <div class="absolute top-0 left-0 w-full h-1 ${feedbackDesign.solidColor}"></div>
     <div class="flex items-start gap-4">
-      <div class="flex-shrink-0 w-14 h-14 rounded-2xl bg-gradient-to-br ${feedbackDesign.gradient} flex items-center justify-center text-3xl shadow-lg transform hover:scale-110 transition-transform">
+      <div class="flex-shrink-0 w-14 h-14 rounded-2xl ${feedbackDesign.solidColor} flex items-center justify-center text-3xl shadow-lg transform hover:scale-110 transition-transform">
         ${feedbackDesign.icon}
       </div>
       <div class="flex-1">
@@ -546,7 +548,7 @@ function showQuestionFeedback(isCorrect, points, difficulty) {
         </div>
         ${isCorrect
           ? `<div class="space-y-1">
-              <p class="text-lg font-bold text-green-800">You earned <span class="text-2xl bg-gradient-to-r ${feedbackDesign.gradient} bg-clip-text text-transparent">+${points} points</span></p>
+              <p class="text-lg font-bold text-green-800">You earned <span class="text-2xl ${feedbackDesign.textColor} font-black">+${points} points</span></p>
               <p class="text-sm text-green-700 flex items-center gap-2">
                 <span class="w-2 h-2 rounded-full bg-green-500"></span>
                 ${difficulty.toUpperCase()} difficulty question completed
@@ -565,7 +567,7 @@ function showQuestionFeedback(isCorrect, points, difficulty) {
 
     <!-- Progress bar animation -->
     <div class="mt-4 h-2 bg-gray-200 rounded-full overflow-hidden">
-      <div class="h-full bg-gradient-to-r ${feedbackDesign.gradient} rounded-full animate-progress" style="width: 0%; animation: progress 4s linear forwards;"></div>
+      <div class="h-full ${feedbackDesign.solidColor} rounded-full animate-progress" style="width: 0%; animation: progress 4s linear forwards;"></div>
     </div>
   `;
   feedbackEl.classList.remove("hidden");
@@ -808,21 +810,21 @@ function showQuestion(playerId, tileColor = null) {
   const difficultyConfig = {
     easy: {
       color: "#10B981",
-      bgGradient: "from-emerald-500 to-green-600",
+      bgSolid: "bg-green-500",
       label: "EASY",
       icon: "",
       borderGlow: "shadow-green-500/50"
     },
     medium: {
       color: "#F59E0B",
-      bgGradient: "from-amber-500 to-orange-600",
+      bgSolid: "bg-amber-500",
       label: "MEDIUM",
       icon: "",
       borderGlow: "shadow-amber-500/50"
     },
     hard: {
       color: "#EF4444",
-      bgGradient: "from-rose-500 to-red-600",
+      bgSolid: "bg-red-500",
       label: "HARD",
       icon: "",
       borderGlow: "shadow-red-500/50"
@@ -836,15 +838,15 @@ function showQuestion(playerId, tileColor = null) {
     <div class="question-card-wrapper animate-slideIn">
       <div class="question-card w-full rounded-2xl border-4 overflow-hidden shadow-2xl ${config.borderGlow} transform transition-all duration-300 hover:scale-[1.02] group" style="border-color: ${config.color};">
         <!-- Chemistry fact card from left side of image -->
-        <div class="relative w-full aspect-[7/5] bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden">
+        <div class="relative w-full aspect-[7/5] bg-gray-50 overflow-hidden">
           <!-- Background image with proper sizing -->
           <div class="absolute inset-0 bg-no-repeat" style="background-image: url('/assets/question-cards/${question.imageFile}'); background-position: 0% center; background-size: 200%;">
             <!-- Overlay for better text readability -->
-            <div class="absolute inset-0 bg-gradient-to-br from-black/10 via-transparent to-black/20"></div>
+            <div class="absolute inset-0 bg-black/5"></div>
           </div>
 
           <!-- Difficulty badge with modern glassmorphism -->
-          <div class="absolute top-3 left-3 px-4 py-2 rounded-xl text-xs font-bold text-white backdrop-blur-lg bg-gradient-to-r ${config.bgGradient} shadow-xl flex items-center gap-2 animate-slideInLeft z-10">
+          <div class="absolute top-3 left-3 px-4 py-2 rounded-xl text-xs font-bold text-white backdrop-blur-lg ${config.bgSolid} shadow-xl flex items-center gap-2 animate-slideInLeft z-10">
             <span class="text-base">${config.icon}</span>
             <span>${config.label}</span>
             <span class="w-px h-4 bg-white/30"></span>
@@ -863,25 +865,25 @@ function showQuestion(playerId, tileColor = null) {
 
   // Modern answer options with beautiful hover effects
   optionsContainer.innerHTML = `
-    <button class="answer-option group w-full p-5 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-purple-50 hover:to-pink-50 rounded-2xl text-left transition-all duration-300 border-3 border-gray-200 hover:border-purple-400 hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]" data-answer="1">
+    <button class="answer-option group w-full p-5 bg-gray-50 hover:bg-purple-50 rounded-2xl text-left transition-all duration-300 border-3 border-gray-200 hover:border-purple-400 hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]" data-answer="1">
       <div class="flex items-center gap-3">
         <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-white shadow-sm group-hover:bg-purple-500 group-hover:text-white flex items-center justify-center font-bold text-gray-700 group-hover:scale-110 transition-all">A</div>
         <span class="font-medium text-gray-800 group-hover:text-purple-900 transition-colors">${question.answers[0]}</span>
       </div>
     </button>
-    <button class="answer-option group w-full p-5 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-purple-50 hover:to-pink-50 rounded-2xl text-left transition-all duration-300 border-3 border-gray-200 hover:border-purple-400 hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]" data-answer="2">
+    <button class="answer-option group w-full p-5 bg-gray-50 hover:bg-purple-50 rounded-2xl text-left transition-all duration-300 border-3 border-gray-200 hover:border-purple-400 hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]" data-answer="2">
       <div class="flex items-center gap-3">
         <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-white shadow-sm group-hover:bg-purple-500 group-hover:text-white flex items-center justify-center font-bold text-gray-700 group-hover:scale-110 transition-all">B</div>
         <span class="font-medium text-gray-800 group-hover:text-purple-900 transition-colors">${question.answers[1]}</span>
       </div>
     </button>
-    <button class="answer-option group w-full p-5 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-purple-50 hover:to-pink-50 rounded-2xl text-left transition-all duration-300 border-3 border-gray-200 hover:border-purple-400 hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]" data-answer="3">
+    <button class="answer-option group w-full p-5 bg-gray-50 hover:bg-purple-50 rounded-2xl text-left transition-all duration-300 border-3 border-gray-200 hover:border-purple-400 hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]" data-answer="3">
       <div class="flex items-center gap-3">
         <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-white shadow-sm group-hover:bg-purple-500 group-hover:text-white flex items-center justify-center font-bold text-gray-700 group-hover:scale-110 transition-all">C</div>
         <span class="font-medium text-gray-800 group-hover:text-purple-900 transition-colors">${question.answers[2]}</span>
       </div>
     </button>
-    <button class="answer-option group w-full p-5 bg-gradient-to-r from-gray-50 to-gray-100 hover:from-purple-50 hover:to-pink-50 rounded-2xl text-left transition-all duration-300 border-3 border-gray-200 hover:border-purple-400 hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]" data-answer="4">
+    <button class="answer-option group w-full p-5 bg-gray-50 hover:bg-purple-50 rounded-2xl text-left transition-all duration-300 border-3 border-gray-200 hover:border-purple-400 hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]" data-answer="4">
       <div class="flex items-center gap-3">
         <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-white shadow-sm group-hover:bg-purple-500 group-hover:text-white flex items-center justify-center font-bold text-gray-700 group-hover:scale-110 transition-all">D</div>
         <span class="font-medium text-gray-800 group-hover:text-purple-900 transition-colors">${question.answers[3]}</span>

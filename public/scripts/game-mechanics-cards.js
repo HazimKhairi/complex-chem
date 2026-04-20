@@ -680,7 +680,7 @@ function collectLigand(playerId, landedCell = null) {
 
       if (gameState.collectedLigandIds.includes(ligand.id)) {
         console.warn(`   ⚠️ Ligand "${ligandName}" already collected!`);
-        showLigandModal(ligand, "⚠️ Already Collected!", "This ligand has already been collected by another player");
+        showLigandModal(ligand, "Already Collected", "This ligand has already been collected by another player");
         // Don't add to player inventory, but don't stop the turn either
         // Just show the modal and continue
         savePiecePositions(); // Save current piece positions
@@ -715,14 +715,14 @@ function collectLigand(playerId, landedCell = null) {
   gameState.collectedLigandIds.push(ligand.id);
 
   updateLigandDisplay(playerId);
-  showLigandModal(ligand, "🧪 Ligand Collected!", "Click card to see details");
+  showLigandModal(ligand, "Ligand Collected!", "Click card to see details");
 
   saveState();
   console.log(`==========================================\n`);
 }
 
 function viewLigandDetail(ligand) {
-  showLigandModal(ligand, "🔍 Ligand Details", "Review your collected ligand");
+  showLigandModal(ligand, "Ligand Details", "Review your collected ligand");
 }
 
 function showLigandModal(ligand, title, subtitle) {
@@ -810,21 +810,21 @@ function showQuestion(playerId, tileColor = null) {
       color: "#10B981",
       bgGradient: "from-emerald-500 to-green-600",
       label: "EASY",
-      icon: "✨",
+      icon: "",
       borderGlow: "shadow-green-500/50"
     },
     medium: {
       color: "#F59E0B",
       bgGradient: "from-amber-500 to-orange-600",
       label: "MEDIUM",
-      icon: "⚡",
+      icon: "",
       borderGlow: "shadow-amber-500/50"
     },
     hard: {
       color: "#EF4444",
       bgGradient: "from-rose-500 to-red-600",
       label: "HARD",
-      icon: "🔥",
+      icon: "",
       borderGlow: "shadow-red-500/50"
     }
   };
@@ -853,7 +853,7 @@ function showQuestion(playerId, tileColor = null) {
 
           <!-- Tap hint -->
           <div class="absolute bottom-3 right-3 px-3 py-2 rounded-lg bg-black/70 backdrop-blur-md text-white text-xs font-semibold flex items-center gap-2 opacity-90 group-hover:opacity-100 transition-opacity">
-            <span>💡</span>
+            <span class="font-bold text-sm">?</span>
             <span>Did you know?</span>
           </div>
         </div>

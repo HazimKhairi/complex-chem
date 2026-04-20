@@ -112,7 +112,7 @@ window.FateEffectHandler = {
       } else {
         // Fallback: browser alert
         console.warn('⚠️ [FATE] InfoModal not available, using alert fallback');
-        alert('❌ Cannot Swap Ligands\n\nYou don\'t have any ligands to swap!\n\nCollect ligands by landing on ligand tiles first.');
+        alert('Cannot Swap Ligands\n\nYou don\'t have any ligands to swap!\n\nCollect ligands by landing on ligand tiles first.');
 
         // Continue game after alert dismissal
         document.dispatchEvent(new CustomEvent('swap-cancelled', {
@@ -158,7 +158,7 @@ window.FateEffectHandler = {
       } else {
         // Fallback: browser alert
         console.warn('⚠️ [FATE] InfoModal not available, using alert fallback');
-        alert('❌ Cannot Swap Ligands\n\nNo other players have ligands to swap with!\n\nYou need to wait for other players to collect ligands first.');
+        alert('Cannot Swap Ligands\n\nNo other players have ligands to swap with!\n\nYou need to wait for other players to collect ligands first.');
 
         // Continue game after alert dismissal
         document.dispatchEvent(new CustomEvent('swap-cancelled', {
@@ -222,7 +222,7 @@ window.FateEffectHandler = {
     this.updateLigandDisplay(playerId);
 
     // Show success notification
-    this.showNotification(`🎉 Discovered new ligand: ${ligand.name}!`, 'success');
+    this.showNotification(`Discovered new ligand: ${ligand.name}!`, 'success');
     console.log(`✅ [FATE] Eureka Moment complete - Player ${playerId} got ${ligand.name}`);
   },
 
@@ -296,7 +296,7 @@ window.FateEffectHandler = {
     console.log(`   Landed on ${tileType} tile`);
 
     // Show notification
-    this.showNotification(`⬆️ Moved forward ${actualMoved} spaces!`, 'success');
+    this.showNotification(`Moved forward ${actualMoved} spaces!`, 'success');
     console.log(`✅ [FATE] Ligand Square complete - Player ${playerId} moved to position ${newPos}`);
 
     // If landed on special tile, trigger orchestrator
@@ -328,12 +328,12 @@ window.FateEffectHandler = {
     const turnMsg = document.getElementById('turn-indicator-message');
     if (turnMsg) {
       turnMsg.innerHTML = `
-        <span class="text-lg font-bold">🎲 You get an extra roll!</span>
+        <span class="text-lg font-bold">You get an extra roll!</span>
       `;
     }
 
     // Show notification
-    this.showNotification("🎲 You get an extra roll!", 'success');
+    this.showNotification("You get an extra roll!", 'success');
     console.log(`✅ [FATE] Second Chance complete - Player ${playerId} can roll again`);
   },
 
@@ -414,7 +414,7 @@ window.FateEffectHandler = {
         console.error(`❌ [FATE] Home area not found for Player ${playerId}`);
       }
 
-      this.showNotification(`⬇️ Sent back to home! (rolled ${diceRoll})`, 'error');
+      this.showNotification(`Sent back to home! (rolled ${diceRoll})`, 'error');
       console.log(`✅ [FATE] Destiny Dance complete - Player ${playerId} sent back to home`);
       return;
     }
@@ -448,7 +448,7 @@ window.FateEffectHandler = {
     }
 
     // Show notification
-    this.showNotification(`⬇️ Moved backward ${actualMoved} spaces! (rolled ${diceRoll})`, 'error');
+    this.showNotification(`Moved backward ${actualMoved} spaces! (rolled ${diceRoll})`, 'error');
     console.log(`✅ [FATE] Destiny Dance complete - Player ${playerId} moved to position ${newPos}`);
   },
 
@@ -637,9 +637,9 @@ window.FateEffectHandler = {
 
     // Show notification
     if (isOneWayDonation) {
-      this.showNotification(`✅ Gave ligand to Player ${targetPlayerId}!`, 'success');
+      this.showNotification(`Gave ligand to Player ${targetPlayerId}!`, 'success');
     } else {
-      this.showNotification(`✅ Swapped ligands with Player ${targetPlayerId}!`, 'success');
+      this.showNotification(`Swapped ligands with Player ${targetPlayerId}!`, 'success');
     }
 
     console.log(`✅ [FATE] Swap complete`);

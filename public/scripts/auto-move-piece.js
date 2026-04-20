@@ -13,15 +13,6 @@ window.AutoMovePiece = {
   moveFromHome(playerId) {
     console.log(`🚀 [AUTO-MOVE] Moving Player ${playerId} from home...`);
 
-    // Check conditions
-    // REMOVED: No longer require rolling 6 to move from home
-    // Players can now start with any dice value
-
-    if (window.z >= 2) {
-      console.warn(`⚠️ [AUTO-MOVE] Already used dice (z=${window.z})`);
-      return false;
-    }
-
     // Get player info
     const identifyPlayer = this.getPlayerIdentifier(playerId);
     const identifyColor = this.getPlayerColor(playerId);
@@ -44,19 +35,17 @@ window.AutoMovePiece = {
 
     // Execute movement (same logic as moveDice click handler)
     try {
-      // Increment z to track 6 usage
-      window.z++;
-
       // Remove piece from home
       $(horseDotClass).remove();
 
       // Remove sixgif class
       $(`#player-${playerId}`).find("div").removeClass("sixgif");
 
-      // UPDATED: Move to position based on dice value (not always 1)
-      const diceValue = window.randomDice || 1;
-      const targetPathCell = `${identifyPlayer}${diceValue}`;
-      console.log(`   Moving to position ${diceValue}: ${targetPathCell}`);
+      // Move from home always goes to position 1 (the start cell)
+      // Standard Ludo rule: rolling 6 brings piece out to start, does NOT walk 6 steps
+      const targetPos = 1;
+      const targetPathCell = `${identifyPlayer}${targetPos}`;
+      console.log(`   Moving to position ${targetPos}: ${targetPathCell}`);
 
       $(targetPathCell).append(
         `<img class="${horseClass} ${identifyColor}" src="horses/${identifyColor}.png">`
@@ -79,10 +68,22 @@ window.AutoMovePiece = {
         window.mergeHorses();
       }
 
-      // Update position tracking with actual dice value
+      // Update position tracking with actual target position
       const posVarName = `lastPos${identifyPlayer.toUpperCase().substring(1)}H1`;
-      window[posVarName] = diceValue;
-      console.log(`   Updated ${posVarName} = ${diceValue}`);
+      window[posVarName] = targetPos;
+      console.log(`   Updated ${posVarName} = ${targetPos}`);
+
+      // Dispatch piece-moved event so orchestrator handles tile actions (ligand/fate/question)
+      const landedCellClass = `${identifyPlayer}${targetPos}`;
+      document.dispatchEvent(new CustomEvent("piece-moved", {
+        detail: {
+          playerId: playerId,
+          landedCell: landedCellClass,
+          position: targetPos,
+          color: identifyColor
+        }
+      }));
+      console.log(`🎮 [AUTO-MOVE] Dispatched piece-moved: ${landedCellClass}`);
 
       console.log(`✅ [AUTO-MOVE] Move complete!`);
       return true;

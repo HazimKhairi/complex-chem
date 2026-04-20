@@ -440,8 +440,15 @@ function moveHorse(event) {
       "." + playerHorseClass == identifyPlayer + "h3" ||
       "." + playerHorseClass == identifyPlayer + "h4")
   ) {
+    if (newfunc) clearInterval(newfunc);
+    window._moveInProgress = true;
     newfunc = setInterval(function () {
-      window[`newPos${playerHorseClassCaps}`] = window[`lastPos${playerHorseClassCaps}`] + 1; //Increments player path position
+      // Skip non-existent cells (gaps at corners and home entries)
+      if (window.BoardPath && window.BoardPath.initialized) {
+        window[`newPos${playerHorseClassCaps}`] = window.BoardPath.getNextPos(identifyPlayer.substring(1), window[`lastPos${playerHorseClassCaps}`]);
+      } else {
+        window[`newPos${playerHorseClassCaps}`] = window[`lastPos${playerHorseClassCaps}`] + 1;
+      }
 
       //Moves the selected player horse to next path cell
       $(`${identifyPlayer}${window[`newPos${playerHorseClassCaps}`]}`).append(
@@ -469,6 +476,7 @@ function moveHorse(event) {
 
       if (count == randomDice) {
         clearInterval(newfunc);
+        window._moveInProgress = false;
 
         // 🎮 Notify game orchestrator that piece has landed
         const landedCellClass = `${identifyPlayer}${window[`lastPos${playerHorseClassCaps}`]}`;
@@ -592,8 +600,15 @@ function moveHorse(event) {
       "." + playerHorseClass == identifyPlayer + "h3" ||
       "." + playerHorseClass == identifyPlayer + "h4")
   ) {
+    if (newfunc) clearInterval(newfunc);
+    window._moveInProgress = true;
     newfunc = setInterval(function () {
-      window[`newPos${playerHorseClassCaps}`] = window[`lastPos${playerHorseClassCaps}`] + 1;
+      // Skip non-existent cells (gaps at corners and home entries)
+      if (window.BoardPath && window.BoardPath.initialized) {
+        window[`newPos${playerHorseClassCaps}`] = window.BoardPath.getNextPos(identifyPlayer.substring(1), window[`lastPos${playerHorseClassCaps}`]);
+      } else {
+        window[`newPos${playerHorseClassCaps}`] = window[`lastPos${playerHorseClassCaps}`] + 1;
+      }
 
       //Moves the selected player horse to next path cell
       $(`${identifyPlayer}${window[`newPos${playerHorseClassCaps}`]}`).append(
@@ -621,6 +636,7 @@ function moveHorse(event) {
 
       if (count == randomDice) {
         clearInterval(newfunc);
+        window._moveInProgress = false;
 
         // 🎮 Notify game orchestrator that piece has landed (home path)
         const landedCellClass = `${identifyPlayer}${window[`lastPos${playerHorseClassCaps}`]}`;
@@ -917,6 +933,20 @@ function moveDice() {
         d = 0; //D is used to restrict one dice roll at a time
         mergeHorseClass = identifyPlayer + 1;
         mergeHorses();
+
+        // Update position tracking
+        window[`lastPos${userSelectedHorse.split(' ')[0].toUpperCase()}`] = 1;
+
+        // Dispatch piece-moved for tile handling (ligand/fate/question modals)
+        document.dispatchEvent(new CustomEvent("piece-moved", {
+          detail: {
+            playerId: x,
+            landedCell: identifyPlayer + "1",
+            position: 1,
+            color: identifyColor
+          }
+        }));
+        console.log(`🎮 [MOVE-DICE] Player ${x} moved from home to ${identifyPlayer}1`);
 
         //Code for computer movement
         computer1Dice = $(`#player-${x}-dice`);

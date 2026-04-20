@@ -28,8 +28,14 @@
       console.log(`   (Or press SPACEBAR to move immediately)`);
 
       // Auto-select piece after 1.5 seconds
+      // Skip if dice is 6 and piece is still in home — moveDice() handles that
       setTimeout(() => {
         if (window.AutoPieceSelector) {
+          // Check if a movement is already in progress (interval running)
+          if (window._moveInProgress) {
+            console.log('⏳ [AUTO-SELECT] Movement already in progress, skipping');
+            return;
+          }
           const success = window.AutoPieceSelector.autoSelectFirstPiece(playerId, value);
           if (!success) {
             console.warn('⚠️ [AUTO-SELECT] No piece can move');

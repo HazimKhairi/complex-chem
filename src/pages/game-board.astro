@@ -76,6 +76,7 @@ import InfoModal from "../components/game/info-modal.astro";
 </Layout>
 
 <script is:inline src="/scripts/audio-manager.js"></script>
+<script is:inline src="/scripts/joyride.js"></script>
 <script>
   // Load game script based on selected option
   const gameOption = sessionStorage.getItem("game-option");
@@ -317,4 +318,14 @@ import InfoModal from "../components/game/info-modal.astro";
 
   console.log('[TILE-INLINE] Inline tile handler ready');
 })();
+</script>
+
+<script is:inline>
+  document.addEventListener('game-countdown-complete', function () {
+    if (!localStorage.getItem('joyride-l1-done')) {
+      setTimeout(function () {
+        if (window.Joyride) window.Joyride.startLevel1();
+      }, 1000);
+    }
+  });
 </script>

@@ -83,6 +83,7 @@ import GameSettingsMenu from "../components/game-settings-menu.astro";
   <script is:inline src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
   <script is:inline src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
   <script is:inline src="/scripts/audio-manager.js"></script>
+  <script is:inline src="/scripts/joyride.js"></script>
   <script is:inline src="/scripts/level-2-3d-builder.js"></script>
   <script is:inline src="/scripts/level-2-game.js"></script>
 </Layout>
@@ -110,3 +111,11 @@ import GameSettingsMenu from "../components/game-settings-menu.astro";
     background-color: #10b981;
   }
 </style>
+
+<script is:inline>
+  if (!localStorage.getItem('joyride-l2-done')) {
+    setTimeout(function () {
+      if (window.Joyride) window.Joyride.startLevel2();
+    }, 500);
+  }
+</script>

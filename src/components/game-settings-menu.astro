@@ -1,0 +1,345 @@
+---
+// Game Settings Menu — floating gear button + slide-in panel
+---
+
+<!-- Gear Button -->
+<button id="settings-gear-btn" type="button" aria-label="Open settings">
+  <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+    <circle cx="12" cy="12" r="3"/>
+  </svg>
+</button>
+
+<!-- Backdrop -->
+<div id="settings-backdrop"></div>
+
+<!-- Settings Panel -->
+<div id="settings-panel">
+  <!-- Header -->
+  <div class="sp-header">
+    <span class="sp-title">Settings</span>
+    <button id="settings-close-btn" type="button" aria-label="Close settings">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Volume -->
+  <div class="sp-section">
+    <label class="sp-label" for="settings-volume">Volume</label>
+    <div class="sp-volume-row">
+      <input type="range" id="settings-volume" min="0" max="100" value="80" class="sp-range" />
+      <span id="settings-volume-val" class="sp-volume-val">80%</span>
+    </div>
+  </div>
+
+  <!-- Mute -->
+  <div class="sp-section">
+    <button id="settings-mute-btn" type="button" class="sp-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;">
+        <path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"/>
+        <path d="M16 9a5 5 0 0 1 0 6"/>
+        <path d="M19.364 18.364a9 9 0 0 0 0-12.728"/>
+      </svg>
+      <span id="settings-mute-text">Mute</span>
+    </button>
+  </div>
+
+  <hr class="sp-divider" />
+
+  <!-- How to Play -->
+  <div class="sp-section">
+    <button id="settings-howtoplay-btn" type="button" class="sp-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;">
+        <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>
+      </svg>
+      How to Play
+    </button>
+  </div>
+
+  <!-- Fullscreen -->
+  <div class="sp-section">
+    <button id="settings-fullscreen-btn" type="button" class="sp-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;">
+        <path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M21 8V5a2 2 0 0 0-2-2h-3"/><path d="M3 16v3a2 2 0 0 0 2 2h3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
+      </svg>
+      Fullscreen
+    </button>
+  </div>
+
+  <hr class="sp-divider" />
+
+  <!-- Restart Game -->
+  <div class="sp-section">
+    <button id="settings-restart-btn" type="button" class="sp-btn sp-btn-danger">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;">
+        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
+      </svg>
+      Restart Game
+    </button>
+  </div>
+
+  <!-- Back to Menu -->
+  <div class="sp-section">
+    <button id="settings-backtomenu-btn" type="button" class="sp-btn sp-btn-danger">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;">
+        <path d="m12 19-7-7 7-7"/><path d="M19 12H5"/>
+      </svg>
+      Back to Menu
+    </button>
+  </div>
+</div>
+
+<style>
+  #settings-gear-btn {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    z-index: 9999;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0, 0, 0, 0.3);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  #settings-gear-btn:hover {
+    background: rgba(0, 0, 0, 0.5);
+  }
+
+  #settings-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+  }
+  #settings-backdrop.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  #settings-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 10000;
+    width: 280px;
+    height: 100%;
+    background: #fff;
+    box-shadow: -2px 0 12px rgba(0, 0, 0, 0.15);
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    overflow-y: auto;
+    padding: 0 16px 24px;
+    box-sizing: border-box;
+  }
+  #settings-panel.open {
+    transform: translateX(0);
+  }
+
+  .sp-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 0 12px;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 16px;
+  }
+  .sp-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #111827;
+  }
+  #settings-close-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #6b7280;
+    padding: 4px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.15s;
+  }
+  #settings-close-btn:hover {
+    color: #111827;
+  }
+
+  .sp-section {
+    margin-bottom: 12px;
+  }
+  .sp-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 6px;
+  }
+
+  .sp-volume-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .sp-range {
+    flex: 1;
+    accent-color: #2563eb;
+    cursor: pointer;
+    height: 6px;
+  }
+  .sp-volume-val {
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+    min-width: 36px;
+    text-align: right;
+  }
+
+  .sp-btn {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 9px 12px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    background: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .sp-btn:hover {
+    background: #f3f4f6;
+  }
+
+  .sp-btn-danger {
+    background: #fef2f2;
+    color: #b91c1c;
+    border-color: #fecaca;
+  }
+  .sp-btn-danger:hover {
+    background: #fee2e2;
+  }
+
+  .sp-divider {
+    border: none;
+    border-top: 1px solid #e5e7eb;
+    margin: 16px 0;
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const gearBtn = document.getElementById('settings-gear-btn');
+    const closeBtn = document.getElementById('settings-close-btn');
+    const backdrop = document.getElementById('settings-backdrop');
+    const panel = document.getElementById('settings-panel');
+    const volumeSlider = document.getElementById('settings-volume') as HTMLInputElement;
+    const volumeVal = document.getElementById('settings-volume-val');
+    const muteBtn = document.getElementById('settings-mute-btn');
+    const muteText = document.getElementById('settings-mute-text');
+    const howToPlayBtn = document.getElementById('settings-howtoplay-btn');
+    const fullscreenBtn = document.getElementById('settings-fullscreen-btn');
+    const restartBtn = document.getElementById('settings-restart-btn');
+    const backBtn = document.getElementById('settings-backtomenu-btn');
+
+    function openPanel() {
+      panel?.classList.add('open');
+      backdrop?.classList.add('open');
+      syncAudioControls();
+    }
+
+    function closePanel() {
+      panel?.classList.remove('open');
+      backdrop?.classList.remove('open');
+    }
+
+    function syncAudioControls() {
+      const am = (window as any).AudioManager;
+      if (am) {
+        if (typeof am.getVolume === 'function') {
+          const vol = Math.round(am.getVolume() * 100);
+          if (volumeSlider) volumeSlider.value = String(vol);
+          if (volumeVal) volumeVal.textContent = vol + '%';
+        }
+        if (typeof am.isMuted === 'function') {
+          if (muteText) muteText.textContent = am.isMuted() ? 'Unmute' : 'Mute';
+        }
+      }
+    }
+
+    gearBtn?.addEventListener('click', openPanel);
+    closeBtn?.addEventListener('click', closePanel);
+    backdrop?.addEventListener('click', closePanel);
+
+    // Volume slider
+    volumeSlider?.addEventListener('input', () => {
+      const val = parseInt(volumeSlider.value, 10);
+      if (volumeVal) volumeVal.textContent = val + '%';
+      const am = (window as any).AudioManager;
+      if (am && typeof am.setVolume === 'function') {
+        am.setVolume(val / 100);
+      }
+    });
+
+    // Mute toggle
+    muteBtn?.addEventListener('click', () => {
+      const am = (window as any).AudioManager;
+      if (am && typeof am.toggleMute === 'function') {
+        am.toggleMute();
+        if (typeof am.isMuted === 'function') {
+          if (muteText) muteText.textContent = am.isMuted() ? 'Unmute' : 'Mute';
+        }
+      }
+    });
+
+    // How to Play
+    howToPlayBtn?.addEventListener('click', () => {
+      const joyride = (window as any).Joyride;
+      if (!joyride) return;
+      const isLevel2 = window.location.href.includes('level-2');
+      if (isLevel2 && typeof joyride.startLevel2 === 'function') {
+        joyride.startLevel2();
+      } else if (typeof joyride.startLevel1 === 'function') {
+        joyride.startLevel1();
+      }
+      closePanel();
+    });
+
+    // Fullscreen
+    fullscreenBtn?.addEventListener('click', () => {
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      } else {
+        document.documentElement.requestFullscreen().catch(() => {});
+      }
+    });
+
+    // Restart Game
+    restartBtn?.addEventListener('click', () => {
+      if (confirm('Are you sure you want to restart the game? All progress will be lost.')) {
+        sessionStorage.clear();
+        window.location.reload();
+      }
+    });
+
+    // Back to Menu
+    backBtn?.addEventListener('click', () => {
+      if (confirm('Are you sure you want to go back to the menu? All progress will be lost.')) {
+        sessionStorage.clear();
+        window.location.href = '/';
+      }
+    });
+  });
+</script>

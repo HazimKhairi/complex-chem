@@ -54,7 +54,7 @@
   function createOverlay() {
     overlayEl = document.createElement('div');
     overlayEl.id = 'joyride-overlay';
-    overlayEl.addEventListener('click', function (e) { e.stopPropagation(); });
+    overlayEl.addEventListener('click', function () { stop(); });
     document.body.appendChild(overlayEl);
 
     cutoutEl = document.createElement('div');

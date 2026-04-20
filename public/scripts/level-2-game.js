@@ -116,6 +116,21 @@
     var info = document.getElementById("player-info");
     if (info) info.textContent = level2State.playerName + " \u2014 " + playerLigands.length + " ligand(s) collected";
 
+    // Show message if no ligands collected
+    if (playerLigands.length === 0) {
+      var c = $("step-container");
+      if (c) {
+        c.innerHTML = '<div class="text-center py-12">'
+          + '<div class="text-5xl mb-4">&#9888;</div>'
+          + '<h2 class="text-xl font-bold text-gray-800 mb-3">No Ligands Collected</h2>'
+          + '<p class="text-gray-600 mb-6">You need to collect ligands in Level 1 before building a complex in Level 2.</p>'
+          + '<a href="/pass-and-play" class="inline-block px-6 py-3 rounded-lg bg-[#4187a0] text-white font-semibold hover:bg-[#357a91] transition">Play Level 1</a>'
+          + '</div>';
+      }
+      updateScoreBar();
+      return;
+    }
+
     updateScoreBar();
     renderStep(1);
   }

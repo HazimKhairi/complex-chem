@@ -2,7 +2,7 @@
 import Layout from "../layouts/Layout.astro";
 import PlayerCard from "../components/game-board/player-card.astro";
 import LudoBoard from "../components/game-board/ludo-board.astro";
-import GameAudio from "../components/game-audio.astro";
+import GameSettingsMenu from "../components/game-settings-menu.astro";
 import WinnersModel from "../components/game-board/winners-model.astro";
 import GameStartCountdown from "../components/game-board/game-start-countdown.astro";
 import GameAssets from "../components/game-assets.astro";
@@ -16,6 +16,7 @@ import InfoModal from "../components/game/info-modal.astro";
 ---
 
 <Layout>
+  <GameSettingsMenu />
   <main class="flex justify-center items-center min-h-dvh p-2 sm:p-4 overflow-hidden">
     <!-- Landscape Mode Required Overlay (Mobile Only) -->
     <div
@@ -62,7 +63,6 @@ import InfoModal from "../components/game/info-modal.astro";
         <LigandBox playerId={4} />
       </div>
     </section>
-    <GameAudio />
     <GameAssets />
     <GameStartCountdown />
 
@@ -75,6 +75,7 @@ import InfoModal from "../components/game/info-modal.astro";
   </main>
 </Layout>
 
+<script is:inline src="/scripts/audio-manager.js"></script>
 <script>
   // Load game script based on selected option
   const gameOption = sessionStorage.getItem("game-option");
@@ -84,6 +85,19 @@ import InfoModal from "../components/game/info-modal.astro";
     console.error("No game mode selected! Redirecting to game mode selection...");
     window.location.href = "/pass-and-play";
     throw new Error("No game mode selected");
+  }
+
+  // Load board path helper (must be before game scripts)
+  const boardPathScript = document.createElement("script");
+  boardPathScript.src = "scripts/board-path.js";
+  boardPathScript.type = "application/javascript";
+  document.head.appendChild(boardPathScript);
+
+  // Initialize BoardPath after DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => window.BoardPath?.init());
+  } else {
+    setTimeout(() => window.BoardPath?.init(), 0);
   }
 
   // Load main game script
@@ -228,4 +242,79 @@ import InfoModal from "../components/game/info-modal.astro";
 
   // Also check periodically for devices that don't fire orientationchange
   setInterval(checkOrientation, 500);
+</script>
+
+<!-- INLINE tile handler - guaranteed to run, no external script dependency -->
+<script is:inline>
+(function() {
+  'use strict';
+
+  var LIGAND_NAMES = ['H₂O', 'phen', 'bipy', 'ox', 'py', 'NH₃', 'PPh₃', 'CI', 'en', 'acac', 'CO₃²⁻', 'CN⁻', 'O²⁻'];
+
+  // Detect tile type from a cell element
+  function detectTileType(cell) {
+    if (!cell) return 'normal';
+    var style = cell.getAttribute('style') || '';
+    if (style.indexOf('fate_card.png') !== -1) return 'fate';
+    if (style.indexOf('/complexes/') !== -1) return 'question';
+    var span = cell.querySelector('span');
+    var text = span ? span.textContent.trim() : '';
+    for (var i = 0; i < LIGAND_NAMES.length; i++) {
+      if (text.indexOf(LIGAND_NAMES[i]) !== -1) return 'ligand';
+    }
+    return 'normal';
+  }
+
+  // Listen for piece-moved and handle tile actions
+  document.addEventListener('piece-moved', function(event) {
+    var detail = event.detail;
+    if (!detail || !detail.landedCell) return;
+
+    var landedCell = detail.landedCell;
+    var playerId = detail.playerId;
+    var className = (typeof landedCell === 'string' && landedCell.charAt(0) === '.')
+      ? landedCell.substring(1) : landedCell;
+
+    if (typeof className !== 'string') return;
+
+    var board = document.getElementById('ludo-board');
+    if (!board) { console.error('[TILE-INLINE] No ludo-board!'); return; }
+
+    var cell = board.querySelector('td.' + className);
+    if (!cell) { console.warn('[TILE-INLINE] Cell not found: ' + className); return; }
+
+    var tileType = detectTileType(cell);
+    console.log('[TILE-INLINE] piece-moved -> cell=' + className + ' type=' + tileType);
+
+    if (tileType === 'normal') return;
+
+    // Try using GameMechanics if available
+    if (window.GameMechanics) {
+      if (tileType === 'ligand') {
+        window.GameMechanics.collectLigand(playerId, cell);
+      } else if (tileType === 'question') {
+        var bgMatch = (cell.getAttribute('style') || '').match(/background:\s*(#[0-9a-fA-F]+)/);
+        window.GameMechanics.showQuestion(playerId, bgMatch ? bgMatch[1] : null);
+      } else if (tileType === 'fate') {
+        window.GameMechanics.showFate(playerId);
+      }
+      return;
+    }
+
+    // Fallback: show modal directly by toggling visibility
+    console.warn('[TILE-INLINE] GameMechanics not loaded, showing modal directly');
+    var modalId = tileType === 'ligand' ? 'ligand-modal'
+                : tileType === 'question' ? 'question-modal'
+                : tileType === 'fate' ? 'fate-modal' : null;
+    if (modalId) {
+      var modal = document.getElementById(modalId);
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    }
+  });
+
+  console.log('[TILE-INLINE] Inline tile handler ready');
+})();
 </script>

@@ -1,8 +1,10 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import GameSettingsMenu from "../components/game-settings-menu.astro";
 ---
 
 <Layout>
+  <GameSettingsMenu />
   <main class="min-h-screen p-4 flex flex-col items-center">
     <!-- Header -->
     <div class="w-full max-w-2xl mb-4">
@@ -80,6 +82,7 @@ import Layout from "../layouts/Layout.astro";
   </script>
   <script is:inline src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
   <script is:inline src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+  <script is:inline src="/scripts/audio-manager.js"></script>
   <script is:inline src="/scripts/level-2-3d-builder.js"></script>
   <script is:inline src="/scripts/level-2-game.js"></script>
 </Layout>

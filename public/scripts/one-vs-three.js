@@ -879,8 +879,8 @@ function accurateMoveHorse() {
   }).length;
 
   //Executes when clicking a horse is necessary
-  // UPDATED: Removed randomDice == 6 check - pieces can start with any dice value
-  if (autoHorsesLength > 1 || (playerAvailHorses >= 1 && autoHorsesLength == 1)) {
+  // Standard Ludo: piece can only exit home on dice 6
+  if (autoHorsesLength > 1 || (playerAvailHorses >= 1 && randomDice == 6 && autoHorsesLength == 1)) {
     // Highlight pieces to show they're clickable
     $(`.path td img.${identifyColor}`).css('opacity', '1');
   }

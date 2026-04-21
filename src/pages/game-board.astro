@@ -322,6 +322,9 @@ import InfoModal from "../components/game/info-modal.astro";
 
 <script is:inline>
   document.addEventListener('game-countdown-complete', function () {
+    // Start background music loop
+    if (window.AudioManager) window.AudioManager.startBGM();
+
     if (!localStorage.getItem('joyride-l1-done')) {
       setTimeout(function () {
         if (window.Joyride) window.Joyride.startLevel1();

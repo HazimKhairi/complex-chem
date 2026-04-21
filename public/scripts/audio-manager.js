@@ -17,6 +17,7 @@ window.AudioManager = (function () {
   var cache = {};
   var volume = parseFloat(localStorage.getItem('game-volume') || '1');
   var muted = localStorage.getItem('game-muted') === 'true';
+  var bgm = null; // Background music Audio instance
 
   // Preload all sounds
   Object.keys(sounds).forEach(function (name) {
@@ -29,10 +30,36 @@ window.AudioManager = (function () {
     if (muted) return;
     var src = sounds[name];
     if (!src) return;
-    // Create fresh instance each time (allows overlapping plays)
     var audio = new Audio(src);
     audio.volume = volume;
     audio.play().catch(function () {});
+  }
+
+  function startBGM() {
+    if (bgm) return; // already playing
+    bgm = new Audio('/audio/game-start.wav');
+    bgm.loop = true;
+    bgm.volume = volume * 0.4; // BGM quieter than SFX
+    if (!muted) {
+      bgm.play().catch(function () {});
+    }
+  }
+
+  function stopBGM() {
+    if (!bgm) return;
+    bgm.pause();
+    bgm.currentTime = 0;
+    bgm = null;
+  }
+
+  function syncBGM() {
+    if (!bgm) return;
+    bgm.volume = volume * 0.4;
+    if (muted) {
+      bgm.pause();
+    } else {
+      bgm.play().catch(function () {});
+    }
   }
 
   function getVolume() {
@@ -42,6 +69,7 @@ window.AudioManager = (function () {
   function setVolume(val) {
     volume = Math.max(0, Math.min(1, val));
     localStorage.setItem('game-volume', volume.toString());
+    syncBGM();
   }
 
   function isMuted() {
@@ -51,11 +79,16 @@ window.AudioManager = (function () {
   function setMuted(val) {
     muted = !!val;
     localStorage.setItem('game-muted', muted.toString());
+    syncBGM();
   }
 
   function toggleMute() {
     setMuted(!muted);
     return muted;
+  }
+
+  function isBGMPlaying() {
+    return bgm !== null && !bgm.paused;
   }
 
   return {
@@ -65,5 +98,8 @@ window.AudioManager = (function () {
     isMuted: isMuted,
     setMuted: setMuted,
     toggleMute: toggleMute,
+    startBGM: startBGM,
+    stopBGM: stopBGM,
+    isBGMPlaying: isBGMPlaying,
   };
 })();

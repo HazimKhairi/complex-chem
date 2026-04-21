@@ -457,6 +457,11 @@ function moveHorse(event) {
 
   playerHorseClassCaps = playerHorseClass.toUpperCase();
 
+  // Guard: skip if piece doesn't exist on board (prevents ghost moves)
+  if (!playerHorseClass || $(`.path img.${playerHorseClass}`).length === 0) {
+    return;
+  }
+
   if (
     window[`lastPos${playerHorseClassCaps}`] < 52 &&
     ("." + playerHorseClass == identifyPlayer + "h1" ||

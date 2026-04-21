@@ -80,10 +80,10 @@ function transferDiceCode() {
     $("#player-" + x + "-dice-arrow").attr("src", "");
     x++;
     identifyPlayerInfo();
-    if ($(`td${identifyPlayer}57`).find("img").length == 4) {
+    if ($(`td${identifyPlayer}57`).find("img").length >= 1) {
       x++;
       identifyPlayerInfo();
-      if ($(`td${identifyPlayer}57`).find("img").length == 4) {
+      if ($(`td${identifyPlayer}57`).find("img").length >= 1) {
         x++;
       }
     }
@@ -1129,11 +1129,11 @@ function findWinner() {
 
   //Code for declaring first winner
   if (
-    $(`td${gameParticipants[0]}`).find("img").length != 4 &&
-    $(`td${gameParticipants[1]}`).find("img").length != 4 &&
-    $(`td${gameParticipants[2]}`).find("img").length != 4
+    $(`td${gameParticipants[0]}`).find("img").length < 1 &&
+    $(`td${gameParticipants[1]}`).find("img").length < 1 &&
+    $(`td${gameParticipants[2]}`).find("img").length < 1
   ) {
-    if ($(`td${identifyPlayer}57`).find("img").length == 4) {
+    if ($(`td${identifyPlayer}57`).find("img").length >= 1) {
       $("#player-" + x + " > table > tbody").css("opacity", "0");
       $("#player-" + x + " > table").css({
         "background-image": 'url("crowns/first-winner.png")',
@@ -1152,17 +1152,17 @@ function findWinner() {
 
   //Code for declaring second winner
   if (
-    ($(`td${gameParticipants[0]}`).find("img").length == 4 &&
-      $(`td${gameParticipants[1]}`).find("img").length != 4 &&
-      $(`td${gameParticipants[2]}`).find("img").length != 4) ||
-    ($(`td${gameParticipants[0]}`).find("img").length != 4 &&
-      $(`td${gameParticipants[1]}`).find("img").length == 4 &&
-      $(`td${gameParticipants[2]}`).find("img").length != 4) ||
-    ($(`td${gameParticipants[0]}`).find("img").length != 4 &&
-      $(`td${gameParticipants[1]}`).find("img").length != 4 &&
-      $(`td${gameParticipants[2]}`).find("img").length == 4)
+    ($(`td${gameParticipants[0]}`).find("img").length >= 1 &&
+      $(`td${gameParticipants[1]}`).find("img").length < 1 &&
+      $(`td${gameParticipants[2]}`).find("img").length < 1) ||
+    ($(`td${gameParticipants[0]}`).find("img").length < 1 &&
+      $(`td${gameParticipants[1]}`).find("img").length >= 1 &&
+      $(`td${gameParticipants[2]}`).find("img").length < 1) ||
+    ($(`td${gameParticipants[0]}`).find("img").length < 1 &&
+      $(`td${gameParticipants[1]}`).find("img").length < 1 &&
+      $(`td${gameParticipants[2]}`).find("img").length >= 1)
   ) {
-    if ($(`td${identifyPlayer}57`).find("img").length == 4) {
+    if ($(`td${identifyPlayer}57`).find("img").length >= 1) {
       $("#player-" + x + " > table > tbody").css("opacity", "0");
       $("#player-" + x + " > table").css({
         "background-image": 'url("crowns/second-winner.png")',
@@ -1181,17 +1181,17 @@ function findWinner() {
 
   //Code for declaring third winner
   if (
-    ($(`td${gameParticipants[0]}`).find("img").length == 4 &&
-      $(`td${gameParticipants[1]}`).find("img").length == 4 &&
-      $(`td${gameParticipants[2]}`).find("img").length != 4) ||
-    ($(`td${gameParticipants[0]}`).find("img").length != 4 &&
-      $(`td${gameParticipants[1]}`).find("img").length == 4 &&
-      $(`td${gameParticipants[2]}`).find("img").length == 4) ||
-    ($(`td${gameParticipants[0]}`).find("img").length == 4 &&
-      $(`td${gameParticipants[1]}`).find("img").length != 4 &&
-      $(`td${gameParticipants[2]}`).find("img").length == 4)
+    ($(`td${gameParticipants[0]}`).find("img").length >= 1 &&
+      $(`td${gameParticipants[1]}`).find("img").length >= 1 &&
+      $(`td${gameParticipants[2]}`).find("img").length < 1) ||
+    ($(`td${gameParticipants[0]}`).find("img").length < 1 &&
+      $(`td${gameParticipants[1]}`).find("img").length >= 1 &&
+      $(`td${gameParticipants[2]}`).find("img").length >= 1) ||
+    ($(`td${gameParticipants[0]}`).find("img").length >= 1 &&
+      $(`td${gameParticipants[1]}`).find("img").length < 1 &&
+      $(`td${gameParticipants[2]}`).find("img").length >= 1)
   ) {
-    if ($(`td${identifyPlayer}57`).find("img").length == 4) {
+    if ($(`td${identifyPlayer}57`).find("img").length >= 1) {
       $("#player-" + x + " > table > tbody").css("opacity", "0");
       $("#player-" + x + " > table").css({
         "background-image": 'url("crowns/third-winner.png")',
@@ -1203,16 +1203,16 @@ function findWinner() {
       xOfThird = x;
 
       //Code for finding fourth winner name
-      if ($(`td.r57`).find("img").length != 4) {
+      if ($(`td.r57`).find("img").length < 1) {
         fourthWinner = $("#player-1-name").text();
         xOfFourth = 1;
-      } else if ($(`td.b57`).find("img").length != 4) {
+      } else if ($(`td.b57`).find("img").length < 1) {
         fourthWinner = $("#player-2-name").text();
         xOfFourth = 2;
-      } else if ($(`td.y57`).find("img").length != 4) {
+      } else if ($(`td.y57`).find("img").length < 1) {
         fourthWinner = $("#player-3-name").text();
         xOfFourth = 3;
-      } else if ($(`td.g57`).find("img").length != 4) {
+      } else if ($(`td.g57`).find("img").length < 1) {
         fourthWinner = $("#player-4-name").text();
         xOfFourth = 4;
       }

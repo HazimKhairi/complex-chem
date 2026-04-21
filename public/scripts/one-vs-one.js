@@ -1123,9 +1123,9 @@ function findWinner() {
     }, 200);
   }
 
-  //Code for declaring first winner
-  if ($(`td${gameParticipants[1]}`).find("img").length != 4) {
-    if ($(`td${identifyPlayer}57`).find("img").length == 4) {
+  //Code for declaring first winner (single piece mode: check >= 1)
+  if ($(`td${gameParticipants[1]}`).find("img").length < 1) {
+    if ($(`td${identifyPlayer}57`).find("img").length >= 1) {
       $("#player-" + x + " > table > tbody").css("opacity", "0");
       $("#player-" + x + " > table").css({
         "background-image": 'url("crowns/first-winner.png")',

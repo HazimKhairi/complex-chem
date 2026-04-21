@@ -681,11 +681,7 @@ function collectLigand(playerId, landedCell = null) {
       console.log(`   ✅ Found matching ligand: ${ligand.name} (${ligand.id})`);
 
       if (gameState.collectedLigandIds.includes(ligand.id)) {
-        console.warn(`   ⚠️ Ligand "${ligandName}" already collected!`);
-        showLigandModal(ligand, "Already Collected", "This ligand has already been collected by another player");
-        // Don't add to player inventory, but don't stop the turn either
-        // Just show the modal and continue
-        savePiecePositions(); // Save current piece positions
+        console.log(`   Ligand "${ligandName}" already collected — skipping, treat as normal tile`);
         return;
       }
     } else {

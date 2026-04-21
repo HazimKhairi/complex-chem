@@ -7,6 +7,7 @@
 // Section for defining some global variables
 
 audio = undefined;
+newfunc = null; // Movement interval reference
 lastClick = 0; // Used in code for avoiding function bounce
 delay = 20; // Used in code for avoiding function bounce
 a = 1; //A is used to restrict auto move horse attempts

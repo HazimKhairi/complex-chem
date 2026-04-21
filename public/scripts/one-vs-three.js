@@ -521,7 +521,7 @@ function moveHorse(event) {
           $(`${identifyPlayer}${window[`lastPos${playerHorseClassCaps}`]} > span > img`).removeAttr("style"); //Removes style attribute of killer and to be killed
           $("#" + identifyPlayerHomePosition).append(horseKillList[0]); //Sends the horse killed back to its default location
           $("img." + identifyPlayerHomePosition).removeClass(identifyHorseToBeKilled); //Removes color class from killed horse
-          window[`lastPos${horseKillList[0].classList[0].toUpperCase()}`] = 1; //Resets the last position of killed horse
+          window[`lastPos${horseKillList[0].classList[0].toUpperCase()}`] = 0; //Resets the last position of killed horse to home
 
           //Horse kill sound
           if (window.AudioManager) window.AudioManager.play("horse-kill");

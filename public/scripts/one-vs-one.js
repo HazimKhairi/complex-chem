@@ -18,25 +18,25 @@ d = 0; //D is used to restrict one dice roll at a time
 playerHorseClass = ""; // Classname or identity of selected player horse
 selectedPathCell = null; // Used to get list of parents of clicked/selected horse
 // Last positions of red horses
-lastPosRH1 = 1;
-lastPosRH2 = 1;
-lastPosRH3 = 1;
-lastPosRH4 = 1;
+lastPosRH1 = 0;
+lastPosRH2 = 0;
+lastPosRH3 = 0;
+lastPosRH4 = 0;
 // Last positions of blue horses
-lastPosBH1 = 1;
-lastPosBH2 = 1;
-lastPosBH3 = 1;
-lastPosBH4 = 1;
+lastPosBH1 = 0;
+lastPosBH2 = 0;
+lastPosBH3 = 0;
+lastPosBH4 = 0;
 // Last positions of yellow horses
-lastPosYH1 = 1;
-lastPosYH2 = 1;
-lastPosYH3 = 1;
-lastPosYH4 = 1;
+lastPosYH1 = 0;
+lastPosYH2 = 0;
+lastPosYH3 = 0;
+lastPosYH4 = 0;
 // Last positions of green horses
-lastPosGH1 = 1;
-lastPosGH2 = 1;
-lastPosGH3 = 1;
-lastPosGH4 = 1;
+lastPosGH1 = 0;
+lastPosGH2 = 0;
+lastPosGH3 = 0;
+lastPosGH4 = 0;
 
 //Code for second horse combination of onevs1
 if (sessionStorage.getItem("one-vs-one-horse-1") == "blue") {

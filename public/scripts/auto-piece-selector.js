@@ -24,8 +24,8 @@ window.AutoPieceSelector = {
 
     let selectablePieces = [];
 
-    // Check piece in home (UPDATED: can move with any dice value)
-    if (piecesInHome.length > 0) {
+    // Check piece in home — standard Ludo rule: only exits on dice 6
+    if (piecesInHome.length > 0 && diceValue === 6) {
       const piece = piecesInHome[0];
       if (this.isPieceClickable(piece)) {
         selectablePieces.push({ piece, location: 'home' });

@@ -40,8 +40,20 @@ window.FateEffectHandler = {
         this.applyDestinyDance(playerId);
         break;
 
+      case 'karma-kickback':
+        this.applyKarmaKickback(playerId);
+        break;
+
+      case 'twist-fate':
+        this.applyTwistFate(playerId);
+        break;
+
+      case 'generous-gesture':
+        this.applyGenerousGesture(playerId);
+        break;
+
       default:
-        console.warn(`⚠️ [FATE] Unknown fate effect: ${fateEffect}`);
+        console.warn(`[FATE] Unknown fate effect: ${fateEffect}`);
     }
   },
 
@@ -646,6 +658,107 @@ window.FateEffectHandler = {
 
     // Dispatch event to continue game
     document.dispatchEvent(new Event("swap-complete"));
+  },
+
+  /**
+   * Karma Kickback — return one ligand card back (removed from inventory)
+   */
+  applyKarmaKickback(playerId) {
+    console.log(`[FATE] Karma Kickback for Player ${playerId}`);
+    const ligands = gameState.playerLigands[playerId] || [];
+
+    if (ligands.length === 0) {
+      this.showNotification('No ligands to return!', 'info');
+      return;
+    }
+
+    // Remove a random ligand
+    const removedIndex = Math.floor(Math.random() * ligands.length);
+    const removed = ligands.splice(removedIndex, 1)[0];
+
+    // Also remove from collectedLigandIds so it can be collected again
+    const collectedIdx = gameState.collectedLigandIds.indexOf(removed.id);
+    if (collectedIdx > -1) gameState.collectedLigandIds.splice(collectedIdx, 1);
+
+    sessionStorage.setItem('game-state', JSON.stringify(gameState));
+    this.updateLigandDisplay(playerId);
+    if (window.GameMechanics) window.GameMechanics.updateAllLigandDisplays?.();
+
+    this.showNotification(`Returned ${removed.name} back!`, 'error');
+  },
+
+  /**
+   * Twist of Fate — exchange one ligand with the previous player
+   */
+  applyTwistFate(playerId) {
+    console.log(`[FATE] Twist of Fate for Player ${playerId}`);
+    const ligands = gameState.playerLigands[playerId] || [];
+
+    if (ligands.length === 0) {
+      this.showNotification('No ligands to exchange!', 'info');
+      return;
+    }
+
+    // Find previous player (active players only)
+    const activePlayers = window.TurnManager ? window.TurnManager.getActivePlayers() : [1, 2, 3, 4];
+    const currentIdx = activePlayers.indexOf(playerId);
+    const prevIdx = (currentIdx - 1 + activePlayers.length) % activePlayers.length;
+    const prevPlayerId = activePlayers[prevIdx];
+    const prevLigands = gameState.playerLigands[prevPlayerId] || [];
+
+    if (prevLigands.length === 0) {
+      // One-way: give one ligand to previous player
+      const givenIndex = Math.floor(Math.random() * ligands.length);
+      const given = ligands.splice(givenIndex, 1)[0];
+      prevLigands.push(given);
+      this.showNotification(`Gave ${given.name} to Player ${prevPlayerId}!`, 'info');
+    } else {
+      // Swap random ligands between current and previous
+      const myIdx = Math.floor(Math.random() * ligands.length);
+      const theirIdx = Math.floor(Math.random() * prevLigands.length);
+      const myLigand = ligands[myIdx];
+      const theirLigand = prevLigands[theirIdx];
+      ligands[myIdx] = theirLigand;
+      prevLigands[theirIdx] = myLigand;
+      this.showNotification(`Exchanged ${myLigand.name} with Player ${prevPlayerId}'s ${theirLigand.name}!`, 'info');
+    }
+
+    sessionStorage.setItem('game-state', JSON.stringify(gameState));
+    this.updateLigandDisplay(playerId);
+    this.updateLigandDisplay(prevPlayerId);
+    if (window.GameMechanics) window.GameMechanics.updateAllLigandDisplays?.();
+  },
+
+  /**
+   * Generous Gesture — donate one ligand to another random player
+   */
+  applyGenerousGesture(playerId) {
+    console.log(`[FATE] Generous Gesture for Player ${playerId}`);
+    const ligands = gameState.playerLigands[playerId] || [];
+
+    if (ligands.length === 0) {
+      this.showNotification('No ligands to donate!', 'info');
+      return;
+    }
+
+    // Pick a random other active player
+    const activePlayers = window.TurnManager ? window.TurnManager.getActivePlayers() : [1, 2, 3, 4];
+    const others = activePlayers.filter(id => id !== playerId);
+    if (others.length === 0) return;
+    const targetPlayerId = others[Math.floor(Math.random() * others.length)];
+    const targetLigands = gameState.playerLigands[targetPlayerId] || [];
+
+    // Give a random ligand
+    const givenIndex = Math.floor(Math.random() * ligands.length);
+    const given = ligands.splice(givenIndex, 1)[0];
+    targetLigands.push(given);
+
+    sessionStorage.setItem('game-state', JSON.stringify(gameState));
+    this.updateLigandDisplay(playerId);
+    this.updateLigandDisplay(targetPlayerId);
+    if (window.GameMechanics) window.GameMechanics.updateAllLigandDisplays?.();
+
+    this.showNotification(`Donated ${given.name} to Player ${targetPlayerId}!`, 'info');
   },
 
   /**

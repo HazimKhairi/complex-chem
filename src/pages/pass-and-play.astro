@@ -38,5 +38,12 @@ import LoadingScreen from "../components/loading-screen.astro";
 <script is:inline src="/scripts/audio-manager.js"></script>
 
 <script>
+  // Wipe everything from any previous run so the next game starts fresh
+  // (piece positions, ligand inventory, scores, level-2 finals, …).
+  // Without this, opening pass-and-play after finishing a game would
+  // carry over stale state and the new piece would jump past home.
+  try {
+    sessionStorage.clear();
+  } catch (e) {}
   sessionStorage.setItem("computer", "false");
 </script>

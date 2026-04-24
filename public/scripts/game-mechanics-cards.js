@@ -585,7 +585,7 @@ function showQuestionFeedback(isCorrect, points, difficulty) {
     borderColor: 'border-green-400',
     textColor: 'text-green-600',
     icon: '',
-    title: 'Outstanding!',
+    title: 'You are correct',
     emoji: '',
     animation: 'animate-bounceIn'
   } : {
@@ -594,7 +594,7 @@ function showQuestionFeedback(isCorrect, points, difficulty) {
     borderColor: 'border-red-400',
     textColor: 'text-red-600',
     icon: '',
-    title: 'Not quite!',
+    title: 'You are wrong',
     emoji: '',
     animation: 'animate-shakeX'
   };

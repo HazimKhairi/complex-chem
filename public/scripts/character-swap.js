@@ -95,6 +95,10 @@
     swapAll();
   }
 
+  // Expose the runner so other systems (e.g. piece-watchdog) can
+  // re-apply blook skins after they restore a vanished piece.
+  window.__characterSwapRun = run;
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', run);
   } else {

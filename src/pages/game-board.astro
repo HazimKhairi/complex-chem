@@ -192,6 +192,14 @@ import InfoModal from "../components/game/info-modal.astro";
   characterSwapScript.type = "application/javascript";
   document.head.appendChild(characterSwapScript);
 
+  // Piece watchdog — Layer 3 of the "no disappearing horse" defence.
+  // Continuously verifies each player's piece is in the DOM and
+  // auto-restores if one vanishes.
+  const pieceWatchdogScript = document.createElement("script");
+  pieceWatchdogScript.src = "scripts/piece-watchdog.js";
+  pieceWatchdogScript.type = "application/javascript";
+  document.head.appendChild(pieceWatchdogScript);
+
   // SKIPPED: turn-indicator-integration.js (user doesn't want turn indicator badge)
   // SKIPPED: ui-animations.js & ui-polish.js (extra UI features)
 

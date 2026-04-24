@@ -9,14 +9,16 @@
  */
 import Layout from "../layouts/Layout.astro";
 
-// Order matters — file numbers have gaps (1,2,3,4,6,10)
+// Order matters — file numbers have gaps (1,2,3,4,6,10).
+// Sources are the designer-drawn JPGs, compressed to WebP for smaller
+// payload (~75% smaller than the originals).
 const PAGES = [
-  "/assets/manual/1.jpg",
-  "/assets/manual/2.jpg",
-  "/assets/manual/3.jpg",
-  "/assets/manual/4.jpg",
-  "/assets/manual/6.jpg",
-  "/assets/manual/10.jpg",
+  "/assets/manual/1.webp",
+  "/assets/manual/2.webp",
+  "/assets/manual/3.webp",
+  "/assets/manual/4.webp",
+  "/assets/manual/6.webp",
+  "/assets/manual/10.webp",
 ];
 ---
 
@@ -105,7 +107,7 @@ const PAGES = [
 
   function playFlip() {
     const am = (window as any).AudioManager;
-    if (am) am.play("fate-card");
+    if (am) am.play("page-flip");
   }
 
   function updateUI() {

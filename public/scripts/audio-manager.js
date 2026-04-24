@@ -22,6 +22,7 @@ window.AudioManager = (function () {
     'level-2-start': '/audio/sfx/level-2-start.wav',
     'char-hover': '/audio/sfx/char-hover.wav',
     'char-select': '/audio/sfx/char-select.wav',
+    'page-flip': '/audio/sfx/page-flip.wav',
   };
 
   var cache = {};

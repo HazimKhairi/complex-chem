@@ -42,20 +42,38 @@ window.AutoMovePiece = {
 
     // Execute movement (same logic as moveDice click handler)
     try {
+      // House rule: land directly on position = diceValue
+      const targetPos = Math.min(6, Math.max(1, diceValue));
+      const targetPathCell = `${identifyPlayer}${targetPos}`;
+
+      // SAFETY — if the target cell isn't in the DOM, DO NOT remove
+      // the piece from home. A missing cell used to cause the horse
+      // to silently disappear.
+      if ($(targetPathCell).length === 0) {
+        console.error(`❌ [AUTO-MOVE] Target cell ${targetPathCell} not found — aborting move, piece stays in home.`);
+        return false;
+      }
+
       // Remove piece from home
       $(horseDotClass).remove();
 
       // Remove sixgif class
       $(`#player-${playerId}`).find("div").removeClass("sixgif");
 
-      // House rule: land directly on position = diceValue
-      const targetPos = Math.min(6, Math.max(1, diceValue));
-      const targetPathCell = `${identifyPlayer}${targetPos}`;
       console.log(`   Moving to position ${targetPos}: ${targetPathCell}`);
 
       $(targetPathCell).append(
         `<img class="${horseClass} ${identifyColor}" src="horses/${identifyColor}.png">`
       );
+
+      // Verify the piece actually landed
+      if ($(targetPathCell + " img." + horseClass).length === 0) {
+        console.error(`❌ [AUTO-MOVE] Append failed, restoring piece to home`);
+        $(`#player-${playerId} .bg-gray-200`).append(
+          `<img class="${horseClass} ${identifyColor}" src="horses/${identifyColor}.png">`
+        );
+        return false;
+      }
 
       // Fix opacity issue
       $(`${targetPathCell} > img`).css("opacity", "");

@@ -798,3 +798,44 @@
 .start-tile .start-label {
   animation: start-pulse 2s ease-in-out infinite;
 }
+
+/* ============================================
+   PIECE VISIBILITY GUARANTEE
+   ============================================
+   Project-wide: horse pieces must never be hidden by a coloured tile
+   background (ligand recolour, START tile, home stretch, fate tile,
+   etc). Forces the piece img above any sibling span and high above
+   the td's own background layers. Also keeps labels/text spans below
+   the piece no matter what.
+*/
+
+.path td img,
+.path td span > img {
+  position: relative !important;
+  z-index: 40 !important;
+  pointer-events: auto !important;
+}
+
+/* Any decorative text inside a tile (ligand names, START label)
+   must stay below the piece. */
+.path td > span:not(:has(img)) {
+  z-index: 5 !important;
+}
+
+/* Ensure the merge wrapper (span that groups multiple pieces on the
+   same cell) doesn't clip children. */
+.path td > span:first-child:has(img) {
+  z-index: 40 !important;
+  overflow: visible !important;
+}
+
+/* START-tile text stays behind the piece too. */
+.start-tile .start-label {
+  z-index: 4 !important;
+}
+
+/* Ligand-tile text label (applied by ligand-tile-colors.js) — also
+   below the piece. */
+.ligand-tile > span {
+  z-index: 5 !important;
+}

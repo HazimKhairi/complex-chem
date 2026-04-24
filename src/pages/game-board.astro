@@ -202,6 +202,12 @@ import InfoModal from "../components/game/info-modal.astro";
   pieceWatchdogScript.type = "application/javascript";
   document.head.appendChild(pieceWatchdogScript);
 
+  // Simulation / demo driver — only fires when sessionStorage.simulation === "true"
+  const autoPlayScript = document.createElement("script");
+  autoPlayScript.src = "scripts/auto-play.js";
+  autoPlayScript.type = "application/javascript";
+  document.head.appendChild(autoPlayScript);
+
   // SKIPPED: turn-indicator-integration.js (user doesn't want turn indicator badge)
   // SKIPPED: ui-animations.js & ui-polish.js (extra UI features)
 

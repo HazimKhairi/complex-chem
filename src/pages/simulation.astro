@@ -1,0 +1,117 @@
+---
+/*
+ * Simulation landing page — explains the demo, sets up a 1-player
+ * solo session flagged as "simulation", then navigates to the real
+ * game-board. The auto-play script (public/scripts/auto-play.js)
+ * drives the gameplay when it sees sessionStorage `simulation = true`.
+ */
+import Layout from "../layouts/Layout.astro";
+import LoadingScreen from "../components/loading-screen.astro";
+import { CHARACTERS } from "../data/characters";
+
+const featuredBlooks = CHARACTERS.slice(0, 8);
+---
+
+<Layout>
+  <LoadingScreen />
+  <main class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-b from-sky-100 to-amber-50">
+    <div class="bg-white rounded-3xl shadow-xl max-w-xl w-full p-6 sm:p-8 space-y-5">
+      <header class="text-center">
+        <p class="text-xs uppercase tracking-widest text-ludon-blue font-bold">Watch Mode</p>
+        <h1 class="text-2xl sm:text-3xl font-black text-gray-900 mt-1 leading-tight">
+          See the game in action
+        </h1>
+        <p class="text-sm text-gray-600 mt-2">
+          A 1-player walkthrough — the computer rolls dice, moves the piece, and answers every question on its own. Just sit back and watch the full flow from the ludo board all the way to the podium.
+        </p>
+      </header>
+
+      <!-- Featured blook strip -->
+      <div class="bg-slate-50 rounded-2xl p-4">
+        <p class="text-xs font-bold uppercase tracking-wide text-slate-500 mb-2 text-center">Today's demo characters</p>
+        <div class="flex gap-2 justify-around">
+          {featuredBlooks.map((b) => (
+            <img src={b.image} alt={b.name} class="w-10 h-10 sm:w-12 sm:h-12 object-contain" loading="eager" />
+          ))}
+        </div>
+      </div>
+
+      <!-- What happens list -->
+      <ul class="text-sm text-gray-700 space-y-2">
+        <li class="flex gap-2">
+          <span class="flex-shrink-0 w-5 h-5 rounded-full bg-ludon-blue text-white text-xs font-bold flex items-center justify-center">1</span>
+          <span>Auto-roll the dice every couple of seconds and walk the piece around the board.</span>
+        </li>
+        <li class="flex gap-2">
+          <span class="flex-shrink-0 w-5 h-5 rounded-full bg-ludon-blue text-white text-xs font-bold flex items-center justify-center">2</span>
+          <span>Collect ligands, draw fate cards, pick random chemistry answers on question tiles.</span>
+        </li>
+        <li class="flex gap-2">
+          <span class="flex-shrink-0 w-5 h-5 rounded-full bg-ludon-blue text-white text-xs font-bold flex items-center justify-center">3</span>
+          <span>Transition into Level 2 — pick a metal, select ligands (CN ≤ 6), answer Q1-Q4 and build the complex in 3D.</span>
+        </li>
+        <li class="flex gap-2">
+          <span class="flex-shrink-0 w-5 h-5 rounded-full bg-ludon-blue text-white text-xs font-bold flex items-center justify-center">4</span>
+          <span>End on the Kahoot-style podium with the final score.</span>
+        </li>
+      </ul>
+
+      <div class="flex flex-col gap-2">
+        <button
+          id="start-demo-btn"
+          class="w-full bg-ludon-green hover:bg-green-700 text-white font-black py-3 rounded-xl text-lg shadow-md transition-colors"
+        >
+          ▶ Start Demo
+        </button>
+        <a
+          href="/"
+          class="w-full text-center bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 rounded-xl transition-colors"
+        >
+          Back to Menu
+        </a>
+      </div>
+
+      <p class="text-center text-xs text-gray-400">
+        Tip: you can leave the tab — the demo plays itself.
+      </p>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  import { CHARACTERS } from "../data/characters";
+
+  const btn = document.getElementById("start-demo-btn");
+  btn?.addEventListener("click", () => {
+    // Pick a random blook for the demo player
+    const blook = CHARACTERS[Math.floor(Math.random() * CHARACTERS.length)];
+    const name = "Demo Bot";
+
+    // Clear any prior state
+    sessionStorage.clear();
+
+    // Solo-mode config (piggybacks on solo-patch.js)
+    sessionStorage.setItem("game-option", "solo");
+    sessionStorage.setItem("solo-mode", "true");
+    sessionStorage.setItem("solo-horse", "red");
+    sessionStorage.setItem("solo-player-name", name);
+    sessionStorage.setItem("one-vs-one-horse-1", "red");
+    sessionStorage.setItem("one-vs-one-horse-2", "green");
+    sessionStorage.setItem("one-vs-one-player-1-name", name);
+    sessionStorage.setItem("one-vs-one-player-2-name", "");
+    sessionStorage.setItem("character-p1", blook.id);
+    sessionStorage.setItem("computer", "false");
+
+    // Flag used by public/scripts/auto-play.js on subsequent pages
+    sessionStorage.setItem("simulation", "true");
+    // Let the objective/intro modals stay out of the way
+    sessionStorage.setItem("objective-seen", "true");
+    sessionStorage.setItem("level2-intro-seen", "true");
+
+    if ((window as any).LoadingScreen?.showForNav) {
+      (window as any).LoadingScreen.showForNav("/game-board", "Starting demo…");
+    } else {
+      window.location.href = "/game-board";
+    }
+  });
+</script>

@@ -251,26 +251,145 @@
     });
   }
 
+  function makeLabelSprite(text, bgHex) {
+    // Draw a round label on a 256x256 canvas, wrap as a Three.js sprite.
+    var size = 256;
+    var canvas = document.createElement("canvas");
+    canvas.width = size;
+    canvas.height = size;
+    var ctx = canvas.getContext("2d");
+    // Transparent background — the sphere itself shows colour
+    ctx.clearRect(0, 0, size, size);
+    ctx.font = "bold 92px system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    // Black text with a thin white outline so it reads on any sphere
+    ctx.strokeStyle = "rgba(255,255,255,0.9)";
+    ctx.lineWidth = 10;
+    ctx.strokeText(text, size / 2, size / 2);
+    ctx.fillStyle = "#111";
+    ctx.fillText(text, size / 2, size / 2);
+    var tex = new THREE.CanvasTexture(canvas);
+    tex.needsUpdate = true;
+    var mat = new THREE.SpriteMaterial({ map: tex, transparent: true });
+    var sprite = new THREE.Sprite(mat);
+    sprite.scale.set(0.9, 0.9, 1);
+    return sprite;
+  }
+
   function placeLigandInSlot(slotIndex, ligand, sphereColorHex) {
     var slot = slotMeshes[slotIndex];
     if (!slot || slot.ligand) return false;
 
-    var ballGeo = new THREE.SphereGeometry(0.4, 32, 32);
+    var ballGeo = new THREE.SphereGeometry(0.45, 32, 32);
     var ballMat = new THREE.MeshPhongMaterial({ color: sphereColorHex, shininess: 60 });
     var ballMesh = new THREE.Mesh(ballGeo, ballMat);
     ballMesh.position.set(slot.position.x, slot.position.y, slot.position.z);
     ballMesh.userData.slotIndex = slotIndex;
     scene.add(ballMesh);
 
+    // Text label on top of the sphere — ligand name
+    var labelText = (ligand.name || ligand.id || "?").replace(/⁻|²⁻|³⁻|²⁺|³⁺/g, "").slice(0, 6);
+    var label = makeLabelSprite(labelText, sphereColorHex);
+    label.position.set(slot.position.x, slot.position.y, slot.position.z);
+    scene.add(label);
+
     ballMesh.scale.setScalar(0.1);
+    label.scale.setScalar(0.1);
     animateScale(ballMesh, 0.1, 1.0, 300);
+    animateScale(label, 0.1, 0.9, 300);
 
     slot.ghostMesh.visible = false;
     slot.ringMesh.visible = false;
     slot.ballMesh = ballMesh;
+    slot.labelMesh = label;
     slot.ligand = ligand;
 
+    // Bidentate auto-pair: if the ligand has denticity ≥ 2 and a paired
+    // empty slot exists next door, place a second sphere and connect
+    // both with a translucent arc.
+    if (ligand.denticity >= 2) {
+      tryPairBidentate(slotIndex, ligand, sphereColorHex);
+    }
+
     return true;
+  }
+
+  /**
+   * When a bidentate ligand lands in a slot, grab the nearest empty
+   * slot and drop an identical sphere there, then draw a curved tube
+   * between them. Marks both slots as occupied by the same ligand so
+   * scoring/removal stays consistent.
+   */
+  function tryPairBidentate(firstSlotIdx, ligand, sphereColorHex) {
+    var first = slotMeshes[firstSlotIdx];
+    if (!first) return;
+
+    // Find the closest free slot to `first`
+    var best = -1;
+    var bestDist = Infinity;
+    for (var i = 0; i < slotMeshes.length; i++) {
+      if (i === firstSlotIdx) continue;
+      var s = slotMeshes[i];
+      if (!s || s.ligand) continue;
+      var dx = s.position.x - first.position.x;
+      var dy = s.position.y - first.position.y;
+      var dz = s.position.z - first.position.z;
+      var d = Math.sqrt(dx * dx + dy * dy + dz * dz);
+      if (d < bestDist) { bestDist = d; best = i; }
+    }
+    if (best < 0) return;
+
+    var partner = slotMeshes[best];
+    var ballGeo = new THREE.SphereGeometry(0.45, 32, 32);
+    var ballMat = new THREE.MeshPhongMaterial({ color: sphereColorHex, shininess: 60 });
+    var ball2 = new THREE.Mesh(ballGeo, ballMat);
+    ball2.position.set(partner.position.x, partner.position.y, partner.position.z);
+    ball2.userData.slotIndex = best;
+    scene.add(ball2);
+
+    var labelText = (ligand.name || ligand.id || "?").replace(/⁻|²⁻|³⁻|²⁺|³⁺/g, "").slice(0, 6);
+    var label2 = makeLabelSprite(labelText, sphereColorHex);
+    label2.position.copy(ball2.position);
+    scene.add(label2);
+
+    ball2.scale.setScalar(0.1);
+    label2.scale.setScalar(0.1);
+    animateScale(ball2, 0.1, 1.0, 300);
+    animateScale(label2, 0.1, 0.9, 300);
+
+    partner.ghostMesh.visible = false;
+    partner.ringMesh.visible = false;
+    partner.ballMesh = ball2;
+    partner.labelMesh = label2;
+    partner.ligand = { _idx: ligand._idx, id: ligand.id, name: ligand.name, denticity: ligand.denticity, _paired: firstSlotIdx };
+    partner._pairedWith = firstSlotIdx;
+    first._pairedWith = best;
+
+    // Curved arc connecting the two spheres (bidentate bond)
+    var arc = makeBondArc(first.position, partner.position, sphereColorHex);
+    if (arc) {
+      scene.add(arc);
+      first._arcMesh = arc;
+      partner._arcMesh = arc;
+    }
+  }
+
+  function makeBondArc(p1, p2, colorHex) {
+    try {
+      var start = new THREE.Vector3(p1.x, p1.y, p1.z);
+      var end = new THREE.Vector3(p2.x, p2.y, p2.z);
+      var mid = start.clone().add(end).multiplyScalar(0.5);
+      // Push the midpoint outward from the origin to curve the arc
+      var outward = mid.clone().normalize().multiplyScalar(1.0);
+      mid.add(outward);
+      var curve = new THREE.QuadraticBezierCurve3(start, mid, end);
+      var geo = new THREE.TubeGeometry(curve, 24, 0.09, 12, false);
+      var mat = new THREE.MeshPhongMaterial({ color: colorHex, shininess: 80, transparent: true, opacity: 0.85 });
+      return new THREE.Mesh(geo, mat);
+    } catch (e) {
+      return null;
+    }
   }
 
   function removeLigandFromSlot(slotIndex) {
@@ -279,10 +398,31 @@
 
     var ligand = slot.ligand;
     scene.remove(slot.ballMesh);
+    if (slot.labelMesh) scene.remove(slot.labelMesh);
+    if (slot._arcMesh) { scene.remove(slot._arcMesh); slot._arcMesh = null; }
     slot.ballMesh = null;
+    slot.labelMesh = null;
     slot.ligand = null;
     slot.ghostMesh.visible = true;
     slot.ringMesh.visible = true;
+
+    // Also tear down the paired slot if this was a bidentate pair
+    if (slot._pairedWith !== undefined) {
+      var pIdx = slot._pairedWith;
+      slot._pairedWith = undefined;
+      var partner = slotMeshes[pIdx];
+      if (partner && partner.ligand) {
+        scene.remove(partner.ballMesh);
+        if (partner.labelMesh) scene.remove(partner.labelMesh);
+        if (partner._arcMesh) { scene.remove(partner._arcMesh); partner._arcMesh = null; }
+        partner.ballMesh = null;
+        partner.labelMesh = null;
+        partner.ligand = null;
+        partner._pairedWith = undefined;
+        partner.ghostMesh.visible = true;
+        partner.ringMesh.visible = true;
+      }
+    }
 
     return ligand;
   }

@@ -12,6 +12,14 @@ window.AudioManager = (function () {
     'horse-kill': '/audio/horse-kill.wav',
     'horse-safe': '/audio/horse-safe.wav',
     'horse-home': '/audio/horse-home.wav',
+    // SFX from Kenney Interface Sounds (CC0)
+    'correct': '/audio/sfx/correct.wav',
+    'wrong': '/audio/sfx/wrong.wav',
+    'win': '/audio/sfx/win.wav',
+    'complex-built': '/audio/sfx/complex-built.wav',
+    'fate-card': '/audio/sfx/fate-card.wav',
+    'ligand': '/audio/sfx/ligand.wav',
+    'level-2-start': '/audio/sfx/level-2-start.wav',
   };
 
   var cache = {};

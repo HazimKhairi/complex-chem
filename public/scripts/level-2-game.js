@@ -471,6 +471,9 @@
       level2State.buildDone = true;
       updateScoreBar();
 
+      // Play "complex built" SFX
+      if (window.AudioManager) window.AudioManager.play('complex-built');
+
       var c = $("step-container");
       c.innerHTML = '<div class="text-center py-8">'
         + '<div class="text-5xl mb-4">&#9989;</div>'

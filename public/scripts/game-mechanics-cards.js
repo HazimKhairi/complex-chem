@@ -380,8 +380,10 @@ function handleQuestionAnswered(event) {
   if (isCorrect) {
     awardQuestionPoints(playerId, points, difficulty);
     console.log(`✅ Correct! Player ${playerId} earned ${points} points (${difficulty})`);
+    if (window.AudioManager) window.AudioManager.play('correct');
   } else {
     console.log(`❌ Incorrect! No points awarded`);
+    if (window.AudioManager) window.AudioManager.play('wrong');
   }
 
   // Show feedback in modal
@@ -756,6 +758,11 @@ function showLigandModal(ligand, title, subtitle) {
 
     modal.classList.remove("hidden");
     modal.classList.add("flex");
+
+    // Play ligand pickup SFX only on fresh collect (not when reviewing details)
+    if (window.AudioManager && /collected/i.test(title)) {
+      window.AudioManager.play('ligand');
+    }
   }
 }
 
@@ -975,6 +982,9 @@ function showFate(playerId) {
 
     modal.classList.remove("hidden");
     modal.classList.add("flex");
+
+    // Play fate card SFX when the card appears
+    if (window.AudioManager) window.AudioManager.play('fate-card');
   }
 }
 

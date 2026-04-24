@@ -86,6 +86,21 @@ import GameSettingsMenu from "../components/game-settings-menu.astro";
   <script is:inline src="/scripts/joyride.js"></script>
   <script is:inline src="/scripts/level-2-3d-builder.js"></script>
   <script is:inline src="/scripts/level-2-game.js"></script>
+  <script>
+    // Play Level 2 intro chime on first user interaction (autoplay policy safe)
+    (function () {
+      let played = false;
+      function playOnce() {
+        if (played) return;
+        played = true;
+        if (window.AudioManager) window.AudioManager.play("level-2-start");
+        document.removeEventListener("click", playOnce);
+        document.removeEventListener("keydown", playOnce);
+      }
+      document.addEventListener("click", playOnce, { once: false });
+      document.addEventListener("keydown", playOnce, { once: false });
+    })();
+  </script>
 </Layout>
 
 <style>

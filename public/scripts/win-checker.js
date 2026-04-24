@@ -180,6 +180,9 @@
 
     console.log(`🏆 Winner #${winners.length}: Player ${playerId} (${playerName}) - Score: ${score} ligands`);
 
+    // Play victory SFX on every new winner
+    if (window.AudioManager) window.AudioManager.play('win');
+
     // Sort winners by score (highest first)
     winners.sort((a, b) => b.score - a.score);
 

@@ -81,6 +81,8 @@
     namingScore: 0,
     namingDone: false,
     level2Score: 0,
+    /** Indices into playerLigands selected by the user in Step 1. */
+    selectedLigandIdxs: [],
   };
 
   var currentStep = 1;
@@ -200,24 +202,103 @@
     }
   }
 
-  // ── Step 1: Choose Metal ────────────────────────────────
+  // ── Helpers: selection + CN ─────────────────────────────
+
+  function ligandDenticity(lig) {
+    var chem = LIGAND_CHEMISTRY[lig.id] || LIGAND_CHEMISTRY[(lig.id || '').toLowerCase()];
+    return chem ? chem.denticity : 1;
+  }
+
+  /** Ligands the user explicitly selected in Step 1 (empty → all collected). */
+  function getSelectedLigands() {
+    if (!level2State.selectedLigandIdxs || level2State.selectedLigandIdxs.length === 0) {
+      return [];
+    }
+    return level2State.selectedLigandIdxs
+      .map(function (i) { return playerLigands[i]; })
+      .filter(Boolean);
+  }
+
+  function calcCN() {
+    var sel = getSelectedLigands();
+    var pool = sel.length > 0 ? sel : playerLigands;
+    var total = 0;
+    pool.forEach(function (lig) { total += ligandDenticity(lig); });
+    return total;
+  }
+
+  function calcCNForIndices(idxs) {
+    var total = 0;
+    idxs.forEach(function (i) {
+      var lig = playerLigands[i];
+      if (lig) total += ligandDenticity(lig);
+    });
+    return total;
+  }
+
+  // ── Step 1: Q1 — Choose Metal + Ligands (CN must be 3–6) ───
 
   function renderStep1() {
     var c = $("step-container");
-    var html = '<h2 class="text-xl font-bold text-gray-800 mb-1">Step 1: Choose Your Central Metal Ion</h2>';
-    html += '<p class="text-gray-500 text-sm mb-6">Select one metal ion to be the centre of your complex.</p>';
-    html += '<div class="grid grid-cols-3 gap-4">';
+    var selectedIdxs = level2State.selectedLigandIdxs || [];
+    var selCN = calcCNForIndices(selectedIdxs);
+    var validCN = selCN >= 3 && selCN <= 6;
+    var canAdvance = !!level2State.selectedMetal && selectedIdxs.length > 0 && validCN;
+
+    var html = '<h2 class="text-xl font-bold text-gray-800 mb-1">Step 1: Build Your Complex</h2>';
+    html += '<p class="text-gray-500 text-sm mb-4">Pick one central metal, then choose ligands so the total coordination number (CN) is 3, 4, 5, or 6.</p>';
+
+    // Metal picker
+    html += '<h3 class="text-sm font-bold text-gray-700 mb-2">Choose one central metal</h3>';
+    html += '<div class="grid grid-cols-3 gap-3 mb-6">';
     CENTRAL_METALS.forEach(function (m) {
       var sel = level2State.selectedMetal && level2State.selectedMetal.id === m.id;
-      var border = sel ? 'border-[#4187a0] ring-2 ring-[#4187a0]/30' : 'border-gray-200 hover:border-[#4187a0]/50';
-      html += '<button class="metal-card p-4 rounded-xl border-2 ' + border + ' text-center transition cursor-pointer" data-metal="' + m.id + '">';
-      html += '<span class="text-2xl font-bold text-gray-800 block">' + m.name + '</span>';
-      html += '<span class="text-xs text-gray-500">Charge: +' + m.charge + '</span></button>';
+      var border = sel ? 'border-[#4187a0] ring-2 ring-[#4187a0]/30 bg-[#4187a0]/5' : 'border-gray-200 hover:border-[#4187a0]/50';
+      html += '<button class="metal-card p-3 rounded-full border-2 ' + border + ' text-center transition cursor-pointer" data-metal="' + m.id + '">';
+      html += '<span class="text-xl font-bold text-gray-800 block">' + m.name + '</span>';
+      html += '</button>';
     });
     html += '</div>';
-    html += navButtons({ back: false, next: true, nextDisabled: !level2State.selectedMetal });
+
+    // Ligand picker
+    html += '<h3 class="text-sm font-bold text-gray-700 mb-1">These are the ligands your group collected in Level 1</h3>';
+    html += '<p class="text-xs text-gray-500 mb-3">Tap to add or remove. Total CN must be 3, 4, 5, or 6.</p>';
+    html += '<div class="grid grid-cols-3 gap-3 mb-3">';
+    playerLigands.forEach(function (lig, idx) {
+      var picked = selectedIdxs.indexOf(idx) >= 0;
+      var d = ligandDenticity(lig);
+      var border = picked
+        ? 'bg-[#3DB5C8] text-white border-[#3DB5C8] ring-2 ring-[#3DB5C8]/40'
+        : 'bg-white text-gray-800 border-gray-200 hover:border-[#3DB5C8]';
+      html += '<button class="ligand-pill p-3 rounded-full border-2 font-semibold text-base ' + border + ' transition cursor-pointer" data-ligand-idx="' + idx + '">';
+      html += lig.name + ' <span class="text-xs opacity-70">(d=' + d + ')</span>';
+      html += '</button>';
+    });
+    html += '</div>';
+
+    // CN readout + validation
+    var cnClass = validCN ? 'text-green-700' : (selCN > 6 ? 'text-red-700' : 'text-gray-500');
+    html += '<div class="bg-gray-50 rounded-lg p-3 flex items-center justify-between mb-3">';
+    html += '<span class="text-sm text-gray-600">Total coordination number:</span>';
+    html += '<span class="text-2xl font-bold ' + cnClass + '">CN = ' + selCN + '</span>';
+    html += '</div>';
+
+    // Error box for CN > 6
+    html += '<div id="l2-q1-error" class="bg-red-50 border-l-4 border-red-500 text-red-800 rounded-lg p-3 text-sm mb-3 ' + (selCN > 6 ? '' : 'hidden') + '">';
+    html += '<strong>Invalid selection.</strong> The coordination number cannot exceed 6. Please try again.';
+    html += '</div>';
+
+    // Hint for CN < 3
+    if (selectedIdxs.length > 0 && selCN < 3) {
+      html += '<div class="bg-amber-50 border-l-4 border-amber-400 text-amber-800 rounded-lg p-3 text-sm mb-3">';
+      html += 'CN must be at least 3. Add more ligands.';
+      html += '</div>';
+    }
+
+    html += navButtons({ back: false, next: true, nextDisabled: !canAdvance });
     c.innerHTML = html;
 
+    // Metal click handlers
     document.querySelectorAll(".metal-card").forEach(function (card) {
       card.addEventListener("click", function () {
         var mid = this.getAttribute("data-metal");
@@ -225,31 +306,66 @@
         renderStep1();
       });
     });
-    bindNav({ onNext: function () { renderStep(2); } });
+
+    // Ligand toggle handlers — block additions that would push CN > 6
+    document.querySelectorAll(".ligand-pill").forEach(function (pill) {
+      pill.addEventListener("click", function () {
+        var idx = parseInt(this.getAttribute("data-ligand-idx"), 10);
+        var cur = level2State.selectedLigandIdxs.slice();
+        var pos = cur.indexOf(idx);
+        if (pos >= 0) {
+          // Deselect
+          cur.splice(pos, 1);
+          level2State.selectedLigandIdxs = cur;
+          renderStep1();
+        } else {
+          // Would this push us over 6?
+          var projected = cur.concat([idx]);
+          if (calcCNForIndices(projected) > 6) {
+            // Show the specific spec error and DO NOT add
+            var box = document.getElementById("l2-q1-error");
+            if (box) {
+              box.classList.remove("hidden");
+              box.classList.add("animate-pulse");
+              setTimeout(function () { box.classList.remove("animate-pulse"); }, 1200);
+            }
+            if (window.AudioManager) window.AudioManager.play("wrong");
+            return;
+          }
+          level2State.selectedLigandIdxs = projected;
+          if (window.AudioManager) window.AudioManager.play("ligand");
+          renderStep1();
+        }
+      });
+    });
+
+    bindNav({ onNext: function () {
+      // Final guard — CN must be 3-6
+      var cn = calcCNForIndices(level2State.selectedLigandIdxs);
+      if (cn > 6 || cn < 3 || !level2State.selectedMetal) {
+        var box = document.getElementById("l2-q1-error");
+        if (box && cn > 6) box.classList.remove("hidden");
+        return;
+      }
+      renderStep(2);
+    } });
   }
 
   // ── Step 2: Pick Geometry (2 pts) ───────────────────────
-
-  function calcCN() {
-    var total = 0;
-    playerLigands.forEach(function (lig) {
-      var chem = LIGAND_CHEMISTRY[lig.id] || LIGAND_CHEMISTRY[(lig.id || '').toLowerCase()];
-      if (chem) total += chem.denticity; else total += 1;
-    });
-    return total;
-  }
 
   function renderStep2() {
     var c = $("step-container");
     var cn = calcCN();
     var correctList = GEOMETRY_MAP[cn] || [];
+    var displayLigands = getSelectedLigands();
+    if (displayLigands.length === 0) displayLigands = playerLigands;
 
     var html = '<h2 class="text-xl font-bold text-gray-800 mb-1">Step 2: Choose the Geometry <span class="text-sm font-normal text-gray-400">(2 pts)</span></h2>';
-    html += '<p class="text-gray-500 text-sm mb-2">Based on your ' + playerLigands.length + ' ligands (CN = ' + cn + '), pick the matching geometry.</p>';
+    html += '<p class="text-gray-500 text-sm mb-2">Based on your ' + displayLigands.length + ' chosen ligands (CN = ' + cn + '), pick the matching geometry.</p>';
 
     html += '<div class="bg-gray-50 rounded-lg p-3 mb-4 text-sm">';
     html += '<div class="flex flex-wrap gap-2">';
-    playerLigands.forEach(function (lig) {
+    displayLigands.forEach(function (lig) {
       var chem = LIGAND_CHEMISTRY[lig.id] || LIGAND_CHEMISTRY[(lig.id || '').toLowerCase()];
       var d = chem ? chem.denticity : 1;
       var t = chem ? chem.type : "?";
@@ -342,7 +458,10 @@
 
     window.BoneBuilder.buildBone(level2State.selectedGeometry);
 
-    inventoryLigands = playerLigands.map(function (lig, idx) {
+    // Step 3 inventory = only ligands selected in Step 1 (if any), else all
+    var sourceLigands = getSelectedLigands();
+    if (sourceLigands.length === 0) sourceLigands = playerLigands;
+    inventoryLigands = sourceLigands.map(function (lig, idx) {
       var chem = LIGAND_CHEMISTRY[lig.id] || LIGAND_CHEMISTRY[(lig.id || '').toLowerCase()];
       return {
         _idx: idx,

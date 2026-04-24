@@ -1,0 +1,119 @@
+---
+/*
+ * Level 2 intro — splash image first, then objective text.
+ * Emits `level2-intro-dismissed` when closed. Uses sessionStorage so
+ * it only shows once per session.
+ */
+---
+
+<div
+  id="level2-intro-modal"
+  class="fixed inset-0 z-[60] flex items-center justify-center bg-black/75 backdrop-blur-sm p-4"
+>
+  <div class="relative bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[92vh] overflow-hidden flex flex-col">
+    <!-- Step 1: splash -->
+    <div id="l2-step-1" class="flex-1 overflow-y-auto">
+      <div class="relative bg-gradient-to-br from-indigo-600 to-blue-500 p-8 sm:p-12 text-center text-white">
+        <p class="text-xs uppercase tracking-widest text-white/80 mb-2">Welcome to</p>
+        <h1 class="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
+          Complex Chem Quest
+        </h1>
+        <p class="text-base sm:text-xl text-white/90 mt-3 font-semibold">
+          Digital Smart Board — Level 2
+        </p>
+        <div class="mt-6 inline-block bg-white/15 backdrop-blur rounded-xl px-5 py-3 text-sm">
+          Now you'll build a real coordination complex from the ligands you collected.
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: objective -->
+    <div id="l2-step-2" class="flex-1 overflow-y-auto p-6 sm:p-8 space-y-4 hidden">
+      <div>
+        <h2 class="text-2xl font-bold text-ludon-blue">Your Level 2 Objective</h2>
+        <p class="text-sm text-gray-500 mt-1">Four steps. Ten points up for grabs.</p>
+      </div>
+
+      <ol class="list-decimal list-inside text-gray-800 space-y-2.5 text-sm sm:text-base">
+        <li><strong>Pick a metal centre</strong> — choose the metal ion for your complex.</li>
+        <li><strong>Select ligands</strong> from your collected pool.</li>
+        <li><strong>Build in 3D</strong> — drag ligands onto the correct geometry. First-try gets max points.</li>
+        <li><strong>Answer Q1–Q4</strong> on coordination number, geometry, isomers, and properties.</li>
+      </ol>
+
+      <div class="bg-amber-50 border-l-4 border-amber-400 rounded-lg p-3 text-sm text-amber-900">
+        Tip: your Level 1 score carries over. Grand total = L1 + L2.
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="px-6 py-4 border-t border-gray-100 flex justify-between gap-2 bg-gray-50">
+      <button
+        id="l2-back-btn"
+        class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold hidden"
+        type="button"
+      >
+        Back
+      </button>
+      <span></span>
+      <button
+        id="l2-next-btn"
+        class="px-6 py-2 rounded-lg bg-ludon-blue hover:bg-blue-700 text-white font-semibold shadow"
+        type="button"
+      >
+        Continue
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const modal = document.getElementById("level2-intro-modal");
+  const step1 = document.getElementById("l2-step-1");
+  const step2 = document.getElementById("l2-step-2");
+  const nextBtn = document.getElementById("l2-next-btn");
+  const backBtn = document.getElementById("l2-back-btn");
+
+  let currentStep: 1 | 2 = 1;
+
+  function showStep(step: 1 | 2) {
+    if (step === 1) {
+      step1?.classList.remove("hidden");
+      step2?.classList.add("hidden");
+      if (nextBtn) nextBtn.textContent = "See Objective";
+      backBtn?.classList.add("hidden");
+    } else {
+      step1?.classList.add("hidden");
+      step2?.classList.remove("hidden");
+      if (nextBtn) nextBtn.textContent = "Start Level 2";
+      backBtn?.classList.remove("hidden");
+    }
+  }
+
+  function dismiss() {
+    modal?.classList.add("hidden");
+    sessionStorage.setItem("level2-intro-seen", "true");
+    document.dispatchEvent(new CustomEvent("level2-intro-dismissed"));
+  }
+
+  nextBtn?.addEventListener("click", () => {
+    if (currentStep === 1) {
+      currentStep = 2;
+      showStep(2);
+    } else {
+      dismiss();
+    }
+  });
+
+  backBtn?.addEventListener("click", () => {
+    currentStep = 1;
+    showStep(1);
+  });
+
+  if (sessionStorage.getItem("level2-intro-seen") === "true") {
+    modal?.classList.add("hidden");
+    setTimeout(() => {
+      document.dispatchEvent(new CustomEvent("level2-intro-dismissed"));
+    }, 0);
+  }
+</script>

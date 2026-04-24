@@ -6,7 +6,7 @@ interface Props {
 const { countdownFrom = 3 } = Astro.props;
 ---
 
-<div id="game-start-countdown" class="fixed inset-0 flex items-center justify-center bg-black/80 z-50">
+<div id="game-start-countdown" class="fixed inset-0 flex items-center justify-center bg-black/80 z-50 hidden">
   <div class="bg-white rounded-lg p-5 text-center shadow-lg">
     <p id="countdown-text" class="text-4xl font-bold text-ludon-blue">{countdownFrom}</p>
     <p class="text-sm mt-2 text-gray-700">Get ready to play!</p>
@@ -20,23 +20,37 @@ const { countdownFrom = 3 } = Astro.props;
 </div>
 
 <script>
-  const countdownText = document.getElementById("countdown-text");
-  let count = parseInt(countdownText?.textContent || "3");
+  function startCountdown() {
+    const container = document.getElementById("game-start-countdown");
+    if (!container) return;
+    container.classList.remove("hidden");
 
-  const countdown = setInterval(() => {
-    count--;
+    const countdownText = document.getElementById("countdown-text");
+    let count = parseInt(countdownText?.textContent || "3");
 
-    if (countdownText) {
-      countdownText.textContent = count.toString();
-    }
+    const countdown = setInterval(() => {
+      count--;
 
-    if (count <= 0) {
-      clearInterval(countdown);
+      if (countdownText) {
+        countdownText.textContent = count.toString();
+      }
 
-      if (window.AudioManager) window.AudioManager.play("game-start");
+      if (count <= 0) {
+        clearInterval(countdown);
 
-      document.getElementById("game-start-countdown")?.remove();
-      document.dispatchEvent(new CustomEvent("game-countdown-complete"));
-    }
-  }, 1000);
+        if ((window as any).AudioManager) (window as any).AudioManager.play("game-start");
+
+        document.getElementById("game-start-countdown")?.remove();
+        document.dispatchEvent(new CustomEvent("game-countdown-complete"));
+      }
+    }, 1000);
+  }
+
+  // Hold until the objective modal emits "game-objective-dismissed".
+  // If no objective modal exists on the page, fire it immediately.
+  if (document.getElementById("objective-modal")) {
+    document.addEventListener("game-objective-dismissed", startCountdown, { once: true });
+  } else {
+    startCountdown();
+  }
 </script>

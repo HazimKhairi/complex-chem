@@ -519,11 +519,27 @@ function moveHorse(event) {
           "img"
         );
 
-        // Code for killing the horse
-        if (horseKillList.length == 2) {
-          identifyHorseToBeKilled = horseKillList[0].classList[1]; //Details of Horse to be killed
-          identifyHorseKiller = horseKillList[1].classList[1]; //Details of Horse killer
-          identifyPlayerHomePosition = horseKillList[0].classList[0]; //Home position of player that is going to be killed
+        // Code for killing the horse. Fix #10: accept >=2 so 3+-piece stacks
+        // don't silently skip the kill. The killer is the just-arrived piece
+        // (last image appended), the first different-coloured piece is killed.
+        if (horseKillList.length >= 2) {
+          identifyHorseKiller = horseKillList[horseKillList.length - 1].classList[1];
+          // Find the first opponent piece to kill
+          let killeeIdx = -1;
+          for (let i = 0; i < horseKillList.length - 1; i++) {
+            if (horseKillList[i].classList[1] !== identifyHorseKiller) {
+              killeeIdx = i;
+              break;
+            }
+          }
+          if (killeeIdx >= 0) {
+            identifyHorseToBeKilled = horseKillList[killeeIdx].classList[1];
+            identifyPlayerHomePosition = horseKillList[killeeIdx].classList[0];
+            // Reorder list so [0]=killee, [1]=killer for the legacy code below
+            horseKillList = [horseKillList[killeeIdx], horseKillList[horseKillList.length - 1]];
+          } else {
+            identifyHorseToBeKilled = identifyHorseKiller; // no kill possible
+          }
         }
 
         if (

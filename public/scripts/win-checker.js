@@ -195,6 +195,54 @@
         showWinnersModal();
       }, 500);
     }
+
+    // #12 — update Continue-to-Level-2 gating every time a new winner lands
+    updateContinueGate();
+  }
+
+  /**
+   * Returns the number of active players in the current session.
+   * Derived from game-option (solo=1, one-vs-one=2, one-vs-two=3, one-vs-three=4).
+   */
+  function getActivePlayerCount() {
+    try {
+      if (window.TurnManager && typeof window.TurnManager.getActivePlayers === 'function') {
+        var ap = window.TurnManager.getActivePlayers();
+        if (Array.isArray(ap) && ap.length > 0) return ap.length;
+      }
+    } catch (e) {}
+    var gameOption = sessionStorage.getItem('game-option');
+    if (gameOption === 'solo') return 1;
+    if (gameOption === 'one-vs-one') return 2;
+    if (gameOption === 'one-vs-two') return 3;
+    if (gameOption === 'one-vs-three') return 4;
+    return 4;
+  }
+
+  /**
+   * #12 — Keep the "Continue to Level 2" button disabled until every
+   * active player has finished Level 1. Show a small hint while gated.
+   */
+  function updateContinueGate() {
+    var btn = document.getElementById('continue-level-2');
+    if (!btn) return;
+
+    var expected = getActivePlayerCount();
+    var remaining = Math.max(0, expected - winners.length);
+
+    if (remaining > 0) {
+      btn.setAttribute('disabled', 'disabled');
+      btn.classList.remove('animate-pulse');
+      btn.classList.add('opacity-50', 'cursor-not-allowed');
+      btn.removeAttribute('onclick');
+      btn.textContent = 'Waiting for ' + remaining + ' more player' + (remaining > 1 ? 's' : '') + '…';
+    } else {
+      btn.removeAttribute('disabled');
+      btn.classList.remove('opacity-50', 'cursor-not-allowed');
+      btn.classList.add('animate-pulse');
+      btn.setAttribute('onclick', "location.href='/level-2'");
+      btn.textContent = 'Continue to Level 2 →';
+    }
   }
 
   /**
@@ -256,6 +304,9 @@
 
     modal.classList.remove('hidden');
     modal.style.display = 'block';
+
+    // #12 — apply the gate state as soon as the modal is shown
+    updateContinueGate();
 
     // Play celebration sound
     if (window.AudioManager) window.AudioManager.play("horse-home");

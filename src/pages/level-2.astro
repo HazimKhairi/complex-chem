@@ -88,8 +88,11 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
       window.location.href = "/pass-and-play";
     }
   </script>
-  <script is:inline src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-  <script is:inline src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+  <!-- three.js pinned to r147 — last release with classic
+       examples/js/controls/OrbitControls.js. r0.160 dropped that
+       folder which 404'd and broke the 3D builder. -->
+  <script is:inline src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+  <script is:inline src="https://cdn.jsdelivr.net/npm/three@0.147.0/examples/js/controls/OrbitControls.js"></script>
   <script is:inline src="/scripts/audio-manager.js"></script>
   <script is:inline src="/scripts/joyride.js"></script>
   <script is:inline src="/scripts/level-2-3d-builder.js"></script>

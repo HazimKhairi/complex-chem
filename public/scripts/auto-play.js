@@ -77,6 +77,8 @@
     }
 
     // Question modal — pick random answer
+    // Demo timings are deliberately slow so the viewer has time to read
+    // the question, see the highlighted pick, and watch the result.
     var q = document.getElementById('question-modal');
     if (q && visible(q) && !q.classList.contains('hidden')) {
       if (!q.dataset.autoAnswered) {
@@ -84,17 +86,16 @@
         if (opts.length > 0) {
           q.dataset.autoAnswered = '1';
           var pick = opts[Math.floor(Math.random() * opts.length)];
-          setTimeout(function () { click(pick); }, 500);
-          setTimeout(function () {
+          setTimeout(function () { click(pick); }, 4500);   // read question
+          setTimeout(function () {                            // submit
             var submit = document.getElementById('submit-answer-btn');
             if (submit) click(submit);
-          }, 1500);
-          // Then dismiss feedback after a beat
-          setTimeout(function () {
+          }, 7000);
+          setTimeout(function () {                            // dismiss feedback
             q.classList.add('hidden');
             q.classList.remove('flex');
             q.dataset.autoAnswered = '';
-          }, 4000);
+          }, 12000);
         }
       }
     }
@@ -196,8 +197,10 @@
   }
 
   // --- Level 2 auto-play -------------------------------------------
+  // Timings are intentionally generous so the demo viewer can follow
+  // each pick instead of seeing the wizard blink past.
   async function runLevel2Sim() {
-    await wait(1000);
+    await wait(2500);
 
     var safety = 0;
     while (safety++ < 200) {
@@ -210,25 +213,23 @@
 
       // Figure out which step is rendered and drive it.
       var c = document.getElementById('step-container');
-      if (!c) { await wait(500); continue; }
+      if (!c) { await wait(800); continue; }
 
       // Step 1 — setup (metal + ligand picker)
       var metalCard = c.querySelector('.metal-card');
       var ligandPill = c.querySelector('.ligand-pill');
       if (metalCard && ligandPill) {
-        // Pick first metal then pick ligands till CN in 3..6
         var metals = c.querySelectorAll('.metal-card');
         if (metals[0] && metals[0].getAttribute('aria-selected') !== 'true') {
           click(metals[0]);
-          await wait(400);
+          await wait(1500);
         }
         var pills = c.querySelectorAll('.ligand-pill');
-        for (var i = 0; i < pills.length && i < 3; i++) { click(pills[i]); await wait(250); }
-        await wait(400);
-        var nextBtn = c.querySelector('#nav-next, button:not([disabled])[data-next], button.bg-ludon-blue:not([disabled])');
+        for (var i = 0; i < pills.length && i < 3; i++) { click(pills[i]); await wait(1000); }
+        await wait(1500);
         var nextBtns = Array.from(c.querySelectorAll('button'));
         var goBtn = nextBtns.find(function (b) { return /next|submit|continue/i.test(b.textContent || '') && !b.disabled; });
-        if (goBtn) { click(goBtn); await wait(600); }
+        if (goBtn) { click(goBtn); await wait(2000); }
         continue;
       }
 
@@ -245,38 +246,33 @@
       else if (picOpts.length) list = picOpts;
 
       if (list) {
-        // Prefer any "correct-looking" one; we don't know, so just pick
-        // the first. Wrong attempts still progress the wizard.
+        await wait(2500);                              // viewer reads question
         click(list[0]);
-        await wait(700);
+        await wait(2000);                              // viewer sees the pick
         var submitBtn = Array.from(c.querySelectorAll('button')).find(function (b) {
           return /submit|next/i.test(b.textContent || '') && !b.disabled;
         });
-        if (submitBtn) { click(submitBtn); await wait(900); }
+        if (submitBtn) { click(submitBtn); await wait(2500); }
         continue;
       }
 
-      // Step 5 — 3D build. BoneBuilder slots are DOM objects in
-      // Three.js canvas; easiest path is to call onPlace ourselves.
+      // Step 5 — 3D build.
       if (window.BoneBuilder && typeof window.BoneBuilder.getEmptySlots === 'function') {
         try {
-          // Rough auto-solver: for each empty slot, ask an inventory
-          // pill to place itself.
           var pills2 = document.querySelectorAll('#ligand-inventory .ligand-pill, #ligand-inventory button, #ligand-inventory [draggable]');
-          for (var k = 0; k < pills2.length; k++) { click(pills2[k]); await wait(300); }
+          for (var k = 0; k < pills2.length; k++) { click(pills2[k]); await wait(1200); }
         } catch (e) {}
       }
       var submit3d = document.getElementById('btn-submit-3d');
-      if (submit3d && !submit3d.disabled) { click(submit3d); await wait(1200); continue; }
+      if (submit3d && !submit3d.disabled) { click(submit3d); await wait(3000); continue; }
 
-      // Maybe we're on the Complex Built / Next to Naming screen
+      // Complex Built / Next to Naming screen
       var navNext = Array.from(c.querySelectorAll('button')).find(function (b) {
         return /next/i.test(b.textContent || '') && !b.disabled;
       });
-      if (navNext) { click(navNext); await wait(800); continue; }
+      if (navNext) { click(navNext); await wait(2500); continue; }
 
-      // Nothing to click — wait and loop
-      await wait(800);
+      await wait(1200);
     }
 
     console.warn('[auto-play] Level 2 simulation hit safety cap');

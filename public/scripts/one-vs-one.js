@@ -939,36 +939,63 @@ function moveDice() {
         var targetPos = Math.min(6, Math.max(1, Number(randomDice) || 1));
         $("." + userSelectedHorse).remove();
         $("#player-" + x).find("div").removeClass("sixgif");
-        $(identifyPlayer + targetPos).append(
-          `<img class="${userSelectedHorse} ${identifyColor}" src="horses/${identifyColor}.png">`
-        );
-        $(identifyPlayer + targetPos + " > img").css("opacity", ""); // Fix for Highlight horses opacity issues
-        setTimeout(function () {
-          $("#player-" + x + "-dice-arrow").attr("src", "gifs/arrow1.gif");
-        }, 200);
-        d = 0; //D is used to restrict one dice roll at a time
-        mergeHorseClass = identifyPlayer + targetPos;
-        mergeHorses();
 
-        // Update position tracking
-        window[`lastPos${userSelectedHorse.split(' ')[0].toUpperCase()}`] = targetPos;
+        // Animated exit: step the piece from cell 1 up to targetPos so
+        // the player sees it travel rather than flicker into place.
+        var stepIdx = 1;
+        var imgHtml = `<img class="${userSelectedHorse} ${identifyColor}" src="horses/${identifyColor}.png">`;
+        function placeAt(pos) {
+          $(identifyPlayer + pos).append(imgHtml);
+          $(identifyPlayer + pos + " > img").css("opacity", "");
+          if (window.AudioManager) window.AudioManager.play("horse-move");
+          mergeHorseClass = identifyPlayer + pos;
+          mergeHorses();
+        }
+        function removeAt(pos) {
+          $(`${identifyPlayer}${pos} img.${userSelectedHorse}`).remove();
+        }
 
-        // Dispatch piece-moved for tile handling (ligand/fate/question modals)
-        document.dispatchEvent(new CustomEvent("piece-moved", {
-          detail: {
-            playerId: x,
-            landedCell: identifyPlayer + targetPos,
-            position: targetPos,
-            color: identifyColor
+        // Drop on cell 1 to start the visible journey.
+        placeAt(stepIdx);
+        window[`lastPos${userSelectedHorse.split(' ')[0].toUpperCase()}`] = stepIdx;
+
+        if (targetPos === 1) {
+          // Single-step exit, finish immediately.
+          finishExit(stepIdx);
+        } else {
+          window._moveInProgress = true;
+          var exitTimer = setInterval(function () {
+            removeAt(stepIdx);
+            stepIdx++;
+            placeAt(stepIdx);
+            window[`lastPos${userSelectedHorse.split(' ')[0].toUpperCase()}`] = stepIdx;
+            if (stepIdx >= targetPos) {
+              clearInterval(exitTimer);
+              window._moveInProgress = false;
+              finishExit(stepIdx);
+            }
+          }, 480);
+        }
+
+        function finishExit(landedPos) {
+          setTimeout(function () {
+            $("#player-" + x + "-dice-arrow").attr("src", "gifs/arrow1.gif");
+          }, 200);
+          d = 0; //D is used to restrict one dice roll at a time
+
+          document.dispatchEvent(new CustomEvent("piece-moved", {
+            detail: {
+              playerId: x,
+              landedCell: identifyPlayer + landedPos,
+              position: landedPos,
+              color: identifyColor
+            }
+          }));
+          console.log(`🎮 [MOVE-DICE] Player ${x} exited home → ${identifyPlayer}${landedPos}`);
+
+          if (x == sessionStorage.getItem("one-vs-one-computer-player") && sessionStorage.getItem("computer") != null) {
+            setTimeout(() => { computer1Dice[0].click(); }, 250);
           }
-        }));
-        console.log(`🎮 [MOVE-DICE] Player ${x} exited home → ${identifyPlayer}${targetPos}`);
-
-        //Code for computer movement
-        if (x == sessionStorage.getItem("one-vs-one-computer-player") && sessionStorage.getItem("computer") != null) {
-          setTimeout(() => {
-            computer1Dice[0].click();
-          }, 250);
         }
       }
     }

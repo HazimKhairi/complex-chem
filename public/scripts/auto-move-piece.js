@@ -60,56 +60,56 @@ window.AutoMovePiece = {
       // Remove sixgif class
       $(`#player-${playerId}`).find("div").removeClass("sixgif");
 
-      console.log(`   Moving to position ${targetPos}: ${targetPathCell}`);
+      console.log(`   Animating exit-from-home → ${targetPos} step(s)`);
 
-      $(targetPathCell).append(
-        `<img class="${horseClass} ${identifyColor}" src="horses/${identifyColor}.png">`
-      );
-
-      // Verify the piece actually landed
-      if ($(targetPathCell + " img." + horseClass).length === 0) {
-        console.error(`❌ [AUTO-MOVE] Append failed, restoring piece to home`);
-        $(`#player-${playerId} .bg-gray-200`).append(
-          `<img class="${horseClass} ${identifyColor}" src="horses/${identifyColor}.png">`
-        );
-        return false;
-      }
-
-      // Fix opacity issue
-      $(`${targetPathCell} > img`).css("opacity", "");
-
-      // Re-enable dice arrow after delay
-      setTimeout(function () {
-        $(`#player-${playerId}-dice-arrow`).attr("src", "gifs/arrow1.gif");
-      }, 200);
-
-      // Reset dice lock
-      window.d = 0;
-
-      // Merge horses if needed
-      window.mergeHorseClass = targetPathCell;
-      if (typeof window.mergeHorses === 'function') {
-        window.mergeHorses();
-      }
-
-      // Update position tracking with actual target position
+      const imgHtml = `<img class="${horseClass} ${identifyColor}" src="horses/${identifyColor}.png">`;
       const posVarName = `lastPos${identifyPlayer.toUpperCase().substring(1)}H1`;
-      window[posVarName] = targetPos;
-      console.log(`   Updated ${posVarName} = ${targetPos}`);
 
-      // Dispatch piece-moved event so orchestrator handles tile actions (ligand/fate/question)
-      const landedCellClass = `${identifyPlayer}${targetPos}`;
-      document.dispatchEvent(new CustomEvent("piece-moved", {
-        detail: {
-          playerId: playerId,
-          landedCell: landedCellClass,
-          position: targetPos,
-          color: identifyColor
-        }
-      }));
-      console.log(`🎮 [AUTO-MOVE] Dispatched piece-moved: ${landedCellClass}`);
+      const placeAt = (pos) => {
+        $(`${identifyPlayer}${pos}`).append(imgHtml);
+        $(`${identifyPlayer}${pos} > img`).css("opacity", "");
+        if (window.AudioManager) window.AudioManager.play("horse-move");
+        window.mergeHorseClass = `${identifyPlayer}${pos}`;
+        if (typeof window.mergeHorses === 'function') window.mergeHorses();
+      };
+      const removeAt = (pos) => {
+        $(`${identifyPlayer}${pos} img.${horseClass}`).remove();
+      };
 
-      console.log(`✅ [AUTO-MOVE] Move complete!`);
+      let stepIdx = 1;
+      placeAt(stepIdx);
+      window[posVarName] = stepIdx;
+
+      const finish = () => {
+        setTimeout(function () {
+          $(`#player-${playerId}-dice-arrow`).attr("src", "gifs/arrow1.gif");
+        }, 200);
+        window.d = 0;
+        const landedCellClass = `${identifyPlayer}${targetPos}`;
+        document.dispatchEvent(new CustomEvent("piece-moved", {
+          detail: { playerId, landedCell: landedCellClass, position: targetPos, color: identifyColor }
+        }));
+        console.log(`🎮 [AUTO-MOVE] Dispatched piece-moved: ${landedCellClass}`);
+      };
+
+      if (targetPos === 1) {
+        finish();
+      } else {
+        window._moveInProgress = true;
+        const exitTimer = setInterval(() => {
+          removeAt(stepIdx);
+          stepIdx++;
+          placeAt(stepIdx);
+          window[posVarName] = stepIdx;
+          if (stepIdx >= targetPos) {
+            clearInterval(exitTimer);
+            window._moveInProgress = false;
+            finish();
+          }
+        }, 480);
+      }
+
+      console.log(`✅ [AUTO-MOVE] Move started!`);
       return true;
 
     } catch (error) {

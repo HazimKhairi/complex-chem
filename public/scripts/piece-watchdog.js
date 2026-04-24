@@ -129,7 +129,9 @@
   /** Run a full sweep: every active player should have exactly 1 piece. */
   function sweep() {
     // If any move animation is actively running, skip this pass entirely.
-    if (window.__pieceMoving) return;
+    // Both flags exist in the codebase; check both so the watchdog stays
+    // out of the way during exit-from-home + step-by-step path moves.
+    if (window.__pieceMoving || window._moveInProgress) return;
 
     var players = getActivePlayerIds();
     var now = Date.now();

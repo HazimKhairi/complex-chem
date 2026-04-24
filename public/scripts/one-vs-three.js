@@ -924,41 +924,58 @@ function moveDice() {
         var targetPos = Math.min(6, Math.max(1, Number(randomDice) || 1));
         $("." + userSelectedHorse).remove();
         $("#player-" + x).find("div").removeClass("sixgif");
-        $(identifyPlayer + targetPos).append(
-          `<img class="${userSelectedHorse} ${identifyColor}" src="horses/${identifyColor}.png">`
-        );
-        $(identifyPlayer + targetPos + " > img").css("opacity", "");
-        setTimeout(function () {
-          $("#player-" + x + "-dice-arrow").attr("src", "gifs/arrow1.gif");
-        }, 200);
-        d = 0; //D is used to restrict one dice roll at a time
-        mergeHorseClass = identifyPlayer + targetPos;
-        mergeHorses();
 
-        // Update position tracking
-        window[`lastPos${userSelectedHorse.split(' ')[0].toUpperCase()}`] = targetPos;
+        // Animated exit-from-home: walk piece 1 → targetPos at 480ms/step
+        var stepIdx = 1;
+        var imgHtml = `<img class="${userSelectedHorse} ${identifyColor}" src="horses/${identifyColor}.png">`;
+        var posVar = `lastPos${userSelectedHorse.split(' ')[0].toUpperCase()}`;
+        function placeAt(pos) {
+          $(identifyPlayer + pos).append(imgHtml);
+          $(identifyPlayer + pos + " > img").css("opacity", "");
+          if (window.AudioManager) window.AudioManager.play("horse-move");
+          mergeHorseClass = identifyPlayer + pos;
+          mergeHorses();
+        }
+        function removeAt(pos) {
+          $(`${identifyPlayer}${pos} img.${userSelectedHorse}`).remove();
+        }
+        placeAt(stepIdx);
+        window[posVar] = stepIdx;
 
-        // Dispatch piece-moved for tile handling (ligand/fate/question modals)
-        document.dispatchEvent(new CustomEvent("piece-moved", {
-          detail: {
-            playerId: x,
-            landedCell: identifyPlayer + targetPos,
-            position: targetPos,
-            color: identifyColor
+        function finishExit() {
+          setTimeout(function () {
+            $("#player-" + x + "-dice-arrow").attr("src", "gifs/arrow1.gif");
+          }, 200);
+          d = 0;
+          document.dispatchEvent(new CustomEvent("piece-moved", {
+            detail: { playerId: x, landedCell: identifyPlayer + targetPos, position: targetPos, color: identifyColor }
+          }));
+          console.log(`🎮 [MOVE-DICE] Player ${x} exited home → ${identifyPlayer}${targetPos}`);
+          computer1Dice = $(`#player-${x}-dice`);
+          if (
+            x == sessionStorage.getItem("one-vs-three-computer-player-1") ||
+            x == sessionStorage.getItem("one-vs-three-computer-player-2") ||
+            (x == sessionStorage.getItem("one-vs-three-computer-player-3") && sessionStorage.getItem("computer") != null)
+          ) {
+            setTimeout(() => { computer1Dice[0].click(); }, 250);
           }
-        }));
-        console.log(`🎮 [MOVE-DICE] Player ${x} exited home → ${identifyPlayer}${targetPos}`);
+        }
 
-        //Code for computer movement
-        computer1Dice = $(`#player-${x}-dice`);
-        if (
-          x == sessionStorage.getItem("one-vs-three-computer-player-1") ||
-          x == sessionStorage.getItem("one-vs-three-computer-player-2") ||
-          (x == sessionStorage.getItem("one-vs-three-computer-player-3") && sessionStorage.getItem("computer") != null)
-        ) {
-          setTimeout(() => {
-            computer1Dice[0].click();
-          }, 250);
+        if (targetPos === 1) {
+          finishExit();
+        } else {
+          window._moveInProgress = true;
+          var exitTimer = setInterval(function () {
+            removeAt(stepIdx);
+            stepIdx++;
+            placeAt(stepIdx);
+            window[posVar] = stepIdx;
+            if (stepIdx >= targetPos) {
+              clearInterval(exitTimer);
+              window._moveInProgress = false;
+              finishExit();
+            }
+          }, 480);
         }
       }
     }

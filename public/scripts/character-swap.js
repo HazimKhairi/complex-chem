@@ -99,10 +99,69 @@
   // re-apply blook skins after they restore a vanished piece.
   window.__characterSwapRun = run;
 
+  /**
+   * Swap a single freshly-added img node immediately (no delay, no
+   * flash). Used by the MutationObserver so a player never sees the
+   * raw horse sprite flash before the blook swap catches up.
+   */
+  function swapSingle(img) {
+    if (!img || img.dataset.charSwapped === 'true') return;
+    var cls = Array.from(img.classList || []);
+    for (var i = 0; i < cls.length; i++) {
+      var playerId = CLASS_TO_PLAYER[cls[i]];
+      if (playerId !== undefined) {
+        var charId = chosenFor(playerId);
+        img.src = charImage(charId);
+        img.dataset.charSwapped = 'true';
+        img.dataset.charId = charId;
+        return;
+      }
+    }
+  }
+
+  /**
+   * Observe the board + player homes for new piece <img> nodes so
+   * we can swap them synchronously on insertion — eliminates the
+   * brief horse-sprite flash during moves / merges / revives.
+   */
+  function startObserver() {
+    var targets = [
+      document.getElementById('ludo-board'),
+      document.getElementById('game-container'),
+      document.getElementById('player-1'),
+      document.getElementById('player-2'),
+      document.getElementById('player-3'),
+      document.getElementById('player-4'),
+    ].filter(Boolean);
+    if (targets.length === 0) {
+      // DOM not ready yet — retry shortly
+      setTimeout(startObserver, 300);
+      return;
+    }
+
+    var mo = new MutationObserver(function (mutations) {
+      for (var i = 0; i < mutations.length; i++) {
+        var added = mutations[i].addedNodes;
+        for (var j = 0; j < added.length; j++) {
+          var n = added[j];
+          if (n.nodeType !== 1) continue;
+          if (n.tagName === 'IMG') {
+            swapSingle(n);
+          } else if (n.querySelectorAll) {
+            var imgs = n.querySelectorAll('img');
+            for (var k = 0; k < imgs.length; k++) swapSingle(imgs[k]);
+          }
+        }
+      }
+    });
+    targets.forEach(function (t) { mo.observe(t, { childList: true, subtree: true }); });
+  }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', run);
+    document.addEventListener('DOMContentLoaded', function () { run(); startObserver(); });
   } else {
     run();
+    startObserver();
   }
   // Re-run to catch late-rendered pieces (merge animations, revives)
   setTimeout(run, 300);

@@ -117,14 +117,39 @@
     return placed;
   }
 
+  /*
+   * Grace-period bookkeeping: a piece can be briefly "missing" during
+   * a normal move (detach → attach in the same microtask, or across a
+   * short animation). Only restore if it's been absent for long enough
+   * that we're confident something actually went wrong.
+   */
+  var missingSince = { 1: 0, 2: 0, 3: 0, 4: 0 };
+  var GRACE_MS = 900;
+
   /** Run a full sweep: every active player should have exactly 1 piece. */
   function sweep() {
+    // If any move animation is actively running, skip this pass entirely.
+    if (window.__pieceMoving) return;
+
     var players = getActivePlayerIds();
+    var now = Date.now();
     players.forEach(function (pid) {
       var info = findPiece(pid);
       if (!info) return;
+
       if (info.count === 0) {
-        restorePiece(pid);
+        if (!missingSince[pid]) {
+          missingSince[pid] = now; // start the grace clock
+          return;
+        }
+        if (now - missingSince[pid] >= GRACE_MS) {
+          // Long enough — really gone. Restore.
+          restorePiece(pid);
+          missingSince[pid] = 0;
+        }
+      } else {
+        // Piece is present again — clear the grace timer
+        missingSince[pid] = 0;
       }
       // count > 1 is handled elsewhere (merge logic / kill logic) and
       // isn't inherently a bug, so the watchdog stays quiet.

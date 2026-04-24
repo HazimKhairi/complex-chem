@@ -8,7 +8,7 @@
 
   // Chemical formulas that appear on ligand tiles
   const LIGAND_FORMULAS = [
-    'H₂O', 'phen', 'bipy', 'ox', 'py', 'NH₃', 'PPh₃', 'CI',
+    'H₂O', 'phen', 'bipy', 'ox', 'py', 'NH₃', 'PPh₃', 'Cl',
     'en', 'acac', 'CO₃²⁻', 'CN⁻', 'O²⁻'
   ];
 

@@ -288,8 +288,9 @@
     ballMesh.userData.slotIndex = slotIndex;
     scene.add(ballMesh);
 
-    // Text label on top of the sphere — ligand name
-    var labelText = (ligand.name || ligand.id || "?").replace(/⁻|²⁻|³⁻|²⁺|³⁺/g, "").slice(0, 6);
+    // Text label on top of the sphere — donor atom symbol from the
+    // chemistry indicator ("Shape sphere bond" column).
+    var labelText = ligand.bond || (ligand.name || ligand.id || "?").replace(/⁻|²⁻|³⁻|²⁺|³⁺/g, "").slice(0, 4);
     var label = makeLabelSprite(labelText, sphereColorHex);
     label.position.set(slot.position.x, slot.position.y, slot.position.z);
     scene.add(label);

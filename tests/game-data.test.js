@@ -201,8 +201,8 @@ describe('LIGANDS_DATA data integrity', () => {
     expect(en.imageFile).toBe('13.png');
   });
 
-  it('should use CI (not Cl) as board name for chloride', () => {
+  it('should use Cl as board name for chloride', () => {
     const cl = LIGANDS_DATA.find(l => l.id === 'cl');
-    expect(cl.name).toBe('CI');
+    expect(cl.name).toBe('Cl');
   });
 });

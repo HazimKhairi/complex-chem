@@ -8,20 +8,22 @@
 
   // ── Chemistry Data ───────────────────────────────────────
 
+  // bond = symbol of the donor atom shown on the 3D sphere
+  // (matches the "Shape sphere bond" column in the chemistry indicator).
   var LIGAND_CHEMISTRY = {
-    h2o:  { name: "H\u2082O",    charge: 0,  denticity: 1, type: "Monodentate", sphere: "red" },
-    nh3:  { name: "NH\u2083",    charge: 0,  denticity: 1, type: "Monodentate", sphere: "blue" },
-    py:   { name: "py",          charge: 0,  denticity: 1, type: "Monodentate", sphere: "blue" },
-    pph3: { name: "PPh\u2083",   charge: 0,  denticity: 1, type: "Monodentate", sphere: "orange" },
-    cn:   { name: "CN\u207B",    charge: -1, denticity: 1, type: "Monodentate", sphere: "blue" },
-    o2:   { name: "O\u00B2\u207B", charge: -2, denticity: 1, type: "Monodentate", sphere: "red" },
-    cl:   { name: "Cl\u207B",   charge: -1, denticity: 1, type: "Monodentate", sphere: "green" },
-    ox:   { name: "Ox\u00B2\u207B",  charge: -2, denticity: 2, type: "Bidentate", sphere: "red" },
-    acac: { name: "acac\u207B", charge: -1, denticity: 2, type: "Bidentate",  sphere: "red" },
-    co32: { name: "CO\u2083\u00B2\u207B", charge: -2, denticity: 2, type: "Bidentate", sphere: "red" },
-    phen: { name: "phen",       charge: 0,  denticity: 2, type: "Bidentate",  sphere: "blue" },
-    bipy: { name: "bipy",       charge: 0,  denticity: 2, type: "Bidentate",  sphere: "blue" },
-    en:   { name: "en",         charge: 0,  denticity: 2, type: "Bidentate",  sphere: "blue" },
+    h2o:  { name: "H\u2082O",    charge: 0,  denticity: 1, type: "Monodentate", sphere: "red",    bond: "O" },
+    nh3:  { name: "NH\u2083",    charge: 0,  denticity: 1, type: "Monodentate", sphere: "blue",   bond: "N" },
+    py:   { name: "py",          charge: 0,  denticity: 1, type: "Monodentate", sphere: "blue",   bond: "N" },
+    pph3: { name: "PPh\u2083",   charge: 0,  denticity: 1, type: "Monodentate", sphere: "orange", bond: "P" },
+    cn:   { name: "CN\u207B",    charge: -1, denticity: 1, type: "Monodentate", sphere: "blue",   bond: "N" },
+    o2:   { name: "O\u00B2\u207B", charge: -2, denticity: 1, type: "Monodentate", sphere: "red",  bond: "O" },
+    cl:   { name: "Cl\u207B",   charge: -1, denticity: 1, type: "Monodentate", sphere: "green",   bond: "Cl" },
+    ox:   { name: "Ox\u00B2\u207B",  charge: -2, denticity: 2, type: "Bidentate", sphere: "red",  bond: "O" },
+    acac: { name: "acac\u207B", charge: -1, denticity: 2, type: "Bidentate",  sphere: "red",      bond: "O" },
+    co32: { name: "CO\u2083\u00B2\u207B", charge: -2, denticity: 2, type: "Bidentate", sphere: "red", bond: "O" },
+    phen: { name: "phen",       charge: 0,  denticity: 2, type: "Bidentate",  sphere: "blue",     bond: "N" },
+    bipy: { name: "bipy",       charge: 0,  denticity: 2, type: "Bidentate",  sphere: "blue",     bond: "N" },
+    en:   { name: "en",         charge: 0,  denticity: 2, type: "Bidentate",  sphere: "blue",     bond: "N" },
   };
 
   var CENTRAL_METALS = [
@@ -956,6 +958,7 @@
         id: lig.id,
         name: lig.name,
         sphere: chem ? chem.sphere : "red",
+        bond: chem ? chem.bond : "?",
         denticity: chem ? chem.denticity : 1,
         charge: chem ? chem.charge : 0,
         placed: false,

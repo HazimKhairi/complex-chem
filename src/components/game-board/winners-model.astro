@@ -1,86 +1,286 @@
 ---
-import { getPlayerAvatar, getPlayerColor } from "../../lib/utils";
+/*
+ * Kahoot-style podium. Renders the top 3 finishers on pedestals
+ * (silver-gold-bronze ordering: 2 left, 1 centre tallest, 3 right),
+ * with the winning player's chosen blook standing on each one.
+ * A 4th-place row is shown below if a 4-player game finished.
+ *
+ * Populated by win-checker.js which fills the winners[] array and
+ * calls updateWinnersModal(). Element IDs stay stable so win-checker
+ * can poke scores/names without touching this component.
+ */
 ---
 
 <div
   id="winners"
-  class="w-full max-w-md fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-6 shadow-lg z-100 hidden"
+  class="fixed inset-0 z-[100] hidden items-start justify-center p-4 overflow-y-auto"
+  style="background: linear-gradient(180deg, #1e3a8a 0%, #312e81 100%);"
 >
-  <img class="h-24 mx-auto mb-2" src="/logo.png" />
-  <h1 class="text-base text-center">Congratulations!</h1>
-  <div class="flex flex-col items-center gap-3 my-4">
-    <div
-      id="winner-1"
-      class="flex items-center w-full border-2 border-ludon-blue rounded-xl bg-white p-3 shadow-md hover:shadow-lg transition-shadow"
-    >
-      <div class="flex items-center justify-center bg-ludon-blue text-white rounded-full w-8 h-8 mr-3">
-        <span class="text-lg font-bold">1</span>
-      </div>
-      <div class="flex items-center gap-2 flex-1">
-        <img id="winner-1-image" class="w-9 h-9 sm:w-10 sm:h-10 md:w-11 md:h-11 lg:w-12 lg:h-12 rounded-full object-cover" alt="Player 1" />
-        <span id="winner-1-name" class="text-lg font-semibold">Player 1</span>
-      </div>
-      <div class="flex-shrink-0">
-        <span class="bg-yellow-400 text-yellow-800 px-2 py-1 rounded-full font-bold text-xs">GOLD</span>
-      </div>
-    </div>
-
-    <div
-      id="winner-2"
-      class="flex items-center w-full border-2 border-gray-500 rounded-xl bg-white p-3 shadow-md hover:shadow-lg transition-shadow"
-    >
-      <div class="flex items-center justify-center bg-gray-500 text-white rounded-full w-8 h-8 mr-3">
-        <span class="text-lg font-bold">2</span>
-      </div>
-      <div class="flex items-center gap-2 flex-1">
-        <img id="winner-2-image" class="w-9 h-9 sm:w-10 sm:h-10 md:w-11 md:h-11 lg:w-12 lg:h-12 rounded-full object-cover" alt="Player 2" />
-        <span id="winner-2-name" class="text-lg font-semibold">Player 2</span>
-      </div>
-      <div class="flex-shrink-0">
-        <span class="bg-gray-200 text-gray-600 px-2 py-1 rounded-full font-bold text-xs">SILVER</span>
-      </div>
-    </div>
-
-    <div
-      id="winner-3"
-      class="flex items-center w-full border-2 border-amber-700 rounded-xl bg-white p-3 shadow-md hover:shadow-lg transition-shadow"
-    >
-      <div class="flex items-center justify-center bg-amber-700 text-white rounded-full w-8 h-8 mr-3">
-        <span class="text-lg font-bold">3</span>
-      </div>
-      <div class="flex items-center gap-2 flex-1">
-        <img id="winner-3-image" class="w-9 h-9 sm:w-10 sm:h-10 md:w-11 md:h-11 lg:w-12 lg:h-12 rounded-full object-cover" alt="Player 3" />
-        <span id="winner-3-name" class="text-lg font-semibold">Player 3</span>
-      </div>
-      <div class="flex-shrink-0">
-        <span class="bg-orange-200 text-amber-800 px-2 py-1 rounded-full font-bold text-xs">BRONZE</span>
-      </div>
-    </div>
-
-    <div
-      id="winner-4"
-      class="flex items-center w-full border-2 border-gray-400 rounded-xl bg-white p-3 shadow-md hover:shadow-lg transition-shadow"
-    >
-      <div class="flex items-center justify-center bg-gray-400 text-gray-600 rounded-full w-8 h-8 mr-3">
-        <span class="text-lg font-bold">4</span>
-      </div>
-      <div class="flex items-center gap-2 flex-1">
-        <img id="winner-4-image" class="w-9 h-9 sm:w-10 sm:h-10 md:w-11 md:h-11 lg:w-12 lg:h-12 rounded-full object-cover" alt="Player 4" />
-        <span id="winner-4-name" class="text-lg font-semibold">Player 4</span>
-      </div>
+  <!-- Confetti streamers at the top (decorative) -->
+  <div class="absolute top-0 left-0 right-0 h-10 overflow-hidden pointer-events-none">
+    <div class="flex justify-around items-start">
+      {Array.from({ length: 18 }).map((_, i) => (
+        <span
+          class="inline-block w-1.5 h-8 rounded-b-full confetti-streamer"
+          style={`background:${["#fbbf24","#ef4444","#3b82f6","#10b981","#a855f7","#ec4899"][i % 6]}; animation-delay:${(i * 80)}ms;`}
+        />
+      ))}
     </div>
   </div>
-  <div class="flex gap-3 justify-center">
-    <button
-      type="button"
-      onclick="location.href='/'"
-      class="bg-gray-400 text-white px-4 py-2 rounded-lg font-medium transition-colors">Menu</button
+
+  <div class="relative w-full max-w-2xl mx-auto mt-6 flex flex-col items-center gap-4">
+    <!-- Podium title -->
+    <div class="bg-sky-200 text-slate-900 text-xl sm:text-2xl font-black px-5 py-1.5 rounded-xl shadow">
+      Podium!
+    </div>
+
+    <!-- Champion callout (1st-place name) -->
+    <div
+      id="champion-name-card"
+      class="bg-white px-8 py-2 rounded-xl shadow-md text-slate-900 text-2xl sm:text-3xl font-black tracking-tight"
     >
-    <button
-      type="button"
-      id="continue-level-2"
-      onclick="location.href='/level-2'"
-      class="bg-ludon-blue text-white px-4 py-2 rounded-lg font-medium transition-colors animate-pulse">Continue to Level 2 →</button
-    >
+      —
+    </div>
+
+    <!-- Podium stage -->
+    <div class="relative w-full max-w-xl mt-2">
+      <div class="grid grid-cols-3 gap-2 sm:gap-4 items-end">
+        <!-- 2nd place (left) -->
+        <div id="podium-2" class="flex flex-col items-center podium-slot">
+          <div class="pod-namecard">—</div>
+          <img class="pod-blook" alt="2nd place" />
+          <div class="pod-pillar pod-pillar-2 flex flex-col items-center justify-start pt-3 pb-4">
+            <div class="pod-rank-badge bg-slate-400">2</div>
+            <div class="pod-score text-white mt-3">0</div>
+          </div>
+        </div>
+
+        <!-- 1st place (centre, tallest) -->
+        <div id="podium-1" class="flex flex-col items-center podium-slot">
+          <div class="pod-namecard">—</div>
+          <img class="pod-blook pod-blook-1" alt="1st place" />
+          <div class="pod-pillar pod-pillar-1 flex flex-col items-center justify-start pt-3 pb-4">
+            <div class="pod-rank-badge bg-amber-400">1</div>
+            <div class="pod-score text-white mt-3">0</div>
+          </div>
+        </div>
+
+        <!-- 3rd place (right) -->
+        <div id="podium-3" class="flex flex-col items-center podium-slot">
+          <div class="pod-namecard">—</div>
+          <img class="pod-blook" alt="3rd place" />
+          <div class="pod-pillar pod-pillar-3 flex flex-col items-center justify-start pt-3 pb-4">
+            <div class="pod-rank-badge bg-orange-500">3</div>
+            <div class="pod-score text-white mt-3">0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4th place (if any) — appears below the podium -->
+      <div id="podium-4" class="hidden mt-4 flex items-center justify-between bg-white/10 backdrop-blur rounded-xl px-4 py-2 text-white">
+        <div class="flex items-center gap-3">
+          <span class="flex items-center justify-center w-8 h-8 rounded-full bg-slate-700 font-bold text-sm">4</span>
+          <img id="podium-4-blook" class="w-10 h-10 object-contain rounded-full bg-white/20 p-0.5" alt="4th place" />
+          <span id="podium-4-name" class="font-semibold">—</span>
+        </div>
+        <span id="podium-4-score" class="font-black text-lg tabular-nums">0</span>
+      </div>
+    </div>
+
+    <!-- Status banner + action row -->
+    <div class="w-full mt-2 bg-white rounded-xl shadow-md p-4">
+      <p id="podium-banner" class="text-center font-bold text-slate-900">You're on the podium!</p>
+    </div>
+
+    <div class="flex gap-3 justify-center pb-6">
+      <button
+        type="button"
+        onclick="location.href='/'"
+        class="bg-slate-200 hover:bg-slate-300 text-slate-800 px-4 py-2.5 rounded-xl font-semibold transition-colors"
+      >
+        Menu
+      </button>
+      <button
+        type="button"
+        id="continue-level-2"
+        onclick="location.href='/level-2'"
+        class="bg-ludon-blue hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold shadow transition-colors animate-pulse"
+      >
+        Continue to Level 2 →
+      </button>
+    </div>
   </div>
 </div>
+
+<style>
+  .podium-slot .pod-namecard {
+    background: white;
+    color: #0f172a;
+    border-radius: 10px;
+    font-weight: 800;
+    font-size: 0.95rem;
+    padding: 4px 14px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    margin-bottom: 8px;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .pod-blook {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+    margin-bottom: -14px;
+    z-index: 5;
+    filter: drop-shadow(0 6px 8px rgba(0,0,0,0.35));
+  }
+  .pod-blook-1 { width: 88px; height: 88px; }
+
+  .pod-pillar {
+    width: 100%;
+    border-top-left-radius: 14px;
+    border-top-right-radius: 14px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-bottom: none;
+  }
+  .pod-pillar-1 { min-height: 200px; }
+  .pod-pillar-2 { min-height: 150px; }
+  .pod-pillar-3 { min-height: 110px; }
+
+  .pod-rank-badge {
+    width: 54px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0f172a;
+    font-weight: 900;
+    font-size: 1.6rem;
+    clip-path: polygon(50% 0%, 100% 30%, 100% 80%, 50% 100%, 0% 80%, 0% 30%);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.25);
+  }
+
+  .pod-score {
+    font-size: 1.6rem;
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+  }
+
+  @keyframes confettiFall {
+    0% { transform: translateY(-20px) rotate(0deg); opacity: 0; }
+    25% { opacity: 1; }
+    100% { transform: translateY(100vh) rotate(540deg); opacity: 0.2; }
+  }
+  .confetti-streamer {
+    animation: confettiFall 4s linear infinite;
+  }
+
+  #winners.flex { display: flex !important; }
+
+  /* Small screens — scale the podium down, keep proportions */
+  @media (max-width: 480px) {
+    .pod-pillar-1 { min-height: 160px; }
+    .pod-pillar-2 { min-height: 120px; }
+    .pod-pillar-3 { min-height: 90px; }
+    .pod-blook { width: 56px; height: 56px; margin-bottom: -10px; }
+    .pod-blook-1 { width: 68px; height: 68px; }
+    .pod-rank-badge { width: 42px; height: 48px; font-size: 1.25rem; }
+    .pod-score { font-size: 1.2rem; }
+  }
+</style>
+
+<script>
+  /*
+   * win-checker.js writes into winners via updateWinnersModal, which
+   * historically used #winner-N-name, #winner-N-image, and #winner-N
+   * show/hide. Expose a tiny shim that maps those old IDs to the new
+   * podium structure so nothing else has to change.
+   */
+
+  // Map rank (1/2/3/4) → slot DOM refs
+  function getSlot(rank: number) {
+    const host = document.getElementById(`podium-${rank}`);
+    if (!host) return null;
+    return {
+      host,
+      nameEl: host.querySelector<HTMLElement>(".pod-namecard"),
+      imgEl: rank === 4
+        ? (document.getElementById(`podium-${rank}-blook`) as HTMLImageElement | null)
+        : host.querySelector<HTMLImageElement>(".pod-blook"),
+      scoreEl: rank === 4
+        ? document.getElementById(`podium-${rank}-score`)
+        : host.querySelector<HTMLElement>(".pod-score"),
+    };
+  }
+
+  function blookSrc(playerId: number): string {
+    const key = `character-p${playerId}`;
+    const charId = sessionStorage.getItem(key);
+    if (!charId) return "/horses/red.png"; // fallback
+    return `/characters/blook/${charId}.png`;
+  }
+
+  /**
+   * Public API — win-checker calls this when the winners list changes.
+   * @param winners [{playerId, playerName, score}, ...] sorted best-first
+   */
+  function renderPodium(winners: Array<{ playerId: number; playerName: string; score: number }>) {
+    const champion = document.getElementById("champion-name-card");
+    if (champion) champion.textContent = winners[0]?.playerName ?? "—";
+
+    // Hide all slots first
+    [1, 2, 3, 4].forEach((r) => {
+      const slot = getSlot(r);
+      if (!slot) return;
+      slot.host.style.visibility = r <= 3 ? "hidden" : "visible";
+      if (r === 4) slot.host.classList.add("hidden");
+    });
+
+    winners.slice(0, 4).forEach((w, idx) => {
+      const rank = idx + 1;
+      const slot = getSlot(rank);
+      if (!slot) return;
+
+      if (slot.nameEl) slot.nameEl.textContent = w.playerName;
+      if (slot.imgEl) slot.imgEl.src = blookSrc(w.playerId);
+      if (slot.scoreEl) slot.scoreEl.textContent = String(w.score);
+
+      if (rank <= 3) slot.host.style.visibility = "visible";
+      if (rank === 4) slot.host.classList.remove("hidden");
+    });
+
+    // Banner text — contextual
+    const banner = document.getElementById("podium-banner");
+    if (banner) {
+      if (winners.length === 1) banner.textContent = "Solo run complete!";
+      else if (winners.length === 2) banner.textContent = `${winners[0].playerName} takes the crown!`;
+      else banner.textContent = "You're on the podium!";
+    }
+  }
+
+  // Back-compat shim: win-checker still sets #winner-N-name and
+  // #winner-N-image. Intercept those writes by providing hidden
+  // dummy elements so the old code doesn't throw, and expose
+  // window.__podiumRender so win-checker can call the richer API.
+  (window as any).__podiumRender = renderPodium;
+
+  // Create the legacy hidden elements so win-checker's
+  // document.getElementById('winner-N-name') etc. don't return null.
+  (function ensureLegacyIds() {
+    const root = document.getElementById("winners");
+    if (!root) return;
+    const shim = document.createElement("div");
+    shim.style.display = "none";
+    for (let n = 1; n <= 4; n++) {
+      shim.innerHTML += `
+        <div id="winner-${n}">
+          <span id="winner-${n}-name"></span>
+          <img id="winner-${n}-image" />
+        </div>`;
+    }
+    root.appendChild(shim);
+  })();
+</script>

@@ -290,6 +290,12 @@
         slot.style.display = 'none';
       }
     }
+
+    // Drive the Kahoot-style podium (blook pedestals). Falls back
+    // silently if the podium render shim isn't loaded (old DOM).
+    if (typeof window.__podiumRender === 'function') {
+      window.__podiumRender(winners);
+    }
   }
 
   /**
@@ -303,7 +309,9 @@
     }
 
     modal.classList.remove('hidden');
-    modal.style.display = 'block';
+    // Podium modal uses flex (full-screen). Legacy modal used block.
+    modal.classList.add('flex');
+    modal.style.display = '';
 
     // #12 — apply the gate state as soon as the modal is shown
     updateContinueGate();

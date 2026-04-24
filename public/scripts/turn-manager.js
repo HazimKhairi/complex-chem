@@ -633,7 +633,13 @@
   function detectActivePlayers() {
     const gameOption = sessionStorage.getItem('game-option');
 
-    if (gameOption === 'one-vs-one') {
+    if (gameOption === 'solo') {
+      state.gameMode = 'solo';
+      const soloHorse = sessionStorage.getItem('solo-horse') || 'red';
+      const horseToPlayer = { red: 1, blue: 2, yellow: 3, green: 4 };
+      const soloPlayer = horseToPlayer[soloHorse] || 1;
+      setActivePlayers([soloPlayer]);
+    } else if (gameOption === 'one-vs-one') {
       state.gameMode = '1v1';
       const horse1 = sessionStorage.getItem('one-vs-one-horse-1');
 

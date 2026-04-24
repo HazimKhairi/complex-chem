@@ -101,11 +101,22 @@ import InfoModal from "../components/game/info-modal.astro";
     setTimeout(() => window.BoardPath?.init(), 0);
   }
 
-  // Load main game script
+  // Load main game script.
+  // Solo mode reuses one-vs-one.js but with a solo-patch loaded right after.
+  const mainScriptName = gameOption === "solo" ? "one-vs-one" : gameOption;
   const script = document.createElement("script");
-  script.src = `scripts/${gameOption}.js`;
+  script.src = `scripts/${mainScriptName}.js`;
   script.type = "application/javascript";
   document.head.appendChild(script);
+
+  // Solo patch — only in solo mode
+  if (gameOption === "solo") {
+    (window as any).SOLO_MODE = true;
+    const soloPatchScript = document.createElement("script");
+    soloPatchScript.src = "scripts/solo-patch.js";
+    soloPatchScript.type = "application/javascript";
+    document.head.appendChild(soloPatchScript);
+  }
 
   // Load game mechanics for fate cards & ligand collection
   const mechanicsScript = document.createElement("script");

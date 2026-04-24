@@ -1,45 +1,69 @@
 ---
 import { cn } from "../lib/utils";
+
+interface Props {
+  includeSolo?: boolean;
+}
+
+const { includeSolo = false } = Astro.props;
 ---
 
 <div class="space-y-5 border-b border-gray-300 pb-5 mb-5">
   <h2 class="text-center text-xl">Choose a mode</h2>
   <div
+    data-include-solo={includeSolo ? "true" : "false"}
     class={cn(
-      "grid grid-cols-3 justify-center border-2 border-ludon-green rounded-full w-full h-[45px] font-bold mx-auto",
+      "grid justify-center border-2 border-ludon-green rounded-full w-full h-[45px] font-bold mx-auto",
+      includeSolo ? "grid-cols-4" : "grid-cols-3",
       "*:flex *:justify-center *:items-center",
       "*:aria-selected:bg-ludon-green *:aria-selected:text-white"
     )}
+    id="game-mode-tabs"
   >
-    <div id="one-vs-one" aria-selected="true" class="rounded-l-full border-r border-ludon-green">2 Players</div>
+    {
+      includeSolo && (
+        <div id="solo" aria-selected="false" class="rounded-l-full border-r border-ludon-green">
+          1 Player
+        </div>
+      )
+    }
+    <div
+      id="one-vs-one"
+      aria-selected="true"
+      class={cn(!includeSolo && "rounded-l-full", "border-r border-ludon-green")}
+    >
+      2 Players
+    </div>
     <div id="one-vs-two">3 Players</div>
     <div id="one-vs-three" class="rounded-r-full border-l border-ludon-green">4 Players</div>
   </div>
 </div>
 
 <script>
-  const options = ["one-vs-one", "one-vs-two", "one-vs-three"].map((id) => document.getElementById(id));
-  const sections = ["one-vs-one-options", "one-vs-two-options", "one-vs-three-options"].map((id) =>
-    document.getElementById(id)
-  );
+  const tabContainer = document.getElementById("game-mode-tabs");
+  const includeSolo = tabContainer?.getAttribute("data-include-solo") === "true";
 
-  // Initialize from session storage or default to first option
+  const tabIds = includeSolo
+    ? ["solo", "one-vs-one", "one-vs-two", "one-vs-three"]
+    : ["one-vs-one", "one-vs-two", "one-vs-three"];
+
+  const options = tabIds.map((id) => document.getElementById(id));
+  const sections = tabIds.map((id) => document.getElementById(`${id}-options`));
+
+  // Initialize from session storage. Default to "one-vs-one" for familiarity
+  // even when the solo tab is available.
   let savedOption = sessionStorage.getItem("game-option");
-  if (!savedOption) {
-    sessionStorage.setItem("game-option", "one-vs-one");
-    savedOption = "one-vs-one";
+  if (!savedOption || !tabIds.includes(savedOption)) {
+    savedOption = tabIds.includes("one-vs-one") ? "one-vs-one" : tabIds[0];
+    sessionStorage.setItem("game-option", savedOption);
   }
 
-  // Function to update UI based on selected option
   function updateUI(selectedId: string) {
-    // Update tabs
     options.forEach((option) => {
       if (option) {
         option.setAttribute("aria-selected", option.id === selectedId ? "true" : "false");
       }
     });
-
-    // Show/hide sections
     sections.forEach((section) => {
       if (section) {
         section.classList.toggle("hidden", section.id !== `${selectedId}-options`);
@@ -47,17 +71,12 @@ import { cn } from "../lib/utils";
     });
   }
 
-  // Set initial UI state
   updateUI(savedOption);
 
-  // Add click handlers
   options.forEach((option) => {
     if (option) {
       option.addEventListener("click", () => {
-        // Update UI
         updateUI(option.id);
-
-        // Save to session storage
         sessionStorage.setItem("game-option", option.id);
       });
     }

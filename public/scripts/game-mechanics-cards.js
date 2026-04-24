@@ -924,9 +924,13 @@ function showFate(playerId) {
     console.log(`🔺 [FATE] Player ${playerId} got fate card: ${fate.title} (${fate.effect}, value: ${fate.value || 0})`);
 
     // Render fate card with HTML/CSS (matching FateCard component design)
-    const valueHTML = fate.value !== undefined
+    // Only show a ± points badge when the card actually changes score.
+    // For spaces-moved / ligand-count effects, the value isn't points
+    // and the badge would be confusing.
+    const POINTS_EFFECTS = ["point-booster", "minus"];
+    const valueHTML = (fate.value !== undefined && POINTS_EFFECTS.includes(fate.effect))
       ? `<div class="mt-3 px-3 py-1 bg-red-100 rounded-full text-red-700 font-bold text-sm">
-           ${fate.value > 0 ? '+' : ''}${fate.value}
+           ${fate.value > 0 ? '+' : ''}${fate.value} pts
          </div>`
       : '';
 

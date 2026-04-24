@@ -32,17 +32,20 @@
 
       console.log(`🔺 [FATE] Applying fate: ${fateTitle} to Player ${playerId}`);
 
-      // Apply points-based fate effects
-      if (fateValue !== 0 && window.GameMechanics) {
+      // Points are ONLY awarded for effects that actually mean "points".
+      // Other effects use `value` for a different purpose (spaces to move,
+      // ligands to gain/give, etc.) and must NOT be treated as points.
+      const POINTS_EFFECTS = ["point-booster", "minus"];
+      if (POINTS_EFFECTS.includes(fateEffect) && fateValue !== 0 && window.GameMechanics) {
         window.GameMechanics.awardPoints(playerId, fateValue, 'fate');
         console.log(`💰 [FATE] Player ${playerId} ${fateValue > 0 ? 'gained' : 'lost'} ${Math.abs(fateValue)} points`);
       }
 
-      // Apply other fate effects using FateEffectHandler
+      // Apply the card's actual behaviour (gain ligand, move forward, swap, etc.)
       if (fateEffect && window.FateEffectHandler) {
         window.FateEffectHandler.applyEffect(playerId, fateEffect, fateValue);
       } else if (!window.FateEffectHandler) {
-        console.warn('⚠️ FateEffectHandler not available, only points-based effects will work');
+        console.warn('⚠️ FateEffectHandler not available, effects will not run');
       }
 
       modal.classList.add("hidden");

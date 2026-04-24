@@ -60,6 +60,14 @@
     1: "", 2: "di", 3: "tri", 4: "tetra", 5: "penta", 6: "hexa",
   };
 
+  // IUPAC rule: use bis/tris/tetrakis for ligand names that already have a
+  // numerical/Greek prefix or are otherwise complex (e.g. ethylenediamine),
+  // wrapping the ligand name in parentheses.
+  var COMPLEX_PREFIX = {
+    1: "", 2: "bis", 3: "tris", 4: "tetrakis", 5: "pentakis", 6: "hexakis",
+  };
+  var COMPLEX_LIGAND_IDS = { en: 1, bipy: 1, phen: 1, acac: 1, pph3: 1 };
+
   // ── Game State ──────────────────────────────────────────
 
   var gameState = null;
@@ -1116,16 +1124,21 @@
     var metal = level2State.selectedMetal;
     var placed = window.BoneBuilder ? window.BoneBuilder.getPlacedLigands() : [];
 
-    var ligCounts = {};
+    var ligCounts = {};  // iupac-name → { count, isComplex }
     placed.forEach(function (lig) {
       var iupac = LIGAND_IUPAC[lig.id] || lig.name;
-      ligCounts[iupac] = (ligCounts[iupac] || 0) + 1;
+      if (!ligCounts[iupac]) ligCounts[iupac] = { count: 0, isComplex: !!COMPLEX_LIGAND_IDS[lig.id] };
+      ligCounts[iupac].count++;
     });
 
     var parts = [];
     Object.keys(ligCounts).sort().forEach(function (name) {
-      var count = ligCounts[name];
-      parts.push((NUMBER_PREFIX[count] || '') + name);
+      var info = ligCounts[name];
+      if (info.isComplex && info.count > 1) {
+        parts.push((COMPLEX_PREFIX[info.count] || '') + '(' + name + ')');
+      } else {
+        parts.push((NUMBER_PREFIX[info.count] || '') + name);
+      }
     });
 
     var metalBase = metal.id.replace(/[0-9]/g, '');

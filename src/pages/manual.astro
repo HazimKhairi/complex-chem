@@ -1,0 +1,173 @@
+---
+/*
+ * Complex-Chem Quest — Manual (book style)
+ *
+ * Renders the designer-drawn manual cards from MANUAL CARD -2 as a
+ * flippable book. Each page is an <img> stacked on a 3D-transformed
+ * container; active page sits on top, previous/next pages are
+ * pre-rendered behind so the flip looks continuous.
+ */
+import Layout from "../layouts/Layout.astro";
+
+// Order matters — file numbers have gaps (1,2,3,4,6,10)
+const PAGES = [
+  "/assets/manual/1.jpg",
+  "/assets/manual/2.jpg",
+  "/assets/manual/3.jpg",
+  "/assets/manual/4.jpg",
+  "/assets/manual/6.jpg",
+  "/assets/manual/10.jpg",
+];
+---
+
+<Layout>
+  <main class="min-h-screen bg-gradient-to-b from-sky-100 to-amber-50 p-4 sm:p-8 flex flex-col items-center">
+    <header class="w-full max-w-4xl flex items-center justify-between mb-4 sm:mb-6">
+      <a href="/" class="text-ludon-blue font-semibold hover:underline flex items-center gap-1 text-sm">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        Home
+      </a>
+      <h1 class="text-lg sm:text-2xl font-black text-gray-800 tracking-tight uppercase">Manual</h1>
+      <span id="page-counter" class="text-xs sm:text-sm font-semibold text-gray-600 tabular-nums">1 / {PAGES.length}</span>
+    </header>
+
+    <!-- Book -->
+    <div class="book-wrap w-full max-w-3xl flex items-center justify-center gap-3 sm:gap-4">
+      <button id="btn-prev" class="shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white shadow-md hover:shadow-lg disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center text-ludon-blue" aria-label="Previous page">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+          <path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+
+      <div class="book relative" style="perspective: 2000px;">
+        <!-- Hardcover backing -->
+        <div class="absolute inset-0 bg-[#1e3a8a] rounded-2xl shadow-2xl" style="transform: translateZ(-8px);"></div>
+
+        <!-- Pages stack (most-recent on top) -->
+        <div id="page-stack" class="relative">
+          {PAGES.map((src, i) => (
+            <div
+              class="manual-page absolute inset-0 bg-white rounded-lg shadow-xl overflow-hidden"
+              data-index={i}
+              style={`transform-origin: left center; will-change: transform; z-index: ${PAGES.length - i};`}
+            >
+              <img src={src} alt={`Manual page ${i + 1}`} class="w-full h-full object-contain bg-white" loading="lazy" />
+            </div>
+          ))}
+        </div>
+
+        <!-- Spacer that sets the book's aspect ratio (matches JPG ~400x566) -->
+        <div class="invisible" style="aspect-ratio: 400/566; width: min(78vw, 640px);"></div>
+      </div>
+
+      <button id="btn-next" class="shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white shadow-md hover:shadow-lg disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center text-ludon-blue" aria-label="Next page">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+          <path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </button>
+    </div>
+
+    <p class="mt-6 text-xs text-gray-500 text-center max-w-md">
+      Tip: use ← / → arrow keys, or tap the page edges.
+    </p>
+  </main>
+
+  <script is:inline src="/scripts/audio-manager.js"></script>
+</Layout>
+
+<style>
+  .book {
+    width: min(78vw, 640px);
+  }
+  .manual-page {
+    transition: transform 700ms cubic-bezier(.2,.7,.2,1);
+    backface-visibility: hidden;
+  }
+  .manual-page.flipped {
+    transform: rotateY(-170deg);
+  }
+  .manual-page.hidden-back {
+    display: none;
+  }
+</style>
+
+<script>
+  const pages = Array.from(document.querySelectorAll<HTMLElement>(".manual-page"));
+  const total = pages.length;
+  const prevBtn = document.getElementById("btn-prev") as HTMLButtonElement;
+  const nextBtn = document.getElementById("btn-next") as HTMLButtonElement;
+  const counter = document.getElementById("page-counter")!;
+
+  let current = 0;
+  let busy = false;
+
+  function playFlip() {
+    const am = (window as any).AudioManager;
+    if (am) am.play("fate-card");
+  }
+
+  function updateUI() {
+    counter.textContent = `${current + 1} / ${total}`;
+    prevBtn.disabled = current === 0;
+    nextBtn.disabled = current === total - 1;
+
+    // Z-index: current on top, later pages beneath in order
+    pages.forEach((p, i) => {
+      p.style.zIndex = String(total - Math.abs(i - current));
+      p.classList.remove("flipped", "hidden-back");
+      if (i < current) p.classList.add("flipped");
+    });
+  }
+
+  function goto(n: number) {
+    if (busy) return;
+    n = Math.max(0, Math.min(total - 1, n));
+    if (n === current) return;
+    busy = true;
+    playFlip();
+
+    if (n > current) {
+      // Flip forward: current page flips left
+      const p = pages[current];
+      p.classList.add("flipped");
+      current = n;
+      setTimeout(() => {
+        updateUI();
+        busy = false;
+      }, 700);
+    } else {
+      // Flip backward: unflip previous page
+      const p = pages[n];
+      p.classList.remove("flipped");
+      current = n;
+      setTimeout(() => {
+        updateUI();
+        busy = false;
+      }, 700);
+    }
+  }
+
+  prevBtn.addEventListener("click", () => goto(current - 1));
+  nextBtn.addEventListener("click", () => goto(current + 1));
+
+  // Keyboard nav
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowLeft") goto(current - 1);
+    else if (e.key === "ArrowRight" || e.key === " ") goto(current + 1);
+  });
+
+  // Click edge of current page to flip (half of the page)
+  pages.forEach((p, i) => {
+    p.addEventListener("click", (e) => {
+      if (i !== current) return;
+      const rect = p.getBoundingClientRect();
+      const x = (e as MouseEvent).clientX - rect.left;
+      if (x > rect.width * 0.5) goto(current + 1);
+      else goto(current - 1);
+    });
+  });
+
+  updateUI();
+</script>

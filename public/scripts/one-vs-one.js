@@ -617,7 +617,7 @@ function moveHorse(event) {
           if (window.AudioManager) window.AudioManager.play("horse-safe");
         }
       }
-    }, 300);
+    }, 480);
   }
   // Code for moving horse on path that is accessible to only current player
   else if (
@@ -709,7 +709,7 @@ function moveHorse(event) {
           }
         }
       }
-    }, 300);
+    }, 480);
   }
 }
 

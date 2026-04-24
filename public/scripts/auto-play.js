@@ -66,13 +66,9 @@
 
   // --- Modal dismisser: fires continuously during the whole run ----
   function handleModals() {
-    // Objective modal (game-board) — already auto-dismissed via
-    // sessionStorage.objective-seen, but be safe.
-    var obj = document.getElementById('objective-modal');
-    if (obj && visible(obj) && !obj.classList.contains('hidden')) {
-      var next = document.getElementById('objective-next-btn');
-      if (next) click(next);
-    }
+    // Note: objective modal is intentionally NOT auto-dismissed — the user
+    // explicitly wants to click Start Playing themselves before the demo
+    // begins. Auto-play resumes once the countdown completes.
 
     var l2intro = document.getElementById('level2-intro-modal');
     if (l2intro && visible(l2intro) && !l2intro.classList.contains('hidden')) {

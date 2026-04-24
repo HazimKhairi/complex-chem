@@ -104,8 +104,8 @@ const featuredBlooks = CHARACTERS.slice(0, 8);
 
     // Flag used by public/scripts/auto-play.js on subsequent pages
     sessionStorage.setItem("simulation", "true");
-    // Let the objective/intro modals stay out of the way
-    sessionStorage.setItem("objective-seen", "true");
+    // Let the level-2 intro modal stay out of the way (objective modal
+    // stays visible so the user can manually press Start Playing).
     sessionStorage.setItem("level2-intro-seen", "true");
 
     if ((window as any).LoadingScreen?.showForNav) {

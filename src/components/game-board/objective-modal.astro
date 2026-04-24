@@ -1,75 +1,33 @@
 ---
 /*
- * Two-step intro shown before the game countdown:
- *   Step 1 — game objective (text)
- *   Step 2 — user manual image
- * Emits `game-objective-dismissed` when closed so the countdown can
- * start. Uses sessionStorage to stay out of the way on subsequent
- * navigations within the same session.
+ * Pre-game popup — single step showing the official user-manual image
+ * (rules + how to play). Emits `game-objective-dismissed` when closed
+ * so the countdown can start. Uses sessionStorage to stay out of the
+ * way on subsequent navigations within the same session.
  */
 ---
 
 <div
   id="objective-modal"
-  class="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+  class="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-3 sm:p-6"
 >
-  <div class="relative bg-white rounded-3xl shadow-2xl max-w-xl w-full max-h-[92vh] overflow-hidden flex flex-col">
-    <!-- Header -->
-    <div class="bg-ludon-blue text-white px-6 py-4">
-      <h2 id="objective-title" class="text-2xl font-bold tracking-tight">Your Objective</h2>
-      <p id="objective-subtitle" class="text-sm text-white/80 mt-1">Read this before the game begins</p>
+  <div class="relative bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[95vh] overflow-hidden flex flex-col">
+    <div class="flex-1 overflow-auto p-3 sm:p-4 bg-gray-50">
+      <img
+        src="/assets/popups/user-manual.png"
+        alt="Complex Chem Quest — Rules & How To Play"
+        class="w-full h-auto object-contain rounded-lg"
+      />
     </div>
 
-    <!-- Body -->
-    <div class="flex-1 overflow-y-auto p-6 space-y-4">
-      <!-- Step 1: objective text -->
-      <div id="objective-step-1" class="space-y-3">
-        <p class="text-gray-800 text-base leading-relaxed">
-          <strong>Complex Chem Quest</strong> is a chemistry board race. Roll the dice, move your
-          piece around the board, and collect ligand tiles. Land on coloured zones to answer
-          chemistry questions and earn points.
-        </p>
-        <ul class="list-disc list-inside text-gray-700 space-y-1.5 text-sm sm:text-base">
-          <li>Collect ligand tiles as you move around the track.</li>
-          <li>Answer questions correctly to gain points (Easy 2 / Med 3 / Hard 5).</li>
-          <li>Draw fate cards for surprise effects.</li>
-          <li>Reach the center to finish Level 1 and unlock Level 2.</li>
-          <li>In Level 2, build a real coordination complex from your collected ligands.</li>
-        </ul>
-      </div>
-
-      <!-- Step 2: user manual image -->
-      <div id="objective-step-2" class="space-y-3 hidden">
-        <p class="text-gray-800 text-sm mb-2">Quick reference — keep this in mind as you play:</p>
-        <div class="rounded-xl border-2 border-gray-200 overflow-hidden bg-gray-50">
-          <img
-            id="objective-manual-img"
-            src="/assets/how-to-play.png"
-            alt="How to play — user manual"
-            class="w-full h-auto object-contain"
-          />
-        </div>
-        <p id="objective-manual-fallback" class="text-xs text-gray-500 hidden">
-          Manual image not found. Ask your teacher for the printed rules sheet.
-        </p>
-      </div>
-    </div>
-
-    <!-- Footer -->
-    <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-2 bg-gray-50">
-      <button
-        id="objective-back-btn"
-        class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold hidden"
-        type="button"
-      >
-        Back
-      </button>
+    <div class="px-5 py-3 border-t border-gray-100 flex justify-between items-center gap-3 bg-white">
+      <p class="text-xs text-gray-500">Take a moment to read the rules.</p>
       <button
         id="objective-next-btn"
-        class="px-6 py-2 rounded-lg bg-ludon-blue hover:bg-blue-700 text-white font-semibold shadow"
+        class="px-6 py-2.5 rounded-lg bg-ludon-blue hover:bg-blue-700 text-white font-semibold shadow"
         type="button"
       >
-        Continue
+        Start Playing
       </button>
     </div>
   </div>
@@ -77,22 +35,7 @@
 
 <script>
   const modal = document.getElementById("objective-modal");
-  const step1 = document.getElementById("objective-step-1");
-  const step2 = document.getElementById("objective-step-2");
   const nextBtn = document.getElementById("objective-next-btn");
-  const backBtn = document.getElementById("objective-back-btn");
-  const title = document.getElementById("objective-title");
-  const subtitle = document.getElementById("objective-subtitle");
-  const manualImg = document.getElementById("objective-manual-img") as HTMLImageElement | null;
-  const manualFallback = document.getElementById("objective-manual-fallback");
-
-  // Fallback if the manual image isn't deployed — hide the <img> and show text note
-  if (manualImg) {
-    manualImg.addEventListener("error", () => {
-      manualImg.classList.add("hidden");
-      manualFallback?.classList.remove("hidden");
-    });
-  }
 
   function dismiss() {
     modal?.classList.add("hidden");
@@ -100,44 +43,10 @@
     document.dispatchEvent(new CustomEvent("game-objective-dismissed"));
   }
 
-  function showStep(step: 1 | 2) {
-    if (step === 1) {
-      step1?.classList.remove("hidden");
-      step2?.classList.add("hidden");
-      if (title) title.textContent = "Your Objective";
-      if (subtitle) subtitle.textContent = "Read this before the game begins";
-      if (nextBtn) nextBtn.textContent = "Continue";
-      backBtn?.classList.add("hidden");
-    } else {
-      step1?.classList.add("hidden");
-      step2?.classList.remove("hidden");
-      if (title) title.textContent = "How to Play";
-      if (subtitle) subtitle.textContent = "A quick look at the rules";
-      if (nextBtn) nextBtn.textContent = "Start Playing";
-      backBtn?.classList.remove("hidden");
-    }
-  }
+  nextBtn?.addEventListener("click", dismiss);
 
-  let currentStep: 1 | 2 = 1;
-
-  nextBtn?.addEventListener("click", () => {
-    if (currentStep === 1) {
-      currentStep = 2;
-      showStep(2);
-    } else {
-      dismiss();
-    }
-  });
-
-  backBtn?.addEventListener("click", () => {
-    currentStep = 1;
-    showStep(1);
-  });
-
-  // If user has already seen it this session, skip
   if (sessionStorage.getItem("objective-seen") === "true") {
     modal?.classList.add("hidden");
-    // Fire dismissed event on next tick so countdown still triggers
     setTimeout(() => {
       document.dispatchEvent(new CustomEvent("game-objective-dismissed"));
     }, 0);

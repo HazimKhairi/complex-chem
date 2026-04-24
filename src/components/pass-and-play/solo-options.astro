@@ -1,60 +1,21 @@
 ---
-import { Image } from "astro:assets";
-import redHorse from "../../assets/horses/red.png";
-import blueHorse from "../../assets/horses/blue.png";
-import yellowHorse from "../../assets/horses/yellow.png";
-import greenHorse from "../../assets/horses/green.png";
 import CharacterPicker from "./character-picker.astro";
 ---
 
 <section id="solo-options" class="space-y-5 hidden">
   <div>
     <h2 class="text-center text-xl">Enter your name</h2>
-    <p class="text-center text-gray-600">Pick your horse colour and play solo.</p>
+    <p class="text-center text-gray-600">Pick your blook and play solo.</p>
   </div>
 
-  <div class="bg-gray-200 rounded-2xl p-4 space-y-5">
-    <div class="flex items-center space-x-4">
-      <input
-        type="text"
-        id="solo-player-name"
-        value="Player 1"
-        placeholder="Your name"
-        class="h-9 rounded-xl text-center w-full bg-white"
-      />
-    </div>
-
-    <div class="grid grid-cols-4 gap-2">
-      <button
-        type="button"
-        data-horse="red"
-        aria-selected="true"
-        class="solo-horse-btn aria-selected:ring-4 aria-selected:ring-ludon-green bg-white rounded-xl p-2 flex items-center justify-center"
-      >
-        <Image src={redHorse} alt="Red horse" class="w-8" />
-      </button>
-      <button
-        type="button"
-        data-horse="green"
-        class="solo-horse-btn aria-selected:ring-4 aria-selected:ring-ludon-green bg-white rounded-xl p-2 flex items-center justify-center"
-      >
-        <Image src={greenHorse} alt="Green horse" class="w-8" />
-      </button>
-      <button
-        type="button"
-        data-horse="blue"
-        class="solo-horse-btn aria-selected:ring-4 aria-selected:ring-ludon-green bg-white rounded-xl p-2 flex items-center justify-center"
-      >
-        <Image src={blueHorse} alt="Blue horse" class="w-8" />
-      </button>
-      <button
-        type="button"
-        data-horse="yellow"
-        class="solo-horse-btn aria-selected:ring-4 aria-selected:ring-ludon-green bg-white rounded-xl p-2 flex items-center justify-center"
-      >
-        <Image src={yellowHorse} alt="Yellow horse" class="w-8" />
-      </button>
-    </div>
+  <div class="bg-gray-200 rounded-2xl p-4">
+    <input
+      type="text"
+      id="solo-player-name"
+      value="Player 1"
+      placeholder="Your name"
+      class="h-10 rounded-xl text-center w-full bg-white font-semibold"
+    />
   </div>
 
   <CharacterPicker slot="p1" label="Pick your blook" defaultId="panda" />
@@ -63,49 +24,32 @@ import CharacterPicker from "./character-picker.astro";
 </section>
 
 <script>
+  // Solo mode defaults to playing as the red slot (player 1) behind the
+  // scenes. The chosen blook replaces the horse visually via
+  // character-swap.js, so the colour is never shown to the user.
+  const SOLO_COLOUR = "red";
+
   const nameInput = document.getElementById("solo-player-name") as HTMLInputElement | null;
-  const horseButtons = document.querySelectorAll<HTMLButtonElement>(".solo-horse-btn");
   const startButton = document.getElementById("start-solo-game") as HTMLButtonElement | null;
 
-  // Initialize from session storage or defaults
-  let savedHorse = sessionStorage.getItem("solo-horse") || "red";
-  sessionStorage.setItem("solo-horse", savedHorse);
   if (!sessionStorage.getItem("solo-player-name")) {
     sessionStorage.setItem("solo-player-name", "Player 1");
   }
-
-  horseButtons.forEach((btn) => {
-    btn.setAttribute("aria-selected", btn.dataset.horse === savedHorse ? "true" : "false");
-  });
-
-  horseButtons.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      horseButtons.forEach((b) => b.setAttribute("aria-selected", "false"));
-      btn.setAttribute("aria-selected", "true");
-      sessionStorage.setItem("solo-horse", btn.dataset.horse || "red");
-    });
-  });
 
   nameInput?.addEventListener("input", () => {
     sessionStorage.setItem("solo-player-name", nameInput.value || "Player 1");
   });
 
   startButton?.addEventListener("click", () => {
-    const horse = sessionStorage.getItem("solo-horse") || "red";
     const name = (nameInput?.value || "Player 1").trim() || "Player 1";
 
     sessionStorage.setItem("solo-mode", "true");
     sessionStorage.setItem("solo-player-name", name);
-    sessionStorage.setItem("solo-horse", horse);
+    sessionStorage.setItem("solo-horse", SOLO_COLOUR);
 
-    // Pair: red<->green (player 1/4), blue<->yellow (player 2/3)
-    // one-vs-one.js reads horse-1 to decide start x (red/green → x=1, blue/yellow → x=2)
-    // and which player areas to hide. solo-patch.js fine-tunes for the chosen horse.
-    const horseGroup = horse === "red" || horse === "green" ? "red" : "blue";
-    const opponent = horse === "red" ? "green" : horse === "green" ? "red" : horse === "blue" ? "yellow" : "blue";
-
-    sessionStorage.setItem("one-vs-one-horse-1", horseGroup);
-    sessionStorage.setItem("one-vs-one-horse-2", opponent);
+    // Keys expected by the legacy one-vs-one.js / solo-patch.js
+    sessionStorage.setItem("one-vs-one-horse-1", "red");
+    sessionStorage.setItem("one-vs-one-horse-2", "green");
     sessionStorage.setItem("one-vs-one-player-1-name", name);
     sessionStorage.setItem("one-vs-one-player-2-name", "");
 

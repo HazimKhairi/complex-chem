@@ -1,69 +1,36 @@
 ---
-import { Image } from "astro:assets";
-import redHorse from "../../assets/horses/red.png";
-import blueHorse from "../../assets/horses/blue.png";
-import yellowHorse from "../../assets/horses/yellow.png";
-import greenHorse from "../../assets/horses/green.png";
-import computerImg from "../../assets/computer.png";
 import CharacterPicker from "./character-picker.astro";
 ---
 
 <section id="one-vs-one-options" class="space-y-5">
   <div>
     <h2 class="text-center text-xl">Enter player names</h2>
-    <p class="text-center text-gray-600">Select any one horse combination for your game.</p>
+    <p class="text-center text-gray-600">Type each player's name and pick a blook.</p>
   </div>
-  <div
-    id="red-green-combo"
-    aria-selected="true"
-    class="aria-selected:bg-ludon-green bg-gray-200 rounded-2xl p-4 *:flex *:items-center space-y-5"
-  >
-    <div class="space-x-4">
-      <Image src={redHorse} alt="Red horse" class="w-5 rounded-md" />
+
+  <div class="bg-gray-200 rounded-2xl p-4 space-y-3">
+    <div>
+      <label for="one-vs-one-p1-name" class="block text-xs font-bold text-gray-700 mb-1 ml-1">Player 1</label>
       <input
         type="text"
-        id="one-vs-one-p1-red-name"
+        id="one-vs-one-p1-name"
         value="Player 1"
         placeholder="Player 1 Name"
-        class="h-9 rounded-xl text-center w-full bg-white"
+        class="h-10 rounded-xl text-center w-full bg-white font-semibold"
       />
     </div>
-    <div class="space-x-4">
-      <Image src={greenHorse} alt="Green horse" class="w-5 rounded-md" />
+    <div>
+      <label for="one-vs-one-p2-name" class="block text-xs font-bold text-gray-700 mb-1 ml-1">Player 2</label>
       <input
         type="text"
-        id="one-vs-one-p2-green-name"
+        id="one-vs-one-p2-name"
         value="Player 2"
         placeholder="Player 2 Name"
-        class="h-9 rounded-xl text-center w-full bg-white"
+        class="h-10 rounded-xl text-center w-full bg-white font-semibold"
       />
     </div>
   </div>
-  <div
-    id="blue-yellow-combo"
-    class="aria-selected:bg-ludon-green bg-gray-200 rounded-2xl p-4 *:flex *:items-center space-y-5"
-  >
-    <div class="space-x-4">
-      <Image src={blueHorse} alt="Blue horse" class="w-5 mr-5 rounded-md" />
-      <input
-        type="text"
-        id="one-vs-one-p1-blue-name"
-        value="Player 1"
-        placeholder="Player 1 Name"
-        class="h-9 rounded-xl text-center w-full bg-white"
-      />
-    </div>
-    <div class="space-x-4">
-      <Image src={yellowHorse} alt="Yellow horse" class="w-5 mr-5 rounded-md" />
-      <input
-        type="text"
-        id="one-vs-one-p2-yellow-name"
-        value="Player 2"
-        placeholder="Player 2 Name"
-        class="h-9 rounded-xl text-center w-full bg-white"
-      />
-    </div>
-  </div>
+
   <CharacterPicker slot="p1" label="Player 1 blook" defaultId="panda" />
   <CharacterPicker slot="p2" label="Player 2 blook" defaultId="frog" />
 
@@ -71,78 +38,27 @@ import CharacterPicker from "./character-picker.astro";
 </section>
 
 <script>
-  // Get elements
-  const redGreenCombo = document.getElementById("red-green-combo");
-  const blueYellowCombo = document.getElementById("blue-yellow-combo");
-  const player1RedInput = document.getElementById("one-vs-one-p1-red-name") as HTMLInputElement | null;
-  const player2GreenInput = document.getElementById("one-vs-one-p2-green-name") as HTMLInputElement | null;
-  const player1BlueInput = document.getElementById("one-vs-one-p1-blue-name") as HTMLInputElement | null;
-  const player2YellowInput = document.getElementById("one-vs-one-p2-yellow-name") as HTMLInputElement | null;
+  // 2-player game uses slots Player 1 (red) and Player 2 (green)
+  // behind the scenes. Blook character picker drives the visual.
+  const p1Input = document.getElementById("one-vs-one-p1-name") as HTMLInputElement | null;
+  const p2Input = document.getElementById("one-vs-one-p2-name") as HTMLInputElement | null;
   const startButton = document.getElementById("start-game") as HTMLButtonElement | null;
 
-  // Initialize from session storage or set defaults
-  let savedHorse1 = sessionStorage.getItem("one-vs-one-horse-1");
-  let savedHorse2 = sessionStorage.getItem("one-vs-one-horse-2");
-  sessionStorage.setItem("one-vs-one-player-1-name", "Player 1");
-  sessionStorage.setItem("one-vs-one-player-2-name", "Player 2");
+  // Default colour pair — fixed to red (slot 1) vs green (slot 4)
+  sessionStorage.setItem("one-vs-one-horse-1", "red");
+  sessionStorage.setItem("one-vs-one-horse-2", "green");
 
-  if (!savedHorse1) {
-    sessionStorage.setItem("one-vs-one-horse-1", "red");
-    savedHorse1 = "red";
+  function saveNames() {
+    sessionStorage.setItem("one-vs-one-player-1-name", p1Input?.value?.trim() || "Player 1");
+    sessionStorage.setItem("one-vs-one-player-2-name", p2Input?.value?.trim() || "Player 2");
   }
-  if (!savedHorse2) {
-    sessionStorage.setItem("one-vs-one-horse-2", "green");
-    savedHorse2 = "green";
-  }
+  saveNames();
 
-  // Set initial selection
-  if (savedHorse1 === "blue" && savedHorse2 === "yellow") {
-    redGreenCombo?.setAttribute("aria-selected", "false");
-    blueYellowCombo?.setAttribute("aria-selected", "true");
-  } else {
-    redGreenCombo?.setAttribute("aria-selected", "true");
-    blueYellowCombo?.setAttribute("aria-selected", "false");
-  }
+  p1Input?.addEventListener("input", saveNames);
+  p2Input?.addEventListener("input", saveNames);
 
-  // Handle combo selection
-  redGreenCombo?.addEventListener("click", () => {
-    redGreenCombo.setAttribute("aria-selected", "true");
-    blueYellowCombo?.setAttribute("aria-selected", "false");
-    sessionStorage.setItem("one-vs-one-horse-1", "red");
-    sessionStorage.setItem("one-vs-one-horse-2", "green");
-  });
-
-  blueYellowCombo?.addEventListener("click", () => {
-    redGreenCombo?.setAttribute("aria-selected", "false");
-    blueYellowCombo.setAttribute("aria-selected", "true");
-    sessionStorage.setItem("one-vs-one-horse-1", "blue");
-    sessionStorage.setItem("one-vs-one-horse-2", "yellow");
-  });
-
-  // Save player names
-  function savePlayerNames() {
-    let player1Name, player2Name;
-
-    if (redGreenCombo?.getAttribute("aria-selected") === "true") {
-      player1Name = player1RedInput?.value || "Player 1";
-      player2Name = player2GreenInput?.value || "Player 2";
-    } else {
-      player1Name = player1BlueInput?.value || "Player 1";
-      player2Name = player2YellowInput?.value || "Player 2";
-    }
-
-    sessionStorage.setItem("one-vs-one-player-1-name", player1Name);
-    sessionStorage.setItem("one-vs-one-player-2-name", player2Name);
-  }
-
-  // Save names on input change
-  player1RedInput?.addEventListener("input", savePlayerNames);
-  player2GreenInput?.addEventListener("input", savePlayerNames);
-  player1BlueInput?.addEventListener("input", savePlayerNames);
-  player2YellowInput?.addEventListener("input", savePlayerNames);
-
-  // Save names when start button is clicked
   startButton?.addEventListener("click", () => {
+    saveNames();
     if ((window as any).LoadingScreen?.showForNav) {
       (window as any).LoadingScreen.showForNav("/game-board", "Setting up your 2-player match…");
     } else {

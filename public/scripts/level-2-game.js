@@ -801,10 +801,130 @@
 
   var inventoryLigands = [];
 
-  function renderStep3() {
+  // Q4 picture-pick state (lazy init)
+  if (!("pictureAnswer" in level2State)) {
+    level2State.pictureAnswer = null;
+    level2State.pictureScore = 0;
+    level2State.pictureAttempts = 0;
+    level2State.pictureDone = false;
+  }
+
+  // Six geometry reference images (cropped from LEVEL_2_GEOMETRY_SHAPE)
+  var GEOMETRY_PICS = [
+    { id: "trigonal-planar",     label: "Trigonal planar",      cn: 3, image: "/assets/geometry/trigonal-planar.png" },
+    { id: "tetrahedral",         label: "Tetrahedral",          cn: 4, image: "/assets/geometry/tetrahedral.png" },
+    { id: "square-planar",       label: "Square planar",        cn: 4, image: "/assets/geometry/square-planar.png" },
+    { id: "trigonal-bipyramidal",label: "Trigonal bipyramidal", cn: 5, image: "/assets/geometry/trigonal-bipyramidal.png" },
+    { id: "square-pyramidal",    label: "Square pyramidal",     cn: 5, image: "/assets/geometry/square-pyramidal.png" },
+    { id: "octahedral",          label: "Octahedral",           cn: 6, image: "/assets/geometry/octahedral.png" },
+  ];
+
+  function renderStep5_Q4_picture() {
     var c = $("step-container");
-    c.innerHTML = '<h2 class="text-xl font-bold text-gray-800 mb-1">Step 3: Build Your Complex <span class="text-sm font-normal text-gray-400">(6 pts)</span></h2>'
-      + '<p class="text-gray-500 text-sm mb-2">Drag ligands from your inventory and drop them onto the empty slots on the 3D model.</p>'
+    var bc = $("builder-container");
+    if (bc) bc.classList.add("hidden"); // hide the 3D canvas during picture pick
+
+    var cn = calcCN();
+    var done = level2State.pictureDone;
+    var chosen = level2State.pictureAnswer;
+
+    var html = '<h2 class="text-xl font-bold text-gray-800 mb-1">4. Drag and drop the appropriate tools to form your complex structure <span class="text-sm font-normal text-gray-400">(3 pts)</span></h2>';
+    html += '<p class="text-gray-500 text-sm mb-2">First, pick the complex picture that matches your coordination number. Your CN = <strong class="text-[#4187a0]">' + cn + '</strong>.</p>';
+    html += '<p class="text-xs text-gray-500 mb-4">Attempt ' + Math.min(level2State.pictureAttempts + (done ? 0 : 1), 3) + ' / 3 &nbsp; | &nbsp; 1st = 3 pts · 2nd = 2 pts · 3rd = 1 pt</p>';
+
+    // Grid of 6 options
+    html += '<div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">';
+    GEOMETRY_PICS.forEach(function (g) {
+      var isCorrect = g.cn === cn;
+      var cls = 'geo-pic-btn relative p-2 rounded-xl border-2 bg-white transition text-center ';
+      if (done) {
+        if (g.id === chosen && isCorrect) cls += 'border-green-500 ring-2 ring-green-500/30 ';
+        else if (g.id === chosen && !isCorrect) cls += 'border-red-500 ring-2 ring-red-500/30 ';
+        else if (isCorrect) cls += 'border-green-300 ';
+        else cls += 'border-gray-200 opacity-60 ';
+        cls += 'cursor-default ';
+      } else {
+        if (g.id === chosen) cls += 'border-[#4187a0] ring-2 ring-[#4187a0]/30 ';
+        else cls += 'border-gray-200 hover:border-[#4187a0] cursor-pointer hover:scale-105 ';
+      }
+      html += '<button class="' + cls + '" data-val="' + g.id + '"' + (done ? ' disabled' : '') + '>';
+      html += '<img src="' + g.image + '" alt="' + g.label + '" class="w-full h-auto object-contain mb-1" />';
+      html += '<div class="text-xs font-semibold text-gray-800">' + g.label + '</div>';
+      html += '<div class="text-[10px] text-gray-500">CN = ' + g.cn + '</div>';
+      html += '</button>';
+    });
+    html += '</div>';
+
+    if (done) {
+      var pts = level2State.pictureScore;
+      if (pts > 0) {
+        html += '<div class="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm text-center font-semibold mb-3">Correct! +' + pts + ' point' + (pts > 1 ? 's' : '') + '</div>';
+      } else {
+        var correctLabel = GEOMETRY_PICS.filter(function (g) { return g.cn === cn; }).map(function (g) { return g.label; }).join(' / ');
+        html += '<div class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm text-center mb-3">The correct answer was <strong>' + correctLabel + '</strong>.</div>';
+      }
+    } else if (level2State.pictureAttempts > 0) {
+      html += '<div class="p-3 bg-orange-50 border border-orange-200 rounded-lg text-orange-700 text-sm text-center mb-3">Not quite. Try again — attempt ' + level2State.pictureAttempts + ' / 3</div>';
+    }
+
+    html += navButtons({ back: true, next: true, nextDisabled: !done && !chosen, nextLabel: done ? "Next: Build in 3D →" : "Submit" });
+    c.innerHTML = html;
+
+    document.querySelectorAll(".geo-pic-btn").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        if (done) return;
+        level2State.pictureAnswer = this.getAttribute("data-val");
+        renderStep5_Q4_picture();
+      });
+    });
+
+    bindNav({
+      onBack: function () { renderStep(4); },
+      onNext: function () {
+        if (done) {
+          // Lock in the chosen geometry for the 3D build phase
+          var picked = GEOMETRY_PICS.find(function (g) { return g.id === level2State.pictureAnswer; });
+          if (picked) level2State.selectedGeometry = picked.label;
+          // Re-enter step 5 so renderStep3's 3D-build branch runs
+          renderStep(5);
+          return;
+        }
+        if (!level2State.pictureAnswer) return;
+
+        level2State.pictureAttempts++;
+        var picked = GEOMETRY_PICS.find(function (g) { return g.id === level2State.pictureAnswer; });
+        var right = picked && picked.cn === calcCN();
+        if (right) {
+          level2State.pictureScore = Math.max(0, 4 - level2State.pictureAttempts); // 3, 2, 1
+          level2State.pictureDone = true;
+          level2State.level2Score += level2State.pictureScore;
+          updateScoreBar();
+          if (window.AudioManager) window.AudioManager.play("correct");
+          renderStep5_Q4_picture();
+        } else if (level2State.pictureAttempts >= 3) {
+          level2State.pictureScore = 0;
+          level2State.pictureDone = true;
+          updateScoreBar();
+          if (window.AudioManager) window.AudioManager.play("wrong");
+          renderStep5_Q4_picture();
+        } else {
+          if (window.AudioManager) window.AudioManager.play("wrong");
+          renderStep5_Q4_picture();
+        }
+      },
+    });
+  }
+
+  function renderStep3() {
+    // Q4 gate — if the picture hasn't been picked yet, show that phase first.
+    if (!level2State.pictureDone) {
+      renderStep5_Q4_picture();
+      return;
+    }
+
+    var c = $("step-container");
+    c.innerHTML = '<h2 class="text-xl font-bold text-gray-800 mb-1">4. Build your complex in 3D <span class="text-sm font-normal text-gray-400">(5 pts — 1 per correctly placed ligand)</span></h2>'
+      + '<p class="text-gray-500 text-sm mb-2">Geometry: <strong class="text-[#4187a0]">' + (level2State.selectedGeometry || "—") + '</strong>. Drag ligands from the inventory onto the empty slots.</p>'
       + '<p class="text-sm text-gray-600">Attempt: <strong>' + (level2State.buildAttempts + 1) + '</strong> / 3 &nbsp; | &nbsp; Click a placed ball to remove it.</p>';
 
     var bc = $("builder-container");
@@ -944,7 +1064,7 @@
     var placed = window.BoneBuilder.getPlacedLigands();
 
     if (valid) {
-      var pts = level2State.buildAttempts === 1 ? 6 : (level2State.buildAttempts === 2 ? 4 : 2);
+      var pts = level2State.buildAttempts === 1 ? 5 : (level2State.buildAttempts === 2 ? 3 : 1);
       level2State.buildScore = pts;
       level2State.level2Score += pts;
       level2State.buildDone = true;

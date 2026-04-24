@@ -197,14 +197,15 @@
     currentStep = step;
     updateStepIndicator(step);
     var bc = $("builder-container");
-    // 3D builder only shown on step 4 now (old step 3)
-    if (bc) bc.classList.toggle("hidden", step !== 4);
+    // 3D builder only shown on step 5 (was step 4)
+    if (bc) bc.classList.toggle("hidden", step !== 5);
     switch (step) {
       case 1: renderStep1(); break;                  // Setup: metal + ligand picker
       case 2: renderStep2_Q1_type(); break;          // Q1: neutral/anion/cation
-      case 3: renderStep2(); break;                  // Q2: geometry (legacy impl)
-      case 4: renderStep3(); break;                  // Q3: 3D build
-      case 5: renderStep4(); break;                  // Q4: IUPAC name
+      case 3: renderStep3_Q2_cn(); break;            // Q2: coordination number
+      case 4: renderStep2(); break;                  // Q3: geometry (legacy impl)
+      case 5: renderStep3(); break;                  // Q4: 3D build
+      case 6: renderStep4(); break;                  // Q5: IUPAC name
       default: renderResults(); break;
     }
   }
@@ -516,7 +517,198 @@
     });
   }
 
-  // ── Step 3: Pick Geometry (2 pts) ───────────────────────
+  // ── Step 3: Q2 — Predict the coordination number (2 pts) ─
+  // CN = Σ (coordination sites per ligand × number of ligands).
+  // cs = denticity for each ligand type.
+
+  // Also expose state for Q2 on first render
+  if (!("cnAnswer" in level2State)) {
+    level2State.cnAnswer = null;
+    level2State.cnScore = 0;
+    level2State.cnAttempts = 0;
+    level2State.cnDone = false;
+  }
+
+  // Info bubble content keyed by topic. Clicking the "i" pill opens
+  // an overlay with the matching text (spec: three coloured speech
+  // bubbles from the mock).
+  var INFO_BUBBLES = {
+    cn: {
+      title: "Coordination Number",
+      body: "The number of ligand donor atoms surrounding the central metal.",
+    },
+    denticity: {
+      title: "Denticity",
+      body: "The number of donor atoms in a ligand that can bind to the central metal ion.<br><br><strong>Monodentate (1)</strong> → 1 donor atom<br><strong>Bidentate (2)</strong> → 2 donor atoms",
+    },
+    sites: {
+      title: "No. of coordination sites",
+      body: "The number of bonding positions on the central metal used by a single ligand.",
+    },
+  };
+
+  function openInfoBubble(key) {
+    var info = INFO_BUBBLES[key];
+    if (!info) return;
+    // Reuse an existing overlay or create one
+    var overlay = document.getElementById("l2-info-overlay");
+    if (!overlay) {
+      overlay = document.createElement("div");
+      overlay.id = "l2-info-overlay";
+      overlay.className = "fixed inset-0 bg-black/60 backdrop-blur-sm z-[80] flex items-center justify-center p-6";
+      overlay.innerHTML = '<div class="bg-[#4187a0] text-white rounded-3xl shadow-2xl max-w-md w-full p-6 relative">'
+        + '<button id="l2-info-close" class="absolute top-3 right-4 text-white/80 hover:text-white text-2xl leading-none" aria-label="Close">&times;</button>'
+        + '<h3 id="l2-info-title" class="text-lg font-bold mb-3"></h3>'
+        + '<div id="l2-info-body" class="text-sm leading-relaxed"></div>'
+        + '</div>';
+      document.body.appendChild(overlay);
+      overlay.addEventListener("click", function (e) {
+        if (e.target === overlay) overlay.remove();
+      });
+      var closeBtn = overlay.querySelector("#l2-info-close");
+      if (closeBtn) closeBtn.addEventListener("click", function () { overlay.remove(); });
+    }
+    overlay.querySelector("#l2-info-title").textContent = info.title;
+    overlay.querySelector("#l2-info-body").innerHTML = info.body;
+  }
+
+  // Expose for inline onclick
+  window.__l2InfoBubble = openInfoBubble;
+
+  function renderStep3_Q2_cn() {
+    var c = $("step-container");
+    var cn = calcCN(); // correct CN derived from Step 1 selections
+    var sel = getSelectedLigands();
+    if (sel.length === 0) sel = playerLigands;
+
+    // Group by ligand id for the table, counting occurrences
+    var byId = {};
+    sel.forEach(function (lig) {
+      var key = lig.id || (lig.name || "?").toLowerCase();
+      if (!byId[key]) {
+        var chem = LIGAND_CHEMISTRY[key] || LIGAND_CHEMISTRY[(lig.id || "").toLowerCase()];
+        byId[key] = {
+          id: key,
+          name: lig.name || key,
+          denticity: chem ? chem.denticity : 1,
+          type: chem ? chem.type : "Monodentate",
+          count: 0,
+        };
+      }
+      byId[key].count++;
+    });
+    var rows = Object.keys(byId).map(function (k) { return byId[k]; });
+
+    var done = level2State.cnDone;
+    var chosen = level2State.cnAnswer;
+
+    var html = '<div class="flex items-center justify-between mb-1">';
+    html += '<h2 class="text-xl font-bold text-gray-800">2. Predict the coordination number <span class="text-sm font-normal text-gray-400">(3, 4, 5 or 6)</span></h2>';
+    html += '<button type="button" class="px-3 py-1 rounded-full bg-[#4187a0] text-white text-xs font-bold hover:bg-[#357a91]" onclick="window.__l2InfoBubble(\'cn\')">What is CN?</button>';
+    html += '</div>';
+    html += '<p class="text-gray-500 text-sm mb-4">Sum the bonding positions each ligand takes up. Tap the info pills for help.</p>';
+
+    // Table
+    html += '<div class="overflow-x-auto mb-4 rounded-lg border border-gray-200">';
+    html += '<table class="w-full text-sm">';
+    html += '<thead class="bg-[#4187a0] text-white"><tr>';
+    html += '<th class="text-left px-3 py-2 font-semibold">Ligand(s)</th>';
+    html += '<th class="px-3 py-2 font-semibold">';
+    html += 'Type of denticity ';
+    html += '<button type="button" class="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-white/20 text-white text-xs font-bold hover:bg-white/30" onclick="window.__l2InfoBubble(\'denticity\')">i</button>';
+    html += '</th>';
+    html += '<th class="px-3 py-2 font-semibold">';
+    html += 'No. of coordination sites, cs ';
+    html += '<button type="button" class="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-white/20 text-white text-xs font-bold hover:bg-white/30" onclick="window.__l2InfoBubble(\'sites\')">i</button>';
+    html += '</th>';
+    html += '<th class="px-3 py-2 font-semibold">No. of ligand(s), n</th>';
+    html += '<th class="px-3 py-2 font-semibold">Contribution (cs × n)</th>';
+    html += '</tr></thead><tbody>';
+    rows.forEach(function (r) {
+      html += '<tr class="border-t border-gray-100">';
+      html += '<td class="px-3 py-2 font-medium text-gray-800">' + r.name + '</td>';
+      html += '<td class="text-center px-3 py-2">' + r.type.toLowerCase() + '</td>';
+      html += '<td class="text-center px-3 py-2">' + r.denticity + '</td>';
+      html += '<td class="text-center px-3 py-2">' + r.count + '</td>';
+      html += '<td class="text-center px-3 py-2 font-semibold">' + (r.denticity * r.count) + '</td>';
+      html += '</tr>';
+    });
+    html += '<tr class="border-t-2 border-gray-300 bg-gray-50">';
+    html += '<td class="px-3 py-2 font-bold text-gray-800" colspan="4">Total</td>';
+    html += '<td class="text-center px-3 py-2 text-lg font-black text-[#4187a0]">Coordination number = ' + (done ? cn : '?') + '</td>';
+    html += '</tr>';
+    html += '</tbody></table></div>';
+
+    // 4-option answer
+    var opts = [3, 4, 5, 6];
+    html += '<div class="grid grid-cols-4 gap-3 mb-3">';
+    opts.forEach(function (n) {
+      var cls = 'p-4 rounded-lg font-bold text-xl border-2 transition text-center ';
+      if (done) {
+        if (n === cn) cls += 'border-green-500 bg-green-50 text-green-700 ';
+        else if (n === chosen) cls += 'border-red-500 bg-red-50 text-red-700 ';
+        else cls += 'border-gray-200 text-gray-400 ';
+        cls += 'cursor-default ';
+      } else {
+        if (n === chosen) cls += 'border-[#4187a0] bg-[#4187a0]/10 text-[#4187a0] ';
+        else cls += 'border-gray-200 hover:border-[#4187a0] cursor-pointer ';
+      }
+      html += '<button class="cn-opt ' + cls + '" data-val="' + n + '"' + (done ? ' disabled' : '') + '>' + n + '</button>';
+    });
+    html += '</div>';
+
+    if (done) {
+      var pts = level2State.cnScore;
+      if (pts > 0) {
+        html += '<div class="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm text-center font-semibold mb-3">Correct! CN = ' + cn + ' (+' + pts + ' pt' + (pts > 1 ? 's' : '') + ')</div>';
+      } else {
+        html += '<div class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm text-center mb-3">Not quite. The correct CN was <strong>' + cn + '</strong>.</div>';
+      }
+    } else if (level2State.cnAttempts > 0) {
+      html += '<div class="p-3 bg-orange-50 border border-orange-200 rounded-lg text-orange-700 text-sm text-center mb-3">Try again. Attempt ' + level2State.cnAttempts + '/2</div>';
+    }
+
+    html += navButtons({ back: true, next: true, nextDisabled: !done && !chosen, nextLabel: done ? "Next: Geometry" : "Submit" });
+    c.innerHTML = html;
+
+    document.querySelectorAll(".cn-opt").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        if (done) return;
+        level2State.cnAnswer = parseInt(this.getAttribute("data-val"), 10);
+        renderStep3_Q2_cn();
+      });
+    });
+
+    bindNav({
+      onBack: function () { renderStep(2); },
+      onNext: function () {
+        if (done) { renderStep(4); return; }
+        if (level2State.cnAnswer === null) return;
+
+        level2State.cnAttempts++;
+        var right = level2State.cnAnswer === cn;
+        if (right) {
+          level2State.cnScore = level2State.cnAttempts === 1 ? 2 : 1;
+          level2State.cnDone = true;
+          level2State.level2Score += level2State.cnScore;
+          updateScoreBar();
+          if (window.AudioManager) window.AudioManager.play("correct");
+          renderStep3_Q2_cn();
+        } else if (level2State.cnAttempts >= 2) {
+          level2State.cnScore = 0;
+          level2State.cnDone = true;
+          updateScoreBar();
+          if (window.AudioManager) window.AudioManager.play("wrong");
+          renderStep3_Q2_cn();
+        } else {
+          if (window.AudioManager) window.AudioManager.play("wrong");
+          renderStep3_Q2_cn();
+        }
+      },
+    });
+  }
+
+  // ── Step 4: Pick Geometry (2 pts) ───────────────────────
 
   function renderStep2() {
     var c = $("step-container");
@@ -597,8 +789,8 @@
     }
 
     bindNav({
-      onBack: function () { renderStep(2); },
-      onNext: function () { renderStep(4); },
+      onBack: function () { renderStep(3); },
+      onNext: function () { renderStep(5); },
     });
   }
 
@@ -766,7 +958,7 @@
         + '<p class="text-sm text-gray-500 mb-6">Your complex: [' + level2State.selectedMetal.name + '] with ' + placed.length + ' ligands</p>'
         + navButtons({ back: false, next: true, nextLabel: "Next: Name Your Complex" })
         + '</div>';
-      bindNav({ onNext: function () { renderStep(5); } });
+      bindNav({ onNext: function () { renderStep(6); } });
     } else if (level2State.buildAttempts >= 3) {
       level2State.buildScore = 0;
       level2State.buildDone = true;
@@ -779,7 +971,7 @@
         + '<p class="text-gray-600 mb-6">0 points for assembly</p>'
         + navButtons({ back: false, next: true, nextLabel: "Next: Name Your Complex" })
         + '</div>';
-      bindNav({ onNext: function () { renderStep(5); } });
+      bindNav({ onNext: function () { renderStep(6); } });
     } else {
       var c = $("step-container");
       c.innerHTML = '<div class="text-center py-4">'
@@ -951,7 +1143,7 @@
   // ── Results ─────────────────────────────────────────────
 
   function renderResults() {
-    updateStepIndicator(6);
+    updateStepIndicator(7);
     var bc = $("builder-container"); if (bc) bc.classList.add("hidden");
     var c = $("step-container");
     var l1 = 0;

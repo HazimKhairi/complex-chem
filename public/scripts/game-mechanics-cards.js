@@ -35,6 +35,9 @@ const QUESTION_CARDS = [
     difficulty: "hard",
     points: 5,
     correctAnswer: 3, // C
+    question: "Coordination number of the central metal ion in the complex [Cr(C₂O₄)₃]³⁻?",
+    hintTitle: "EDTA",
+    hint: "In your morning routine, EDTA might be in your shampoo! It helps prevent minerals in water from binding to hair, keeping it soft and manageable. EDTA is a ligand — its structure contains multiple donor sites capable of forming coordination bonds with metal ions, making it an effective chelating agent.",
     answers: ["4", "5", "6", "7"]
   },
   {
@@ -43,6 +46,9 @@ const QUESTION_CARDS = [
     difficulty: "hard",
     points: 5,
     correctAnswer: 3, // C
+    question: "What is the oxidation state of the metal in [Co(NH₃)₅Cl]Cl₂?",
+    hintTitle: "Hemoglobin in our blood contains a special complex ion",
+    hint: "The Fe complex in haemoglobin helps it carry oxygen from our lungs to the rest of our body, making sure our cells get the oxygen they need to function.",
     answers: ["+1", "+2", "+3", "+4"]
   },
   {
@@ -51,6 +57,9 @@ const QUESTION_CARDS = [
     difficulty: "hard",
     points: 5,
     correctAnswer: 2, // B
+    question: "What is the oxidation state of copper in the complex [Cu(NH₃)₄]²⁺?",
+    hintTitle: "Vitamin B12 contains a complex ion",
+    hint: "Cobalamin (B12) has a complex structure with a cobalt ion at its core. This complex ion is crucial for red blood cell production and maintaining a healthy nervous system.",
     answers: ["+1", "+2", "+3", "+4"]
   },
   {
@@ -59,6 +68,9 @@ const QUESTION_CARDS = [
     difficulty: "hard",
     points: 5,
     correctAnswer: 3, // C
+    question: "Calculate the oxidation number of cobalt (Co) in the following complex [Co(dppe)₂Cl₂]⁺",
+    hintTitle: "Green pigment in plants contains a complex ion",
+    hint: "Chlorophyll has magnesium at its centre and helps plants absorb sunlight to make food through photosynthesis. This complex ion plays a crucial role in capturing light energy.",
     answers: ["+1", "+2", "+3", "+4"]
   },
   {
@@ -67,11 +79,14 @@ const QUESTION_CARDS = [
     difficulty: "hard",
     points: 5,
     correctAnswer: 3, // C
+    question: "Which of the following is the correct name for this complex? [Cr(NH₃)₄(H₂O)₂]³⁺",
+    hintTitle: "Fireworks have complex ions",
+    hint: "Fireworks contain special ingredients like dextrin and metal salts. When mixed, they create complex compounds — strontium salts produce red, copper salts produce blue or green.",
     answers: [
       "Tetraammoniadiwater chromium (III) ion",
       "Tetraammoniadiaquachromate (III) ion",
-      "Tetraammoniadi aquachromium (III) ion",
-      "Tetraammoniediaquachromate (III) ion"
+      "Tetraamminediaquachromium (III) ion",
+      "Tetraamminediaquachromate (III) ion"
     ]
   },
   {
@@ -80,6 +95,9 @@ const QUESTION_CARDS = [
     difficulty: "hard",
     points: 5,
     correctAnswer: 2, // B
+    question: "What is the coordination number in the complex [Ni(CN)₄]²⁻?",
+    hintTitle: "The antimalarial drug Ferroquine contains complex ions",
+    hint: "Ferroquine's iron-based complex ions are crucial for its effectiveness in treating malaria — they help target and destroy the malaria parasites in the body.",
     answers: ["2", "4", "6", "8"]
   },
 
@@ -92,6 +110,9 @@ const QUESTION_CARDS = [
     difficulty: "medium",
     points: 3,
     correctAnswer: 2, // B
+    question: "Chelation occurs when a ligand ___.",
+    hintTitle: "Copper phthalocyanine is a complex ion used as a colour pigment",
+    hint: "Its intricate molecular structure is the foundation for various shades of blue and green in pigments. Its versatility and stability make it truly fascinating.",
     answers: [
       "Donates one pair of electrons to a metal ion",
       "Forms a ring structure with the metal ion",
@@ -105,6 +126,9 @@ const QUESTION_CARDS = [
     difficulty: "medium",
     points: 3,
     correctAnswer: 1, // A
+    question: "In the complex potassium diamminetetrabromocobaltate (III), which one of the following is the counter ion?",
+    hintTitle: "Cisplatin is a complex ion used in chemotherapy",
+    hint: "Cisplatin works by binding to the DNA of cancer cells, which prevents the cells from dividing and proliferating — interfering with the replication process and ultimately leading to their death.",
     answers: ["K⁺", "Co³⁺", "NH₃", "Br⁻"]
   },
   {
@@ -113,6 +137,9 @@ const QUESTION_CARDS = [
     difficulty: "medium",
     points: 3,
     correctAnswer: 1, // A
+    question: "In the complex [Ni(CN)₄]²⁻, what is the coordination number of the nickel ion?",
+    hintTitle: "Auranofin is used to treat rheumatoid arthritis",
+    hint: "Auranofin belongs to a class of drugs known as DMARDs (disease-modifying antirheumatic drugs). It works by reducing inflammation and slowing joint damage.",
     answers: ["4", "5", "6", "7"]
   },
   {
@@ -121,6 +148,9 @@ const QUESTION_CARDS = [
     difficulty: "medium",
     points: 3,
     correctAnswer: 2, // B
+    question: "Which of the following complexes is expected to have the highest coordination number?",
+    hintTitle: "[Fe(H₂O)₆]³⁺ is commonly used in colorimetry",
+    hint: "It has a distinct yellow-orange colour in water. By measuring how much light it absorbs, we can figure out how much of it (or other substances) is in a solution.",
     answers: [
       "[Cu(H₂O)₄]²⁺",
       "[Co(NH₃)₆]³⁺",
@@ -134,6 +164,9 @@ const QUESTION_CARDS = [
     difficulty: "medium",
     points: 3,
     correctAnswer: 3, // C
+    question: "Which of the following ligands is known for its ability to form stable octahedral complexes with transition metal ions?",
+    hintTitle: "DTPA is used as a chelating agent in food preservation",
+    hint: "DTPA binds to metal ions present in food (iron, copper etc.). Those metal ions can catalyse oxidative reactions that lead to food spoilage, off-flavours and discolouration.",
     answers: [
       "Cyanide (CN⁻)",
       "Ammonia (NH₃)",
@@ -147,11 +180,14 @@ const QUESTION_CARDS = [
     difficulty: "medium",
     points: 3,
     correctAnswer: 3, // C
+    question: "What is a key feature of diethylenetriamine (dien) in coordination chemistry?",
+    hintTitle: "Potassium ferrocyanide is used to produce blue paint",
+    hint: "When combined with iron(III) salts, it forms a blue-coloured compound known as Prussian blue — a pigment widely used in paint and ink.",
     answers: [
       "They can only form monodentate complexes with metal ions.",
       "They possess four donor atoms capable of coordinating to a metal ion.",
       "They are known for their ability to form stable chelate complexes with metal ions.",
-      "They exhibit z-donor properties, facilitating the stabilization of metal complexes."
+      "They exhibit π-donor properties, facilitating the stabilization of metal complexes."
     ]
   },
 
@@ -164,6 +200,9 @@ const QUESTION_CARDS = [
     difficulty: "easy",
     points: 2,
     correctAnswer: 3, // C
+    question: "A complex with a coordination number of 6 often adopts what geometry?",
+    hintTitle: "Gadolinium-based contrast agents are used in MRI scans",
+    hint: "These agents improve MRI images because gadolinium ions are strongly paramagnetic — their unpaired electrons interact with the scanner's magnetic field to give clearer images.",
     answers: ["Square Planar", "Tetrahedral", "Octahedral", "Linear"]
   },
   {
@@ -172,6 +211,9 @@ const QUESTION_CARDS = [
     difficulty: "easy",
     points: 2,
     correctAnswer: 3, // C
+    question: "Which of the following is the formula for oxalate ion?",
+    hintTitle: "Desferrioxamine acts as a chemosensor for iron",
+    hint: "Desferrioxamine forms strong bonds with extra iron in the body, helping it pass out through urine and stool. It can selectively bind to iron ions, acting as a sensor for their presence in biological or environmental samples.",
     answers: ["CH₃COO⁻", "CO₃²⁻", "C₂O₄²⁻", "S₂O₃²⁻"]
   },
   {
@@ -180,6 +222,9 @@ const QUESTION_CARDS = [
     difficulty: "easy",
     points: 2,
     correctAnswer: 3, // C
+    question: "Which of the following is an example of a bidentate ligand?",
+    hintTitle: "Cyclen is a chemical sensor for metal ions in industrial processes",
+    hint: "Cyclen's unique ring structure binds selectively to metal ions. By forming stable complexes, sensors built with cyclen can track metal levels in real time — keeping industrial processes safe and under control.",
     answers: ["NH₃", "H₂O", "C₂O₄²⁻", "Cl⁻"]
   },
   {
@@ -188,6 +233,9 @@ const QUESTION_CARDS = [
     difficulty: "easy",
     points: 2,
     correctAnswer: 4, // D
+    question: "A complex in which there are two similar metal centres is called ___.",
+    hintTitle: "Rhodamine B is used as a fluorescent pH indicator",
+    hint: "Rhodamine B changes fluorescence depending on the pH of the solution, allowing scientists to monitor pH changes visually.",
     answers: [
       "Cationic complex",
       "Anionic complex",
@@ -201,6 +249,9 @@ const QUESTION_CARDS = [
     difficulty: "easy",
     points: 2,
     correctAnswer: 2, // B
+    question: "What is the coordination number of a metal in a square planar complex?",
+    hintTitle: "Copper-64 is used in PET imaging for medical diagnostics",
+    hint: "Copper-64 is a radioactive isotope prized for its favourable decay characteristics and compatibility with biological molecules. Its complexes can be attached to targeting agents for visualising biological processes like tumours.",
     answers: ["2", "4", "6", "8"]
   },
   {
@@ -209,7 +260,10 @@ const QUESTION_CARDS = [
     difficulty: "easy",
     points: 2,
     correctAnswer: 2, // B
-    answers: ["I only", "I and II only", "I, II, and III"]
+    question: "What does 'monodentate' mean?",
+    hintTitle: "Zinc Protoporphyrin is used in diagnosing blood disorders",
+    hint: "Zinc Protoporphyrin (ZnPP) levels in red blood cells can indicate iron deficiency anaemia or lead poisoning.",
+    answers: ["I only — Have one point of attachment.", "I and II only — one attachment + one coordination site.", "I, II, and III — plus bonds through a metal centre."]
   }
 ];
 
@@ -766,6 +820,49 @@ function showLigandModal(ligand, title, subtitle) {
   }
 }
 
+/**
+ * Show a "Did you know?" quick-notes popup for the current question.
+ * Reuses a single overlay element, re-creating on each call if the
+ * player dismissed the previous one.
+ */
+function openQuestionHintPopup(title, body) {
+  if (!body) return;
+
+  let overlay = document.getElementById("question-hint-overlay");
+  if (overlay) overlay.remove();
+
+  overlay = document.createElement("div");
+  overlay.id = "question-hint-overlay";
+  overlay.className = "fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4";
+  overlay.innerHTML = `
+    <div class="bg-amber-50 border-4 border-amber-400 rounded-2xl shadow-2xl max-w-md w-full p-5 relative">
+      <button
+        id="question-hint-close"
+        aria-label="Close hint"
+        class="absolute top-2 right-3 text-amber-800 hover:text-amber-900 text-2xl leading-none font-black"
+      >&times;</button>
+      <div class="flex items-center gap-2 mb-2">
+        <span class="text-xl">💡</span>
+        <h3 class="font-black text-amber-900 uppercase tracking-wide text-sm">Did you know?</h3>
+      </div>
+      ${title ? `<p class="font-bold text-amber-900 mb-2">${title}</p>` : ''}
+      <p class="text-sm text-gray-800 leading-relaxed">${body}</p>
+      <div class="mt-4 text-right">
+        <button
+          id="question-hint-ok"
+          class="px-4 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm"
+        >Got it</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  function close() { overlay.remove(); }
+  overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
+  overlay.querySelector("#question-hint-close").addEventListener("click", close);
+  overlay.querySelector("#question-hint-ok").addEventListener("click", close);
+}
+
 function showQuestion(playerId, tileColor = null) {
   // Map tile background color to question difficulty
   // Red zone (#ef4444) = hard, Yellow zone (#eab308) = medium,
@@ -836,63 +933,66 @@ function showQuestion(playerId, tileColor = null) {
 
   const config = difficultyConfig[question.difficulty] || difficultyConfig.easy;
 
-  // Render beautiful question card with proper image display
+  // Store hint data on modal for the Hint popup (opened on demand)
+  modal.dataset.hintTitle = question.hintTitle || "";
+  modal.dataset.hint = question.hint || "";
+
+  // Render a text-based question card (typed text, not the whole
+  // sprite image). The fact/hint is available via the Hint button.
+  const hasHint = !!(question.hint && question.hint.length);
+  const questionText = question.question || "See image reference.";
+
   cardContainer.innerHTML = `
     <div class="question-card-wrapper animate-slideIn">
-      <div class="question-card w-full rounded-2xl border-4 overflow-hidden shadow-2xl ${config.borderGlow} transform transition-all duration-300 hover:scale-[1.02] group" style="border-color: ${config.color};">
-        <!-- Chemistry fact card from left side of image -->
-        <div class="relative w-full aspect-[7/5] bg-gray-50 overflow-hidden">
-          <!-- Background image with proper sizing -->
-          <div class="absolute inset-0 bg-no-repeat" style="background-image: url('/assets/question-cards/${question.imageFile}'); background-position: 100% center; background-size: 200%;">
-            <!-- Overlay for better text readability -->
-            <div class="absolute inset-0 bg-black/5"></div>
-          </div>
-
-          <!-- Difficulty badge with modern glassmorphism -->
-          <div class="absolute top-3 left-3 px-4 py-2 rounded-xl text-xs font-bold text-white backdrop-blur-lg ${config.bgSolid} shadow-xl flex items-center gap-2 animate-slideInLeft z-10">
-            <span class="text-base">${config.icon}</span>
+      <div class="question-card w-full rounded-2xl border-4 shadow-xl ${config.borderGlow} bg-white" style="border-color: ${config.color};">
+        <div class="flex items-center justify-between gap-2 px-4 pt-4">
+          <div class="px-3 py-1.5 rounded-lg text-xs font-bold text-white ${config.bgSolid} flex items-center gap-2">
             <span>${config.label}</span>
             <span class="w-px h-4 bg-white/30"></span>
             <span>${question.points} PTS</span>
           </div>
+          ${hasHint ? `
+            <button
+              id="question-hint-btn"
+              type="button"
+              class="px-3 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 border-2 border-amber-300 text-amber-900 text-xs font-bold flex items-center gap-1.5 shadow-sm transition-colors"
+              aria-label="Show hint"
+            >
+              <span class="text-base leading-none">💡</span>
+              <span>Hint</span>
+            </button>
+          ` : ''}
+        </div>
 
-          <!-- Tap hint -->
-          <div class="absolute bottom-3 right-3 px-3 py-2 rounded-lg bg-black/70 backdrop-blur-md text-white text-xs font-semibold flex items-center gap-2 opacity-90 group-hover:opacity-100 transition-opacity">
-            <span class="font-bold text-sm">?</span>
-            <span>Did you know?</span>
-          </div>
+        <div class="p-4 sm:p-6">
+          <p class="text-base sm:text-lg font-semibold text-gray-900 leading-snug">
+            ${questionText}
+          </p>
         </div>
       </div>
     </div>
   `;
 
-  // Modern answer options with beautiful hover effects
-  optionsContainer.innerHTML = `
-    <button class="answer-option group w-full p-5 bg-gray-50 hover:bg-purple-50 rounded-2xl text-left transition-all duration-300 border-3 border-gray-200 hover:border-purple-400 hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]" data-answer="1">
+  // Wire up the Hint button — opens a quick-notes popup with the
+  // "Did you know?" fact from the original card design.
+  const hintBtn = document.getElementById("question-hint-btn");
+  if (hintBtn) {
+    hintBtn.addEventListener("click", () => openQuestionHintPopup(question.hintTitle, question.hint));
+  }
+
+  // Render one button per available answer (handles 3 or 4 option cases).
+  const LETTERS = ["A", "B", "C", "D"];
+  optionsContainer.innerHTML = question.answers.map((text, i) => `
+    <button
+      class="answer-option group w-full p-5 bg-gray-50 hover:bg-purple-50 rounded-2xl text-left transition-all duration-300 border-3 border-gray-200 hover:border-purple-400 hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]"
+      data-answer="${i + 1}"
+    >
       <div class="flex items-center gap-3">
-        <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-white shadow-sm group-hover:bg-purple-500 group-hover:text-white flex items-center justify-center font-bold text-gray-700 group-hover:scale-110 transition-all">A</div>
-        <span class="font-medium text-gray-800 group-hover:text-purple-900 transition-colors">${question.answers[0]}</span>
+        <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-white shadow-sm group-hover:bg-purple-500 group-hover:text-white flex items-center justify-center font-bold text-gray-700 group-hover:scale-110 transition-all">${LETTERS[i] || (i + 1)}</div>
+        <span class="font-medium text-gray-800 group-hover:text-purple-900 transition-colors">${text}</span>
       </div>
     </button>
-    <button class="answer-option group w-full p-5 bg-gray-50 hover:bg-purple-50 rounded-2xl text-left transition-all duration-300 border-3 border-gray-200 hover:border-purple-400 hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]" data-answer="2">
-      <div class="flex items-center gap-3">
-        <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-white shadow-sm group-hover:bg-purple-500 group-hover:text-white flex items-center justify-center font-bold text-gray-700 group-hover:scale-110 transition-all">B</div>
-        <span class="font-medium text-gray-800 group-hover:text-purple-900 transition-colors">${question.answers[1]}</span>
-      </div>
-    </button>
-    <button class="answer-option group w-full p-5 bg-gray-50 hover:bg-purple-50 rounded-2xl text-left transition-all duration-300 border-3 border-gray-200 hover:border-purple-400 hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]" data-answer="3">
-      <div class="flex items-center gap-3">
-        <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-white shadow-sm group-hover:bg-purple-500 group-hover:text-white flex items-center justify-center font-bold text-gray-700 group-hover:scale-110 transition-all">C</div>
-        <span class="font-medium text-gray-800 group-hover:text-purple-900 transition-colors">${question.answers[2]}</span>
-      </div>
-    </button>
-    <button class="answer-option group w-full p-5 bg-gray-50 hover:bg-purple-50 rounded-2xl text-left transition-all duration-300 border-3 border-gray-200 hover:border-purple-400 hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]" data-answer="4">
-      <div class="flex items-center gap-3">
-        <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-white shadow-sm group-hover:bg-purple-500 group-hover:text-white flex items-center justify-center font-bold text-gray-700 group-hover:scale-110 transition-all">D</div>
-        <span class="font-medium text-gray-800 group-hover:text-purple-900 transition-colors">${question.answers[3]}</span>
-      </div>
-    </button>
-  `;
+  `).join("");
 
   const options = optionsContainer.querySelectorAll(".answer-option");
   options.forEach(option => {

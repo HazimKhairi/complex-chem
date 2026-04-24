@@ -717,22 +717,25 @@
     var displayLigands = getSelectedLigands();
     if (displayLigands.length === 0) displayLigands = playerLigands;
 
-    var html = '<h2 class="text-xl font-bold text-gray-800 mb-1">Step 2: Choose the Geometry <span class="text-sm font-normal text-gray-400">(2 pts)</span></h2>';
-    html += '<p class="text-gray-500 text-sm mb-2">Based on your ' + displayLigands.length + ' chosen ligands (CN = ' + cn + '), pick the matching geometry.</p>';
+    var html = '<h2 class="text-xl font-bold text-gray-800 mb-1">3. State the possible complex geometry <span class="text-sm font-normal text-gray-400">(2 pts)</span></h2>';
+    html += '<p class="text-gray-500 text-sm mb-3">Your coordination number is <strong class="text-[#4187a0]">CN = ' + cn + '</strong>. Pick the matching geometry from the six options below.</p>';
 
-    html += '<div class="bg-gray-50 rounded-lg p-3 mb-4 text-sm">';
-    html += '<div class="flex flex-wrap gap-2">';
-    displayLigands.forEach(function (lig) {
-      var chem = LIGAND_CHEMISTRY[lig.id] || LIGAND_CHEMISTRY[(lig.id || '').toLowerCase()];
-      var d = chem ? chem.denticity : 1;
-      var t = chem ? chem.type : "?";
-      html += '<span class="px-2 py-1 bg-white rounded border text-xs">' + lig.name + ' <span class="text-gray-400">(' + t + ', d=' + d + ')</span></span>';
+    // CN → Geometry reference table per spec (6 rows across 4 CN values)
+    html += '<div class="overflow-x-auto mb-4 rounded-lg border border-gray-200">';
+    html += '<table class="w-full text-sm">';
+    html += '<thead class="bg-[#4187a0] text-white"><tr>';
+    html += '<th class="text-left px-3 py-2 font-semibold w-32">Coordination no.</th>';
+    html += '<th class="text-left px-3 py-2 font-semibold text-red-100">Geometry</th>';
+    html += '</tr></thead><tbody>';
+    [3, 4, 5, 6].forEach(function (n) {
+      var geos = GEOMETRY_MAP[n] || [];
+      var highlight = n === cn ? 'bg-yellow-50 font-semibold' : '';
+      html += '<tr class="border-t border-gray-100 ' + highlight + '">';
+      html += '<td class="px-3 py-2 align-top">' + n + '</td>';
+      html += '<td class="px-3 py-2 text-red-600">' + geos.map(function (g) { return '<div>' + g + '</div>'; }).join('') + '</td>';
+      html += '</tr>';
     });
-    html += '</div>';
-    html += '<p class="mt-2 text-right font-semibold">Total CN = ' + cn + '</p></div>';
-
-    var imgFile = (cn <= 4) ? "1.png" : "2.png";
-    html += '<div class="flex justify-center mb-4"><img src="/images/geometry/' + imgFile + '" alt="Geometry reference" class="max-h-40 rounded-lg shadow-sm" /></div>';
+    html += '</tbody></table></div>';
 
     var done = level2State.geometryDone;
     html += '<div class="grid grid-cols-2 sm:grid-cols-3 gap-3">';

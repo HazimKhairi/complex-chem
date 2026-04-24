@@ -1304,11 +1304,81 @@
     html += '<tr class="text-lg"><td class="pt-3 font-bold text-gray-800">Grand Total</td><td class="pt-3 text-right font-bold text-[#4187a0]">' + grand + '</td></tr>';
     html += '</tbody></table></div>';
 
-    html += '<a href="/" class="inline-block mt-8 px-8 py-3 rounded-lg bg-[#4187a0] text-white font-semibold hover:bg-[#357a91] transition">Back to Menu</a>';
+    html += '<button id="btn-show-podium" class="inline-block mt-8 px-8 py-3 rounded-lg bg-[#4187a0] text-white font-bold hover:bg-[#357a91] transition">Show Podium</button>';
     html += '</div>';
 
     c.innerHTML = html;
     updateScoreBar();
+
+    // Save this player's final totals so multi-player Level 2 can
+    // aggregate across turns. If more players are still due, the
+    // button says "Pass device to next player" instead of "Show Podium".
+    persistLevel2Finish(level2State.playerId, level2State.playerName, grand);
+
+    var btn = $("btn-show-podium");
+    if (btn) btn.onclick = function () { openFinalPodiumOrNext(); };
+
+    // Auto-open podium after a beat if everyone's done
+    setTimeout(openFinalPodiumOrNext, 800);
+  }
+
+  /**
+   * Write the finishing player's grand total into sessionStorage under
+   * a shared `level2-finals` map. Persists across page reloads so the
+   * podium can show every player once the last one finishes.
+   */
+  function persistLevel2Finish(playerId, playerName, grandTotal) {
+    var finals = {};
+    try { finals = JSON.parse(sessionStorage.getItem("level2-finals") || "{}"); } catch (e) {}
+    finals[playerId] = {
+      playerId: Number(playerId),
+      playerName: playerName,
+      score: grandTotal,
+      finishedAt: Date.now(),
+    };
+    sessionStorage.setItem("level2-finals", JSON.stringify(finals));
+  }
+
+  /**
+   * Count how many active players are expected, compare with finals.
+   * If all finished → open podium. Otherwise prompt for the next.
+   */
+  function openFinalPodiumOrNext() {
+    var finals = {};
+    try { finals = JSON.parse(sessionStorage.getItem("level2-finals") || "{}"); } catch (e) {}
+    var expected = getExpectedActivePlayers();
+    var entries = Object.values(finals);
+
+    if (entries.length >= expected.length) {
+      if (window.LevelTwoPodium && typeof window.LevelTwoPodium.show === "function") {
+        window.LevelTwoPodium.show(entries);
+      }
+    } else {
+      var remaining = expected.filter(function (pid) { return !finals[pid]; });
+      alert("Pass the device to " + playerNameFor(remaining[0]) + " to finish Level 2.");
+    }
+  }
+
+  function getExpectedActivePlayers() {
+    try {
+      if (window.TurnManager && typeof window.TurnManager.getActivePlayers === "function") {
+        var ap = window.TurnManager.getActivePlayers();
+        if (Array.isArray(ap) && ap.length > 0) return ap;
+      }
+    } catch (e) {}
+    var opt = sessionStorage.getItem("game-option");
+    if (opt === "solo") return [1];
+    if (opt === "one-vs-one") return [1, 4];
+    if (opt === "one-vs-two") return [1, 2, 3];
+    if (opt === "one-vs-three") return [1, 2, 3, 4];
+    return [1];
+  }
+
+  function playerNameFor(playerId) {
+    var opt = sessionStorage.getItem("game-option") || "one-vs-one";
+    return sessionStorage.getItem(opt + "-player-" + playerId + "-name")
+        || sessionStorage.getItem("solo-player-name")
+        || ("Player " + playerId);
   }
 
   // ── Boot ────────────────────────────────────────────────

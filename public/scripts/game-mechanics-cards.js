@@ -83,7 +83,7 @@ const QUESTION_CARDS = [
     hintTitle: "Fireworks have complex ions",
     hint: "Fireworks contain special ingredients like dextrin and metal salts. When mixed, they create complex compounds — strontium salts produce red, copper salts produce blue or green.",
     answers: [
-      "Tetraammoniadiwater chromium (III) ion",
+      "Tetraammoniadiwaterchromium (III) ion",
       "Tetraammoniadiaquachromate (III) ion",
       "Tetraamminediaquachromium (III) ion",
       "Tetraamminediaquachromate (III) ion"
@@ -260,10 +260,10 @@ const QUESTION_CARDS = [
     difficulty: "easy",
     points: 2,
     correctAnswer: 2, // B
-    question: "What does 'monodentate' mean?",
+    question: "What does it mean by 'monodentate'?<br><br>I. Have one point of attachment.<br>II. Occupy only one coordination site.<br>III. Can bond through a metal center.",
     hintTitle: "Zinc Protoporphyrin is used in diagnosing blood disorders",
     hint: "Zinc Protoporphyrin (ZnPP) levels in red blood cells can indicate iron deficiency anaemia or lead poisoning.",
-    answers: ["I only — Have one point of attachment.", "I and II only — one attachment + one coordination site.", "I, II, and III — plus bonds through a metal centre."]
+    answers: ["I only", "I and II only", "I, II, and III"]
   }
 ];
 

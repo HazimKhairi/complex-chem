@@ -22,7 +22,7 @@ export const CHARACTERS: Character[] = [
   { id: "panda",     name: "Panda",     image: "/characters/blook/panda.png",     tint: "bg-slate-100",   tag: "Chill" },
   { id: "frog",      name: "Frog",      image: "/characters/blook/frog.png",      tint: "bg-emerald-100", tag: "Bouncy" },
   { id: "dog",       name: "Dog",       image: "/characters/blook/dog.png",       tint: "bg-amber-100",   tag: "Loyal" },
-  { id: "cat",       name: "Owl",       image: "/characters/blook/owl.png",       tint: "bg-indigo-100",  tag: "Wise" },
+  { id: "owl",       name: "Owl",       image: "/characters/blook/owl.png",       tint: "bg-indigo-100",  tag: "Wise" },
   { id: "rabbit",    name: "Rabbit",    image: "/characters/blook/rabbit.png",    tint: "bg-pink-100",    tag: "Quick" },
   { id: "penguin",   name: "Penguin",   image: "/characters/blook/penguin.png",   tint: "bg-sky-100",     tag: "Cool" },
   { id: "elephant",  name: "Elephant",  image: "/characters/blook/elephant.png",  tint: "bg-gray-200",    tag: "Mighty" },
@@ -55,7 +55,7 @@ export const CHARACTERS: Character[] = [
  * Default fallback when a player hasn't chosen a character yet.
  * Picks from the top of the list cycling by slot index.
  */
-export const DEFAULT_ORDER: string[] = ["panda", "frog", "dog", "cat"];
+export const DEFAULT_ORDER: string[] = ["panda", "frog", "dog", "owl"];
 
 export function getCharacter(id: string | null | undefined): Character | null {
   if (!id) return null;

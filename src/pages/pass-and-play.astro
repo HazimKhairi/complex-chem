@@ -1,19 +1,24 @@
 ---
-import { Image } from "astro:assets";
+/*
+ * Pass-and-play setup wizard.
+ *
+ * Single-page experience with two columns on desktop:
+ *   Left  — mode selector (1 / 2 / 3 / 4 Players)
+ *   Right — per-player card that asks for name + blook, one player at a
+ *           time. The "Next" button advances to the following player; the
+ *           last player's button reads "Start" and launches the board.
+ *
+ * Background music (bgm-cozy-puzzle) starts on the first user click —
+ * autoplay policies block playback before any interaction.
+ */
 import Layout from "../layouts/Layout.astro";
-
-import { cn } from "../lib/utils";
-import SoloOptions from "../components/pass-and-play/solo-options.astro";
-import OneVsOneOptions from "../components/pass-and-play/one-vs-one-options.astro";
-import OneVsTwoOptions from "../components/pass-and-play/one-vs-two-options.astro";
-import OneVsThreeOptions from "../components/pass-and-play/one-vs-three-options.astro";
-import SelectGameMode from "../components/select-game-mode.astro";
 import LoadingScreen from "../components/loading-screen.astro";
+import { CHARACTERS } from "../data/characters";
 ---
 
 <Layout>
   <LoadingScreen />
-  <main class="relative flex justify-center items-center min-h-screen p-2 bg-azure w-[95%] mx-auto">
+  <main class="relative min-h-screen bg-azure flex items-center justify-center px-3 py-6">
     <a
       href="/"
       class="absolute top-4 left-4 z-10 flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white shadow-md hover:shadow-lg text-ludon-blue font-semibold text-sm"
@@ -24,26 +29,429 @@ import LoadingScreen from "../components/loading-screen.astro";
       </svg>
       Home
     </a>
-    <div class="rounded-2xl shadow-md bg-white px-5 sm:px-10 py-5 w-full max-w-lg">
-      <SelectGameMode includeSolo={true} />
-      <SoloOptions />
-      <OneVsOneOptions />
-      <OneVsTwoOptions />
-      <OneVsThreeOptions />
+
+    <button
+      id="bgm-toggle"
+      type="button"
+      class="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white shadow-md hover:shadow-lg flex items-center justify-center text-ludon-blue"
+      aria-label="Toggle background music"
+      title="Toggle background music"
+    >
+      <svg id="bgm-on-icon" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+      </svg>
+      <svg id="bgm-off-icon" class="w-5 h-5 hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+        <line x1="22" y1="9" x2="16" y2="15"/>
+        <line x1="16" y1="9" x2="22" y2="15"/>
+      </svg>
+    </button>
+
+    <div class="w-full max-w-5xl bg-white rounded-3xl shadow-xl overflow-hidden grid md:grid-cols-[280px_1fr]">
+      <!-- LEFT: Mode selector -->
+      <aside class="bg-gradient-to-b from-indigo-900 via-blue-900 to-indigo-950 text-white p-6 sm:p-8 flex flex-col gap-5">
+        <div>
+          <p class="text-xs uppercase tracking-widest text-amber-300 font-bold">Step 1</p>
+          <h2 class="text-2xl font-black mt-1 leading-tight">Choose a mode</h2>
+        </div>
+        <div id="mode-list" class="flex flex-col gap-2">
+          {[
+            { id: "solo",          n: 1, label: "1 Player"  },
+            { id: "one-vs-one",    n: 2, label: "2 Players" },
+            { id: "one-vs-two",    n: 3, label: "3 Players" },
+            { id: "one-vs-three",  n: 4, label: "4 Players" },
+          ].map((m) => (
+            <button
+              type="button"
+              data-mode={m.id}
+              data-count={m.n}
+              class="mode-btn group flex items-center justify-between gap-3 px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 border-2 border-transparent transition-all aria-selected:bg-amber-400/20 aria-selected:border-amber-300 aria-selected:shadow-lg"
+            >
+              <span class="font-bold text-base">{m.label}</span>
+              <span class="w-7 h-7 rounded-full bg-white/15 group-aria-selected:bg-amber-400 group-aria-selected:text-blue-900 flex items-center justify-center text-xs font-black">
+                {m.n}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        <!-- Player progress dots -->
+        <div class="mt-auto">
+          <p class="text-xs uppercase tracking-widest text-amber-300 font-bold mb-2">Players</p>
+          <div id="player-dots" class="flex gap-1.5"></div>
+        </div>
+      </aside>
+
+      <!-- RIGHT: Per-player card -->
+      <section class="p-6 sm:p-8 flex flex-col gap-5">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-xs uppercase tracking-widest text-ludon-blue font-bold">
+              <span id="player-step-label">Step 2</span>
+            </p>
+            <h2 class="text-2xl sm:text-3xl font-black text-gray-900 leading-tight" id="player-heading">
+              Player 1
+            </h2>
+            <p class="text-sm text-gray-500 mt-0.5" id="player-subheading">
+              Enter your name and pick a blook.
+            </p>
+          </div>
+          <div class="flex flex-col items-end">
+            <span class="text-xs text-gray-500">Playing as</span>
+            <span id="player-color-pill" class="mt-1 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-white">
+              <span class="w-2 h-2 rounded-full bg-white"></span>
+              <span class="color-name">Red</span>
+            </span>
+          </div>
+        </div>
+
+        <input
+          type="text"
+          id="player-name-input"
+          maxlength="20"
+          placeholder="Enter your name"
+          class="h-12 rounded-xl text-center w-full bg-gray-100 font-semibold text-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-ludon-blue/40 border border-gray-200"
+        />
+
+        <!-- Character grid -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-sm font-bold text-gray-800">Pick your blook</h3>
+            <p class="text-xs text-gray-500">
+              <span id="picked-name" class="font-semibold text-ludon-blue"></span>
+            </p>
+          </div>
+          <div
+            id="char-grid"
+            class="grid grid-cols-5 sm:grid-cols-6 gap-2 bg-gray-50 p-3 rounded-xl max-h-[260px] overflow-y-auto"
+          >
+            {CHARACTERS.map((char) => (
+              <button
+                type="button"
+                class={`char-btn relative flex items-center justify-center rounded-lg border-2 border-transparent ${char.tint} aspect-square p-1 transition-all hover:scale-105 hover:border-ludon-blue aria-selected:border-ludon-green aria-selected:ring-2 aria-selected:ring-ludon-green aria-selected:shadow-md`}
+                data-char-id={char.id}
+                data-char-name={char.name}
+                aria-label={char.name}
+                title={char.name}
+              >
+                <img
+                  src={char.image}
+                  alt={char.name}
+                  class="w-full h-full object-contain pointer-events-none"
+                  loading="lazy"
+                />
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between gap-3 mt-2">
+          <button
+            id="prev-btn"
+            type="button"
+            class="px-5 py-2.5 rounded-xl border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Back
+          </button>
+          <button
+            id="next-btn"
+            type="button"
+            class="flex-1 px-6 py-3 rounded-xl bg-ludon-green hover:bg-green-700 text-white font-black text-lg shadow-md transform transition-transform active:scale-95"
+          >
+            Next
+          </button>
+        </div>
+      </section>
     </div>
   </main>
 </Layout>
 
-<!-- AudioManager needed for character-picker hover/select SFX -->
 <script is:inline src="/scripts/audio-manager.js"></script>
-
 <script>
-  // Wipe everything from any previous run so the next game starts fresh
-  // (piece positions, ligand inventory, scores, level-2 finals, …).
-  // Without this, opening pass-and-play after finishing a game would
-  // carry over stale state and the new piece would jump past home.
-  try {
-    sessionStorage.clear();
-  } catch (e) {}
+  import { CHARACTERS } from "../data/characters";
+
+  /* ------------------------------------------------------------ *
+   * Reset any prior session so a second run starts clean.
+   * ------------------------------------------------------------ */
+  try { sessionStorage.clear(); } catch (e) {}
   sessionStorage.setItem("computer", "false");
+
+  /* ------------------------------------------------------------ *
+   * Configuration per mode — fixed colour slots and storage keys.
+   * ------------------------------------------------------------ */
+  type ModeId = "solo" | "one-vs-one" | "one-vs-two" | "one-vs-three";
+
+  const MODE_TO_COLORS: Record<ModeId, string[]> = {
+    "solo":         ["red"],
+    "one-vs-one":   ["red", "green"],
+    "one-vs-two":   ["red", "green", "blue"],
+    "one-vs-three": ["red", "green", "blue", "yellow"],
+  };
+
+  const COLOR_LABEL: Record<string, string> = {
+    red: "Red", green: "Green", blue: "Blue", yellow: "Yellow",
+  };
+
+  const COLOR_BG: Record<string, string> = {
+    red:    "bg-red-500",
+    green:  "bg-emerald-500",
+    blue:   "bg-blue-500",
+    yellow: "bg-amber-500",
+  };
+
+  /* ------------------------------------------------------------ *
+   * Wizard state.
+   * ------------------------------------------------------------ */
+  type Player = { name: string; characterId: string };
+  let currentMode: ModeId = "one-vs-one";
+  let currentPlayerIdx = 0;
+  let players: Player[] = [];
+
+  function colorsFor(mode: ModeId): string[] { return MODE_TO_COLORS[mode]; }
+  function defaultName(idx: number): string { return `Player ${idx + 1}`; }
+  function defaultChar(idx: number): string {
+    return CHARACTERS[idx % CHARACTERS.length]?.id || "panda";
+  }
+
+  function ensurePlayersArray() {
+    const want = colorsFor(currentMode).length;
+    while (players.length < want) {
+      players.push({
+        name: defaultName(players.length),
+        characterId: defaultChar(players.length),
+      });
+    }
+    if (players.length > want) players.length = want;
+  }
+
+  /* ------------------------------------------------------------ *
+   * DOM refs.
+   * ------------------------------------------------------------ */
+  const $mode = document.getElementById("mode-list")!;
+  const $dots = document.getElementById("player-dots")!;
+  const $heading = document.getElementById("player-heading")!;
+  const $subheading = document.getElementById("player-subheading")!;
+  const $stepLabel = document.getElementById("player-step-label")!;
+  const $colorPill = document.getElementById("player-color-pill")!;
+  const $name = document.getElementById("player-name-input") as HTMLInputElement;
+  const $grid = document.getElementById("char-grid")!;
+  const $picked = document.getElementById("picked-name")!;
+  const $next = document.getElementById("next-btn")!;
+  const $prev = document.getElementById("prev-btn") as HTMLButtonElement;
+
+  /* ------------------------------------------------------------ *
+   * Render helpers.
+   * ------------------------------------------------------------ */
+  function renderModeButtons() {
+    $mode.querySelectorAll<HTMLElement>(".mode-btn").forEach((btn) => {
+      btn.setAttribute("aria-selected", btn.dataset.mode === currentMode ? "true" : "false");
+    });
+  }
+
+  function renderDots() {
+    const total = colorsFor(currentMode).length;
+    $dots.innerHTML = "";
+    for (let i = 0; i < total; i++) {
+      const dot = document.createElement("span");
+      dot.className = "w-2.5 h-2.5 rounded-full transition-colors " +
+        (i < currentPlayerIdx ? "bg-emerald-400" :
+         i === currentPlayerIdx ? "bg-amber-300 ring-2 ring-amber-200/50" :
+         "bg-white/20");
+      $dots.appendChild(dot);
+    }
+  }
+
+  function renderPlayerCard() {
+    ensurePlayersArray();
+    const total = colorsFor(currentMode).length;
+    const color = colorsFor(currentMode)[currentPlayerIdx];
+    const isLast = currentPlayerIdx === total - 1;
+
+    $stepLabel.textContent = `Step ${currentPlayerIdx + 2} — Player ${currentPlayerIdx + 1} of ${total}`;
+    $heading.textContent = `Player ${currentPlayerIdx + 1}`;
+    $subheading.textContent = total === 1
+      ? "Enter your name and pick a blook to play solo."
+      : "Enter your name and pick a blook, then hand the device over.";
+
+    // Colour pill
+    $colorPill.className = "mt-1 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-white " + COLOR_BG[color];
+    const nameSpan = $colorPill.querySelector(".color-name");
+    if (nameSpan) nameSpan.textContent = COLOR_LABEL[color] || color;
+
+    // Name input
+    $name.value = players[currentPlayerIdx].name;
+
+    // Character selection
+    const activeCharId = players[currentPlayerIdx].characterId;
+    $grid.querySelectorAll<HTMLElement>(".char-btn").forEach((b) => {
+      b.setAttribute("aria-selected", b.dataset.charId === activeCharId ? "true" : "false");
+    });
+    const pickedBtn = $grid.querySelector<HTMLElement>(`.char-btn[data-char-id="${activeCharId}"]`);
+    $picked.textContent = pickedBtn?.dataset.charName || "";
+
+    // Buttons
+    $prev.disabled = currentPlayerIdx === 0;
+    $next.textContent = isLast ? "Start Game" : "Next →";
+    $next.classList.toggle("bg-ludon-green", true);
+    $next.classList.toggle("hover:bg-green-700", true);
+  }
+
+  function renderAll() {
+    renderModeButtons();
+    renderDots();
+    renderPlayerCard();
+  }
+
+  /* ------------------------------------------------------------ *
+   * Sequential flow — collect, then commit on Start.
+   * ------------------------------------------------------------ */
+  function captureCurrent() {
+    const name = $name.value.trim() || defaultName(currentPlayerIdx);
+    const activeCharId = $grid.querySelector<HTMLElement>('.char-btn[aria-selected="true"]')?.dataset.charId
+      || defaultChar(currentPlayerIdx);
+    players[currentPlayerIdx] = { name, characterId: activeCharId };
+  }
+
+  function commitToSessionAndGo() {
+    const colors = colorsFor(currentMode);
+
+    sessionStorage.setItem("game-option", currentMode);
+
+    if (currentMode === "solo") {
+      const p = players[0];
+      sessionStorage.setItem("solo-mode", "true");
+      sessionStorage.setItem("solo-player-name", p.name);
+      sessionStorage.setItem("solo-horse", colors[0]);
+      sessionStorage.setItem("character-p1", p.characterId);
+      // Legacy keys expected by one-vs-one.js / solo-patch.js
+      sessionStorage.setItem("one-vs-one-horse-1", "red");
+      sessionStorage.setItem("one-vs-one-horse-2", "green");
+      sessionStorage.setItem("one-vs-one-player-1-name", p.name);
+      sessionStorage.setItem("one-vs-one-player-2-name", "");
+    } else if (currentMode === "one-vs-one") {
+      sessionStorage.setItem("one-vs-one-horse-1", colors[0]);
+      sessionStorage.setItem("one-vs-one-horse-2", colors[1]);
+      sessionStorage.setItem("one-vs-one-player-1-name", players[0].name);
+      sessionStorage.setItem("one-vs-one-player-2-name", players[1].name);
+      sessionStorage.setItem("character-p1", players[0].characterId);
+      sessionStorage.setItem("character-p2", players[1].characterId);
+    } else if (currentMode === "one-vs-two") {
+      sessionStorage.setItem("one-vs-two-horse-1", colors[0]);
+      sessionStorage.setItem("one-vs-two-horse-2", colors[1]);
+      sessionStorage.setItem("one-vs-two-horse-3", colors[2]);
+      sessionStorage.setItem("one-vs-two-player-1-name", players[0].name);
+      sessionStorage.setItem("one-vs-two-player-2-name", players[1].name);
+      sessionStorage.setItem("one-vs-two-player-3-name", players[2].name);
+      sessionStorage.setItem("character-p1", players[0].characterId);
+      sessionStorage.setItem("character-p2", players[1].characterId);
+      sessionStorage.setItem("character-p3", players[2].characterId);
+    } else if (currentMode === "one-vs-three") {
+      sessionStorage.setItem("one-vs-three-horse-1", colors[0]);
+      sessionStorage.setItem("one-vs-three-horse-2", colors[1]);
+      sessionStorage.setItem("one-vs-three-horse-3", colors[2]);
+      sessionStorage.setItem("one-vs-three-horse-4", colors[3]);
+      sessionStorage.setItem("one-vs-three-player-1-name", players[0].name);
+      sessionStorage.setItem("one-vs-three-player-2-name", players[1].name);
+      sessionStorage.setItem("one-vs-three-player-3-name", players[2].name);
+      sessionStorage.setItem("one-vs-three-player-4-name", players[3].name);
+      sessionStorage.setItem("character-p1", players[0].characterId);
+      sessionStorage.setItem("character-p2", players[1].characterId);
+      sessionStorage.setItem("character-p3", players[2].characterId);
+      sessionStorage.setItem("character-p4", players[3].characterId);
+    }
+
+    if ((window as any).LoadingScreen?.showForNav) {
+      (window as any).LoadingScreen.showForNav("/game-board", "Setting up the board…");
+    } else {
+      window.location.href = "/game-board";
+    }
+  }
+
+  /* ------------------------------------------------------------ *
+   * Event wiring.
+   * ------------------------------------------------------------ */
+  $mode.addEventListener("click", (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLElement>(".mode-btn");
+    if (!btn) return;
+    const mode = btn.dataset.mode as ModeId;
+    if (!mode || mode === currentMode) return;
+    captureCurrent();
+    currentMode = mode;
+    currentPlayerIdx = 0;
+    renderAll();
+  });
+
+  $grid.addEventListener("click", (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLElement>(".char-btn");
+    if (!btn) return;
+    const id = btn.dataset.charId;
+    if (!id) return;
+    players[currentPlayerIdx].characterId = id;
+    if ((window as any).AudioManager) (window as any).AudioManager.play("char-select");
+    renderPlayerCard();
+  });
+
+  $grid.addEventListener("mouseover", (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLElement>(".char-btn");
+    if (!btn) return;
+    if ((window as any).AudioManager) (window as any).AudioManager.play("char-hover");
+  }, true);
+
+  $name.addEventListener("input", () => {
+    players[currentPlayerIdx].name = $name.value;
+  });
+
+  $prev.addEventListener("click", () => {
+    captureCurrent();
+    if (currentPlayerIdx > 0) {
+      currentPlayerIdx--;
+      renderAll();
+    }
+  });
+
+  $next.addEventListener("click", () => {
+    captureCurrent();
+    const total = colorsFor(currentMode).length;
+    if (currentPlayerIdx < total - 1) {
+      currentPlayerIdx++;
+      renderAll();
+    } else {
+      commitToSessionAndGo();
+    }
+  });
+
+  /* ------------------------------------------------------------ *
+   * Background music — start on first interaction (autoplay safe).
+   * ------------------------------------------------------------ */
+  let bgmStarted = false;
+  let bgmMuted = false;
+  function startBgmOnce() {
+    if (bgmStarted || bgmMuted) return;
+    bgmStarted = true;
+    if ((window as any).AudioManager) (window as any).AudioManager.startBGM();
+  }
+  document.addEventListener("click", startBgmOnce, { once: false });
+
+  const bgmToggle = document.getElementById("bgm-toggle");
+  const bgmOnIcon = document.getElementById("bgm-on-icon");
+  const bgmOffIcon = document.getElementById("bgm-off-icon");
+  bgmToggle?.addEventListener("click", () => {
+    bgmMuted = !bgmMuted;
+    bgmOnIcon?.classList.toggle("hidden", bgmMuted);
+    bgmOffIcon?.classList.toggle("hidden", !bgmMuted);
+    if (bgmMuted) {
+      if ((window as any).AudioManager) (window as any).AudioManager.stopBGM();
+    } else {
+      if ((window as any).AudioManager) (window as any).AudioManager.startBGM();
+      bgmStarted = true;
+    }
+  });
+
+  /* ------------------------------------------------------------ *
+   * Boot.
+   * ------------------------------------------------------------ */
+  ensurePlayersArray();
+  renderAll();
 </script>

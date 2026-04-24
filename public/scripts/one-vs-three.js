@@ -911,7 +911,7 @@ function accurateMoveHorse() {
 // Move dice out of player area to the first cell of their respective area
 function moveDice() {
   $("#player-" + x + " img").click(function (event) {
-    if (randomDice == 6 && z < 2) {
+    if (z < 2) {
       userSelectedHorse = event.target.className;
       //Condition for accurate move dice fucntion execution
       if (
@@ -921,32 +921,33 @@ function moveDice() {
         "." + userSelectedHorse == identifyPlayer + "h4"
       ) {
         z++;
+        var targetPos = Math.min(6, Math.max(1, Number(randomDice) || 1));
         $("." + userSelectedHorse).remove();
         $("#player-" + x).find("div").removeClass("sixgif");
-        $(identifyPlayer + 1).append(
+        $(identifyPlayer + targetPos).append(
           `<img class="${userSelectedHorse} ${identifyColor}" src="horses/${identifyColor}.png">`
         );
-        $(identifyPlayer + 1 + " > img").css("opacity", ""); // Fix for Highlight horses opacity issues
+        $(identifyPlayer + targetPos + " > img").css("opacity", "");
         setTimeout(function () {
           $("#player-" + x + "-dice-arrow").attr("src", "gifs/arrow1.gif");
         }, 200);
         d = 0; //D is used to restrict one dice roll at a time
-        mergeHorseClass = identifyPlayer + 1;
+        mergeHorseClass = identifyPlayer + targetPos;
         mergeHorses();
 
         // Update position tracking
-        window[`lastPos${userSelectedHorse.split(' ')[0].toUpperCase()}`] = 1;
+        window[`lastPos${userSelectedHorse.split(' ')[0].toUpperCase()}`] = targetPos;
 
         // Dispatch piece-moved for tile handling (ligand/fate/question modals)
         document.dispatchEvent(new CustomEvent("piece-moved", {
           detail: {
             playerId: x,
-            landedCell: identifyPlayer + "1",
-            position: 1,
+            landedCell: identifyPlayer + targetPos,
+            position: targetPos,
             color: identifyColor
           }
         }));
-        console.log(`🎮 [MOVE-DICE] Player ${x} moved from home to ${identifyPlayer}1`);
+        console.log(`🎮 [MOVE-DICE] Player ${x} exited home → ${identifyPlayer}${targetPos}`);
 
         //Code for computer movement
         computer1Dice = $(`#player-${x}-dice`);

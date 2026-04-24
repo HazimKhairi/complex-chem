@@ -24,8 +24,9 @@ window.AutoPieceSelector = {
 
     let selectablePieces = [];
 
-    // Check piece in home — standard Ludo rule: only exits on dice 6
-    if (piecesInHome.length > 0 && diceValue === 6) {
+    // House rule: any dice roll can exit home (see moveFromHome for
+    // where the piece lands — position = diceValue, not 1)
+    if (piecesInHome.length > 0) {
       const piece = piecesInHome[0];
       if (this.isPieceClickable(piece)) {
         selectablePieces.push({ piece, location: 'home' });
@@ -58,7 +59,7 @@ window.AutoPieceSelector = {
     // Directly call movement function (same logic game uses internally)
     if (selected.location === 'home' && window.AutoMovePiece) {
       console.log('   Using direct movement (no clicking needed)...');
-      const success = window.AutoMovePiece.moveFromHome(playerId);
+      const success = window.AutoMovePiece.moveFromHome(playerId, diceValue);
 
       if (success) {
         console.log('   ✅ Piece moved directly!');

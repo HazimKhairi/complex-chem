@@ -6,12 +6,19 @@
 
 window.AutoMovePiece = {
   /**
-   * Move piece from home to first path cell
+   * Move piece from home straight to position = diceValue.
+   * House rule: any dice roll exits home and the piece lands at the
+   * matching path cell (dice=3 → position 3, etc). No "must roll 6"
+   * gate, no two-step exit-then-walk.
    * @param {number} playerId - Current player (1-4)
+   * @param {number} diceValue - Dice face 1..6. Falls back to window.randomDice
    * @returns {boolean} - True if move succeeded
    */
-  moveFromHome(playerId) {
-    console.log(`🚀 [AUTO-MOVE] Moving Player ${playerId} from home...`);
+  moveFromHome(playerId, diceValue) {
+    if (typeof diceValue !== "number" || diceValue < 1) {
+      diceValue = Number(window.randomDice) || 1;
+    }
+    console.log(`🚀 [AUTO-MOVE] Player ${playerId} exiting home → position ${diceValue}`);
 
     // Get player info
     const identifyPlayer = this.getPlayerIdentifier(playerId);
@@ -41,9 +48,8 @@ window.AutoMovePiece = {
       // Remove sixgif class
       $(`#player-${playerId}`).find("div").removeClass("sixgif");
 
-      // Move from home always goes to position 1 (the start cell)
-      // Standard Ludo rule: rolling 6 brings piece out to start, does NOT walk 6 steps
-      const targetPos = 1;
+      // House rule: land directly on position = diceValue
+      const targetPos = Math.min(6, Math.max(1, diceValue));
       const targetPathCell = `${identifyPlayer}${targetPos}`;
       console.log(`   Moving to position ${targetPos}: ${targetPathCell}`);
 

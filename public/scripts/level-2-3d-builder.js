@@ -305,12 +305,10 @@
     slot.labelMesh = label;
     slot.ligand = ligand;
 
-    // Bidentate auto-pair: if the ligand has denticity ≥ 2 and a paired
-    // empty slot exists next door, place a second sphere and connect
-    // both with a translucent arc.
-    if (ligand.denticity >= 2) {
-      tryPairBidentate(slotIndex, ligand, sphereColorHex);
-    }
+    // NOTE: bidentate auto-pair (tryPairBidentate) was removed — players
+    // were confused when one inventory pill produced two balls in the 3D
+    // view. One placement now always equals one ball; chelating ligands
+    // need to be placed once per coordination site they occupy.
 
     return true;
   }

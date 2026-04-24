@@ -617,7 +617,9 @@
     html += '</div>';
     html += '<p class="text-gray-500 text-sm mb-4">Sum the bonding positions each ligand takes up. Tap the info pills for help.</p>';
 
-    // Table
+    // Table — only Ligand(s) + Type of denticity per latest spec.
+    // Players work out coordination sites / counts / contribution / total
+    // themselves before picking 3, 4, 5 or 6 below.
     html += '<div class="overflow-x-auto mb-4 rounded-lg border border-gray-200">';
     html += '<table class="w-full text-sm">';
     html += '<thead class="bg-[#4187a0] text-white"><tr>';
@@ -626,26 +628,14 @@
     html += 'Type of denticity ';
     html += '<button type="button" class="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-white/20 text-white text-xs font-bold hover:bg-white/30" onclick="window.__l2InfoBubble(\'denticity\')">i</button>';
     html += '</th>';
-    html += '<th class="px-3 py-2 font-semibold">';
-    html += 'No. of coordination sites, cs ';
-    html += '<button type="button" class="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-white/20 text-white text-xs font-bold hover:bg-white/30" onclick="window.__l2InfoBubble(\'sites\')">i</button>';
-    html += '</th>';
-    html += '<th class="px-3 py-2 font-semibold">No. of ligand(s), n</th>';
-    html += '<th class="px-3 py-2 font-semibold">Contribution (cs × n)</th>';
     html += '</tr></thead><tbody>';
     rows.forEach(function (r) {
+      var label = r.count > 1 ? (r.name + ' &times; ' + r.count) : r.name;
       html += '<tr class="border-t border-gray-100">';
-      html += '<td class="px-3 py-2 font-medium text-gray-800">' + r.name + '</td>';
+      html += '<td class="px-3 py-2 font-medium text-gray-800">' + label + '</td>';
       html += '<td class="text-center px-3 py-2">' + r.type.toLowerCase() + '</td>';
-      html += '<td class="text-center px-3 py-2">' + r.denticity + '</td>';
-      html += '<td class="text-center px-3 py-2">' + r.count + '</td>';
-      html += '<td class="text-center px-3 py-2 font-semibold">' + (r.denticity * r.count) + '</td>';
       html += '</tr>';
     });
-    html += '<tr class="border-t-2 border-gray-300 bg-gray-50">';
-    html += '<td class="px-3 py-2 font-bold text-gray-800" colspan="4">Total</td>';
-    html += '<td class="text-center px-3 py-2 text-lg font-black text-[#4187a0]">Coordination number = ' + (done ? cn : '?') + '</td>';
-    html += '</tr>';
     html += '</tbody></table></div>';
 
     // 4-option answer

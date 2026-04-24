@@ -266,9 +266,9 @@
       var submit3d = document.getElementById('btn-submit-3d');
       if (submit3d && !submit3d.disabled) { click(submit3d); await wait(3000); continue; }
 
-      // Complex Built / Next to Naming screen
+      // Complex Built / See Results screen — match Next or "See Results"
       var navNext = Array.from(c.querySelectorAll('button')).find(function (b) {
-        return /next/i.test(b.textContent || '') && !b.disabled;
+        return /(next|see\s+results|results)/i.test(b.textContent || '') && !b.disabled;
       });
       if (navNext) { click(navNext); await wait(2500); continue; }
 

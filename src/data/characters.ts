@@ -27,7 +27,6 @@ export const CHARACTERS: Character[] = [
   { id: "penguin",   name: "Penguin",   image: "/characters/blook/penguin.png",   tint: "bg-sky-100",     tag: "Cool" },
   { id: "elephant",  name: "Elephant",  image: "/characters/blook/elephant.png",  tint: "bg-gray-200",    tag: "Mighty" },
   { id: "monkey",    name: "Monkey",    image: "/characters/blook/monkey.png",    tint: "bg-orange-100",  tag: "Playful" },
-  { id: "pig",       name: "Pig",       image: "/characters/blook/pig.png",       tint: "bg-rose-100",    tag: "Happy" },
   { id: "chick",     name: "Chick",     image: "/characters/blook/chick.png",     tint: "bg-yellow-100",  tag: "Cute" },
   { id: "giraffe",   name: "Giraffe",   image: "/characters/blook/giraffe.png",   tint: "bg-yellow-200",  tag: "Tall" },
   { id: "hippo",     name: "Hippo",     image: "/characters/blook/hippo.png",     tint: "bg-purple-100",  tag: "Chunky" },

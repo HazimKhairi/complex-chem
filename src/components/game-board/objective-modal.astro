@@ -41,7 +41,9 @@
 
   function dismiss() {
     modal?.classList.add("hidden");
-    document.dispatchEvent(new CustomEvent("game-objective-dismissed"));
+    // Hand off to the Learning Outcomes popup. That modal will then emit
+    // `game-objective-dismissed` so the countdown can start.
+    document.dispatchEvent(new CustomEvent("objective-modal-dismissed"));
   }
 
   nextBtn?.addEventListener("click", dismiss);

@@ -41,16 +41,8 @@
 
   function dismiss() {
     modal?.classList.add("hidden");
-    sessionStorage.setItem("objective-seen", "true");
     document.dispatchEvent(new CustomEvent("game-objective-dismissed"));
   }
 
   nextBtn?.addEventListener("click", dismiss);
-
-  if (sessionStorage.getItem("objective-seen") === "true") {
-    modal?.classList.add("hidden");
-    setTimeout(() => {
-      document.dispatchEvent(new CustomEvent("game-objective-dismissed"));
-    }, 0);
-  }
 </script>

@@ -456,6 +456,18 @@ function awardQuestionPoints(playerId, points, difficulty) {
 }
 
 /**
+ * Deduct points from a player (used when they request a hint).
+ * Clamps to 0 — players can't go negative.
+ */
+function deductPoints(playerId, amount) {
+  const before = gameState.playerPoints[playerId] || 0;
+  gameState.playerPoints[playerId] = Math.max(0, before - amount);
+  updatePointsDisplay(playerId);
+  saveState();
+  console.log(`💸 Player ${playerId} lost ${amount} pt(s) (hint). New total: ${gameState.playerPoints[playerId]}`);
+}
+
+/**
  * Update points display for a specific player
  */
 function updatePointsDisplay(playerId) {
@@ -508,31 +520,26 @@ function showQuestionFeedback(isCorrect, points, difficulty) {
     };
 
     const config = difficultyConfig[difficulty] || difficultyConfig.easy;
-
-    // Get the question image file from the existing card
-    // The bg image is on the inner div (absolute inset-0), not the outer wrapper div
-    // Use imageFile from modal data attribute (stored in showQuestion)
-    const imageFile = modal.dataset.imageFile || '';
+    const questionText = modal.dataset.questionText || "";
+    const resultBg = isCorrect ? "bg-green-500" : "bg-red-500";
+    const resultLabel = isCorrect ? "CORRECT" : "WRONG";
 
     cardContainer.innerHTML = `
-      <div class="question-card w-full rounded-2xl overflow-hidden shadow-2xl border-4 transform transition-all duration-300 hover:scale-[1.01]" style="border-color: ${config.color};">
-        <!-- Show actual question (right side of card image) -->
-        <div class="w-full aspect-[7/5] bg-no-repeat relative group" style="${imageFile ? "background-image: url('/assets/question-cards/" + imageFile + "'); " : ''}background-position: 100% center; background-size: 200%;">
-
-          <!-- Difficulty badge with modern design -->
-          <div class="absolute top-3 left-3 px-4 py-2 rounded-xl text-xs font-bold text-white backdrop-blur-md shadow-lg ${config.bgSolid} flex items-center gap-2 animate-slideInLeft">
-            <span class="text-base">${config.icon}</span>
-            <span>${config.label} • ${points} PTS</span>
+      <div class="question-card w-full rounded-2xl shadow-2xl border-4 bg-white transform transition-all duration-300 ${isCorrect ? 'animate-bounceIn' : 'animate-shakeX'}" style="border-color: ${config.color};">
+        <div class="flex items-center justify-between gap-2 px-4 pt-4">
+          <div class="px-3 py-1.5 rounded-lg text-xs font-bold text-white ${config.bgSolid} flex items-center gap-2">
+            <span>${config.label}</span>
+            <span class="w-px h-4 bg-white/30"></span>
+            <span>${points} PTS</span>
           </div>
-
-          <!-- Result badge with animation -->
-          <div class="absolute bottom-3 right-3 px-4 py-2 bg-black/80 backdrop-blur-md text-white text-sm rounded-xl font-bold shadow-lg flex items-center gap-2 ${isCorrect ? 'animate-bounceIn' : 'animate-shakeX'}">
-            <span class="text-lg font-bold">${isCorrect ? 'Correct' : 'Wrong'}</span>
-            <span>${isCorrect ? 'Correct!' : 'Wrong'}</span>
+          <div class="px-3 py-1.5 rounded-lg text-xs font-black text-white ${resultBg} shadow-md tracking-wide">
+            ${resultLabel}
           </div>
-
-          <!-- Solid overlay for better readability -->
-          <div class="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+        </div>
+        <div class="p-4 sm:p-6">
+          <p class="text-base sm:text-lg font-semibold text-gray-900 leading-snug">
+            ${questionText}
+          </p>
         </div>
       </div>
     `;
@@ -903,6 +910,7 @@ function showQuestion(playerId, tileColor = null) {
   modal.dataset.difficulty = question.difficulty;
   modal.dataset.correctAnswer = question.correctAnswer;
   modal.dataset.imageFile = question.imageFile;
+  modal.dataset.questionText = question.question || "";
 
   // Update modal header color to match tile background (if provided)
   if (modalHeader && tileColor) {
@@ -961,8 +969,9 @@ function showQuestion(playerId, tileColor = null) {
             <button
               id="question-hint-btn"
               type="button"
-              class="px-3 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 border-2 border-amber-300 text-amber-900 text-xs font-bold flex items-center gap-1.5 shadow-sm transition-colors"
-              aria-label="Show hint"
+              class="px-3 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 border-2 border-amber-300 text-amber-900 text-xs font-bold flex items-center gap-1.5 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-amber-100"
+              aria-label="Show hint (costs 1 point)"
+              title="Reveal a Did-You-Know hint — costs 1 point"
             >
               <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5a6 6 0 0 0-12 0c0 1.3.5 2.6 1.5 3.5.8.8 1.3 1.5 1.5 2.5"/>
@@ -970,6 +979,7 @@ function showQuestion(playerId, tileColor = null) {
                 <path d="M10 22h4"/>
               </svg>
               <span>Hint</span>
+              <span class="ml-1 px-1.5 py-0.5 rounded bg-red-500 text-white text-[10px] font-black tracking-tight">−1 PT</span>
             </button>
           ` : ''}
         </div>
@@ -984,10 +994,20 @@ function showQuestion(playerId, tileColor = null) {
   `;
 
   // Wire up the Hint button — opens a quick-notes popup with the
-  // "Did you know?" fact from the original card design.
+  // "Did you know?" fact from the original card design. First click
+  // costs the asking player 1 point; subsequent clicks are free
+  // (button disables itself after the first use).
   const hintBtn = document.getElementById("question-hint-btn");
   if (hintBtn) {
-    hintBtn.addEventListener("click", () => openQuestionHintPopup(question.hintTitle, question.hint));
+    hintBtn.addEventListener("click", () => {
+      if (hintBtn.disabled) return;
+      const modalEl = document.getElementById("question-modal");
+      const askingPlayerId = parseInt(modalEl?.dataset.playerId || 0);
+      if (askingPlayerId) deductPoints(askingPlayerId, 1);
+      hintBtn.disabled = true;
+      hintBtn.querySelector("span:last-child").textContent = "USED";
+      openQuestionHintPopup(question.hintTitle, question.hint);
+    });
   }
 
   // Render one button per available answer (handles 3 or 4 option cases).

@@ -45,9 +45,11 @@ window.AudioManager = (function () {
 
   function startBGM() {
     if (bgm) return; // already playing
-    bgm = new Audio('/audio/game-start.wav');
+    // "Cozy Puzzle In-Game 1" by MintoDog — CC0 (Public Domain)
+    // https://opengameart.org/content/cozy-puzzle-in-game-1
+    bgm = new Audio('/audio/bgm-cozy-puzzle.mp3');
     bgm.loop = true;
-    bgm.volume = volume * 0.4; // BGM quieter than SFX
+    bgm.volume = volume * 0.35; // BGM quieter than SFX
     if (!muted) {
       bgm.play().catch(function () {});
     }
@@ -62,7 +64,7 @@ window.AudioManager = (function () {
 
   function syncBGM() {
     if (!bgm) return;
-    bgm.volume = volume * 0.4;
+    bgm.volume = volume * 0.35;
     if (muted) {
       bgm.pause();
     } else {

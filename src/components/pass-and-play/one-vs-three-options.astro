@@ -98,6 +98,10 @@ import CharacterPicker from "./character-picker.astro";
   // Save names when start button is clicked
   startButton?.addEventListener("click", () => {
     savePlayerNames();
-    window.location.href = "/game-board";
+    if ((window as any).LoadingScreen?.showForNav) {
+      (window as any).LoadingScreen.showForNav("/game-board", "Setting up your 4-player match…");
+    } else {
+      window.location.href = "/game-board";
+    }
   });
 </script>

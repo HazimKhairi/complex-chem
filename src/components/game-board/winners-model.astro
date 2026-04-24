@@ -103,7 +103,7 @@
       <button
         type="button"
         id="continue-level-2"
-        onclick="location.href='/level-2'"
+        onclick="(window.LoadingScreen?.showForNav ? window.LoadingScreen.showForNav('/level-2', 'Preparing Level 2…') : (location.href='/level-2'))"
         class="bg-ludon-blue hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-bold shadow transition-colors animate-pulse"
       >
         Continue to Level 2 →

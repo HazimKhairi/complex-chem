@@ -240,7 +240,7 @@
       btn.removeAttribute('disabled');
       btn.classList.remove('opacity-50', 'cursor-not-allowed');
       btn.classList.add('animate-pulse');
-      btn.setAttribute('onclick', "location.href='/level-2'");
+      btn.setAttribute('onclick', "(window.LoadingScreen?.showForNav ? window.LoadingScreen.showForNav('/level-2','Preparing Level 2…') : (location.href='/level-2'))");
       btn.textContent = 'Continue to Level 2 →';
     }
   }

@@ -1,0 +1,180 @@
+---
+/*
+ * Full-screen loading overlay with 4 blooks walking left-right.
+ *
+ * Usage:
+ *   <LoadingScreen />                  — rendered hidden by default
+ *   window.LoadingScreen.show("Loading the board…")
+ *   window.LoadingScreen.hide()
+ *   window.LoadingScreen.showForNav(href, msg)  — shows then navigates
+ *
+ * Characters are picked at random from the blook roster so every
+ * appearance feels a little different.
+ */
+import { CHARACTERS } from "../data/characters";
+
+// Precompute the blook pool to inject via JSON, so the client script
+// doesn't need to import TS at runtime.
+const pool = CHARACTERS.map((c) => ({ id: c.id, image: c.image, tint: c.tint }));
+---
+
+<div
+  id="loading-screen"
+  class="fixed inset-0 z-[200] hidden items-center justify-center"
+  style="background: linear-gradient(180deg, #1e3a8a 0%, #312e81 100%);"
+  data-characters={JSON.stringify(pool)}
+  aria-live="polite"
+  role="status"
+>
+  <div class="w-full max-w-xl mx-auto px-6 flex flex-col items-center gap-6">
+    <!-- Loading message -->
+    <p id="loading-message" class="text-white text-lg sm:text-2xl font-bold tracking-wide drop-shadow">
+      Loading…
+    </p>
+
+    <!-- Walking blooks stage -->
+    <div class="loading-stage relative w-full h-28 sm:h-36">
+      <div class="loading-ground"></div>
+      <div id="loading-blooks" class="absolute inset-0 flex items-end justify-around px-2 sm:px-4">
+        <!-- Populated by script on show() -->
+      </div>
+    </div>
+
+    <!-- Bouncing dots -->
+    <div class="flex gap-2 items-center justify-center">
+      <span class="loading-dot" style="animation-delay: 0ms;"></span>
+      <span class="loading-dot" style="animation-delay: 120ms;"></span>
+      <span class="loading-dot" style="animation-delay: 240ms;"></span>
+      <span class="loading-dot" style="animation-delay: 360ms;"></span>
+    </div>
+  </div>
+</div>
+
+<style>
+  #loading-screen.flex { display: flex !important; }
+
+  .loading-ground {
+    position: absolute;
+    left: 5%;
+    right: 5%;
+    bottom: 6px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 999px;
+  }
+
+  /* Each blook wrapper handles its own walk + bob. */
+  .loading-blook {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+    filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.4));
+    will-change: transform;
+    animation:
+      loadingWalk 2.8s ease-in-out infinite,
+      loadingBob 0.5s ease-in-out infinite;
+  }
+
+  @media (max-width: 480px) {
+    .loading-blook { width: 56px; height: 56px; }
+  }
+
+  @keyframes loadingWalk {
+    0%   { transform: translateX(-24px) scaleX(1); }
+    48%  { transform: translateX(28px)  scaleX(1); }
+    50%  { transform: translateX(28px)  scaleX(-1); }
+    98%  { transform: translateX(-24px) scaleX(-1); }
+    100% { transform: translateX(-24px) scaleX(1); }
+  }
+
+  /* Bob uses translateY on a wrapper element so we don't fight the
+     horizontal walk animation on the same property. */
+  .loading-bob {
+    display: inline-block;
+    animation: loadingBob 0.5s ease-in-out infinite;
+  }
+  @keyframes loadingBob {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-8px); }
+  }
+
+  .loading-dot {
+    width: 10px;
+    height: 10px;
+    background: white;
+    border-radius: 999px;
+    display: inline-block;
+    animation: loadingDot 0.8s ease-in-out infinite;
+  }
+  @keyframes loadingDot {
+    0%, 100% { opacity: 0.3; transform: translateY(0); }
+    50%      { opacity: 1;   transform: translateY(-6px); }
+  }
+</style>
+
+<script>
+  interface BlookData { id: string; image: string; tint: string; }
+
+  const root = document.getElementById("loading-screen")!;
+  const message = document.getElementById("loading-message")!;
+  const stage = document.getElementById("loading-blooks")!;
+
+  const pool: BlookData[] = JSON.parse(root.dataset.characters || "[]");
+
+  function pickRandomBlooks(n: number): BlookData[] {
+    const copy = pool.slice();
+    const out: BlookData[] = [];
+    for (let i = 0; i < n && copy.length; i++) {
+      const idx = Math.floor(Math.random() * copy.length);
+      out.push(copy.splice(idx, 1)[0]);
+    }
+    return out;
+  }
+
+  function renderBlooks(count: number) {
+    const blooks = pickRandomBlooks(count);
+    // Stagger the walk + bob so they don't march in sync
+    stage.innerHTML = blooks.map((b, i) => {
+      const walkDelay = (i * 380) % 2800;
+      const bobDelay = (i * 150) % 500;
+      return `
+        <div class="inline-block">
+          <img
+            src="${b.image}"
+            alt=""
+            class="loading-blook"
+            style="animation-delay: -${walkDelay}ms, -${bobDelay}ms;"
+            loading="eager"
+          />
+        </div>
+      `;
+    }).join("");
+  }
+
+  function show(msg?: string, count = 4) {
+    if (msg) message.textContent = msg;
+    renderBlooks(count);
+    root.classList.remove("hidden");
+    root.classList.add("flex");
+  }
+
+  function hide() {
+    root.classList.add("hidden");
+    root.classList.remove("flex");
+  }
+
+  function showForNav(href: string, msg?: string, minMs = 700) {
+    show(msg || "Loading…");
+    const startedAt = Date.now();
+    const elapsed = () => Date.now() - startedAt;
+    const go = () => {
+      const remaining = Math.max(0, minMs - elapsed());
+      setTimeout(() => { window.location.href = href; }, remaining);
+    };
+    // Fire now — the browser shows the loader while fetching the new
+    // page. minMs just guarantees it's visible long enough to register.
+    go();
+  }
+
+  (window as any).LoadingScreen = { show, hide, showForNav };
+</script>

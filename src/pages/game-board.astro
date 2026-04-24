@@ -6,6 +6,7 @@ import GameSettingsMenu from "../components/game-settings-menu.astro";
 import WinnersModel from "../components/game-board/winners-model.astro";
 import GameStartCountdown from "../components/game-board/game-start-countdown.astro";
 import ObjectiveModal from "../components/game-board/objective-modal.astro";
+import LoadingScreen from "../components/loading-screen.astro";
 import GameAssets from "../components/game-assets.astro";
 import LigandBox from "../components/game-board/ligand-box.astro";
 import LigandModal from "../components/game/ligand-modal.astro";
@@ -17,6 +18,7 @@ import InfoModal from "../components/game/info-modal.astro";
 ---
 
 <Layout>
+  <LoadingScreen />
   <GameSettingsMenu />
   <main class="flex justify-center items-center min-h-dvh p-2 sm:p-4 overflow-hidden">
     <!-- Landscape Mode Required Overlay (Mobile Only) -->

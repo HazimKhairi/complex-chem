@@ -111,6 +111,10 @@ import CharacterPicker from "./character-picker.astro";
 
     sessionStorage.setItem("game-option", "solo");
     sessionStorage.removeItem("computer");
-    window.location.href = "/game-board";
+    if ((window as any).LoadingScreen?.showForNav) {
+      (window as any).LoadingScreen.showForNav("/game-board", "Setting up your solo game…");
+    } else {
+      window.location.href = "/game-board";
+    }
   });
 </script>

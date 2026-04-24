@@ -169,6 +169,10 @@ import CharacterPicker from "./character-picker.astro";
 
     // Save player names and proceed
     savePlayerNames();
-    window.location.href = "/game-board";
+    if ((window as any).LoadingScreen?.showForNav) {
+      (window as any).LoadingScreen.showForNav("/game-board", "Setting up your 3-player match…");
+    } else {
+      window.location.href = "/game-board";
+    }
   });
 </script>

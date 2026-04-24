@@ -1081,9 +1081,10 @@
       // Play "complex built" SFX
       if (window.AudioManager) window.AudioManager.play('complex-built');
 
+      var checkIcon = '<svg class="w-14 h-14 mx-auto mb-3 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>';
       var c = $("step-container");
       c.innerHTML = '<div class="text-center py-8">'
-        + '<div class="text-5xl mb-4">&#9989;</div>'
+        + checkIcon
         + '<h2 class="text-xl font-bold text-green-700 mb-2">Complex Built Successfully!</h2>'
         + '<p class="text-gray-600 mb-2">+' + pts + ' points (attempt ' + level2State.buildAttempts + '/3)</p>'
         + '<p class="text-sm text-gray-500 mb-6">Your complex: [' + level2State.selectedMetal.name + '] with ' + placed.length + ' ligands</p>'
@@ -1095,9 +1096,10 @@
       level2State.buildDone = true;
       updateScoreBar();
 
+      var xIcon = '<svg class="w-14 h-14 mx-auto mb-3 text-red-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>';
       var c = $("step-container");
       c.innerHTML = '<div class="text-center py-8">'
-        + '<div class="text-5xl mb-4">&#128546;</div>'
+        + xIcon
         + '<h2 class="text-xl font-bold text-red-700 mb-2">No attempts remaining</h2>'
         + '<p class="text-gray-600 mb-6">0 points for assembly</p>'
         + navButtons({ back: false, next: true, nextLabel: "Next: Name Your Complex" })
@@ -1287,8 +1289,9 @@
     var l2 = level2State.level2Score;
     var grand = l1 + l2;
 
+    var trophyIcon = '<svg class="w-16 h-16 mx-auto mb-3 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>';
     var html = '<div class="text-center">';
-    html += '<div class="text-6xl mb-4">&#127942;</div>';
+    html += trophyIcon;
     html += '<h2 class="text-2xl font-bold text-gray-800 mb-2">Level 2 Complete!</h2>';
     html += '<p class="text-gray-500 mb-6">' + level2State.playerName + ', here is your score breakdown.</p>';
 

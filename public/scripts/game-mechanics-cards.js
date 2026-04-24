@@ -552,11 +552,13 @@ function showQuestionFeedback(isCorrect, points, difficulty) {
       if (answerNum === correctAnswer) {
         // Highlight correct answer with beautiful green design
         option.className = "answer-option w-full p-5 rounded-2xl text-left border-4 border-green-500 bg-green-50 text-green-900 font-bold shadow-lg transform transition-all duration-300 animate-pulse-once";
-        option.innerHTML = option.innerHTML.replace(/^[A-D]\.\s/, match => `<span class="inline-flex items-center gap-2"><span class="text-xl font-bold text-green-600">&#10003;</span>${match}</span> `);
+        const checkSvg = '<svg class="inline-block w-5 h-5 text-green-600 mr-2 align-middle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+        option.innerHTML = option.innerHTML.replace(/^[A-D]\.\s/, match => checkSvg + match);
       } else if (answerNum === selectedAnswer && !isCorrect) {
         // Highlight wrong selected answer with red design
         option.className = "answer-option w-full p-5 rounded-2xl text-left border-4 border-red-500 bg-red-50 text-red-900 font-semibold shadow-md";
-        option.innerHTML = option.innerHTML.replace(/^[A-D]\.\s/, match => `<span class="inline-flex items-center gap-2"><span class="text-xl font-bold text-red-600">&#10007;</span>${match}</span> `);
+        const xSvg = '<svg class="inline-block w-5 h-5 text-red-600 mr-2 align-middle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
+        option.innerHTML = option.innerHTML.replace(/^[A-D]\.\s/, match => xSvg + match);
       } else {
         // Fade out other options with subtle styling
         option.className = "answer-option w-full p-4 rounded-xl text-left border-2 border-gray-200 bg-gray-50 text-gray-400 opacity-60";
@@ -842,7 +844,11 @@ function openQuestionHintPopup(title, body) {
         class="absolute top-2 right-3 text-amber-800 hover:text-amber-900 text-2xl leading-none font-black"
       >&times;</button>
       <div class="flex items-center gap-2 mb-2">
-        <span class="text-xl">💡</span>
+        <svg class="w-5 h-5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5a6 6 0 0 0-12 0c0 1.3.5 2.6 1.5 3.5.8.8 1.3 1.5 1.5 2.5"/>
+          <path d="M9 18h6"/>
+          <path d="M10 22h4"/>
+        </svg>
         <h3 class="font-black text-amber-900 uppercase tracking-wide text-sm">Did you know?</h3>
       </div>
       ${title ? `<p class="font-bold text-amber-900 mb-2">${title}</p>` : ''}
@@ -958,7 +964,11 @@ function showQuestion(playerId, tileColor = null) {
               class="px-3 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 border-2 border-amber-300 text-amber-900 text-xs font-bold flex items-center gap-1.5 shadow-sm transition-colors"
               aria-label="Show hint"
             >
-              <span class="text-base leading-none">💡</span>
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5a6 6 0 0 0-12 0c0 1.3.5 2.6 1.5 3.5.8.8 1.3 1.5 1.5 2.5"/>
+                <path d="M9 18h6"/>
+                <path d="M10 22h4"/>
+              </svg>
               <span>Hint</span>
             </button>
           ` : ''}

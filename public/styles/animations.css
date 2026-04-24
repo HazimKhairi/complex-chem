@@ -767,3 +767,34 @@
   }
 }
 
+
+/* ============================================
+   START TILES — #8
+   ============================================ */
+
+/* Each player's starting tile gets a vivid colour + subtle pulsing ring
+   so newcomers can spot where their piece will enter the board. */
+.start-tile.start-tile-red {
+  background-color: #fc0404 !important;
+  box-shadow: inset 0 0 0 2px #fff, 0 0 0 2px #fc0404;
+}
+.start-tile.start-tile-blue {
+  background-color: #046cfc !important;
+  box-shadow: inset 0 0 0 2px #fff, 0 0 0 2px #046cfc;
+}
+.start-tile.start-tile-yellow {
+  background-color: #fcbc04 !important;
+  box-shadow: inset 0 0 0 2px #fff, 0 0 0 2px #fcbc04;
+}
+.start-tile.start-tile-green {
+  background-color: #0cc704 !important;
+  box-shadow: inset 0 0 0 2px #fff, 0 0 0 2px #0cc704;
+}
+
+@keyframes start-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+.start-tile .start-label {
+  animation: start-pulse 2s ease-in-out infinite;
+}

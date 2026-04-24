@@ -843,7 +843,7 @@ function showQuestion(playerId, tileColor = null) {
         <!-- Chemistry fact card from left side of image -->
         <div class="relative w-full aspect-[7/5] bg-gray-50 overflow-hidden">
           <!-- Background image with proper sizing -->
-          <div class="absolute inset-0 bg-no-repeat" style="background-image: url('/assets/question-cards/${question.imageFile}'); background-position: 0% center; background-size: 200%;">
+          <div class="absolute inset-0 bg-no-repeat" style="background-image: url('/assets/question-cards/${question.imageFile}'); background-position: 100% center; background-size: 200%;">
             <!-- Overlay for better text readability -->
             <div class="absolute inset-0 bg-black/5"></div>
           </div>

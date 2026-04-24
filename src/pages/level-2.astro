@@ -22,9 +22,9 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
       <p id="player-info" class="text-center text-gray-600 mt-1 text-sm"></p>
     </div>
 
-    <!-- Step Indicator (Setup + Q1..Q5) -->
+    <!-- Step Indicator (5 stages: setup → type → CN → geometry → 3D build) -->
     <div class="flex items-center justify-center gap-0 mb-6 w-full max-w-xl">
-      {[1, 2, 3, 4, 5, 6].map((n, i) => (
+      {[1, 2, 3, 4, 5].map((n, i) => (
         <>
           <div
             class="step-dot flex items-center justify-center rounded-full text-white font-bold text-sm shrink-0"
@@ -32,7 +32,7 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
           >
             {n}
           </div>
-          {i < 5 && <div class="step-line flex-1" />}
+          {i < 4 && <div class="step-line flex-1" />}
         </>
       ))}
     </div>

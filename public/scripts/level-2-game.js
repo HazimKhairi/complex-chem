@@ -87,9 +87,8 @@
     buildAttempts: 0,
     buildScore: 0,
     buildDone: false,
-    namingAnswer: null,
-    namingScore: 0,
-    namingDone: false,
+    setupScore: 0,
+    setupAwarded: false,
     level2Score: 0,
     /** Indices into playerLigands selected by the user in Step 1. */
     selectedLigandIdxs: [],
@@ -209,13 +208,18 @@
     var bc = $("builder-container");
     // 3D builder only shown on step 5 (was step 4)
     if (bc) bc.classList.toggle("hidden", step !== 5);
+    // Latest spec (5 stages — IUPAC naming step removed):
+    //   1) Choose metal + ligands       2 pts
+    //   2) Predict type                 2 pts
+    //   3) Predict coordination number  1 pt
+    //   4) Choose geometry              1 pt
+    //   5) Build complex in 3D          6 pts
     switch (step) {
-      case 1: renderStep1(); break;                  // Setup: metal + ligand picker
-      case 2: renderStep2_Q1_type(); break;          // Q1: neutral/anion/cation
-      case 3: renderStep3_Q2_cn(); break;            // Q2: coordination number
-      case 4: renderStep2(); break;                  // Q3: geometry (legacy impl)
-      case 5: renderStep3(); break;                  // Q4: 3D build
-      case 6: renderStep4(); break;                  // Q5: IUPAC name
+      case 1: renderStep1(); break;
+      case 2: renderStep2_Q1_type(); break;
+      case 3: renderStep3_Q2_cn(); break;
+      case 4: renderStep2(); break;
+      case 5: renderStep3(); break;
       default: renderResults(); break;
     }
   }
@@ -364,6 +368,14 @@
         var box = document.getElementById("l2-q1-error");
         if (box && cn > 6) box.classList.remove("hidden");
         return;
+      }
+      // Spec: 2 pts for completing Setup (metal + valid ligand selection),
+      // awarded once.
+      if (!level2State.setupAwarded) {
+        level2State.setupScore = 2;
+        level2State.level2Score += 2;
+        level2State.setupAwarded = true;
+        updateScoreBar();
       }
       renderStep(2);
     } });
@@ -698,7 +710,8 @@
         level2State.cnAttempts++;
         var right = level2State.cnAnswer === cn;
         if (right) {
-          level2State.cnScore = level2State.cnAttempts === 1 ? 2 : 1;
+          // Spec: 1 pt max for CN regardless of attempts
+          level2State.cnScore = level2State.cnAttempts === 1 ? 1 : 0;
           level2State.cnDone = true;
           level2State.level2Score += level2State.cnScore;
           updateScoreBar();
@@ -786,7 +799,8 @@
           var isCorrect = correctList.indexOf(val) >= 0;
           if (isCorrect) {
             level2State.selectedGeometry = val;
-            var pts = Math.max(0, 3 - level2State.geometryAttempts);
+            // Spec: 1 pt max for geometry, only awarded on first attempt
+            var pts = level2State.geometryAttempts === 1 ? 1 : 0;
             level2State.geometryScore = pts;
             level2State.level2Score += pts;
             level2State.geometryDone = true;
@@ -1091,9 +1105,9 @@
         + '<h2 class="text-xl font-bold text-green-700 mb-2">Complex Built Successfully!</h2>'
         + '<p class="text-gray-600 mb-2">+' + pts + ' points (attempt ' + level2State.buildAttempts + '/3)</p>'
         + '<p class="text-sm text-gray-500 mb-6">Your complex: [' + level2State.selectedMetal.name + '] with ' + placed.length + ' ligands</p>'
-        + navButtons({ back: false, next: true, nextLabel: "Next: Name Your Complex" })
+        + navButtons({ back: false, next: true, nextLabel: "See Results" })
         + '</div>';
-      bindNav({ onNext: function () { renderStep(6); } });
+      bindNav({ onNext: function () { renderResults(); } });
     } else if (level2State.buildAttempts >= 3) {
       level2State.buildScore = 0;
       level2State.buildDone = true;
@@ -1105,9 +1119,9 @@
         + xIcon
         + '<h2 class="text-xl font-bold text-red-700 mb-2">No attempts remaining</h2>'
         + '<p class="text-gray-600 mb-6">0 points for assembly</p>'
-        + navButtons({ back: false, next: true, nextLabel: "Next: Name Your Complex" })
+        + navButtons({ back: false, next: true, nextLabel: "See Results" })
         + '</div>';
-      bindNav({ onNext: function () { renderStep(6); } });
+      bindNav({ onNext: function () { renderResults(); } });
     } else {
       var c = $("step-container");
       c.innerHTML = '<div class="text-center py-4">'
@@ -1284,7 +1298,7 @@
   // ── Results ─────────────────────────────────────────────
 
   function renderResults() {
-    updateStepIndicator(7);
+    updateStepIndicator(6);
     var bc = $("builder-container"); if (bc) bc.classList.add("hidden");
     var c = $("step-container");
     var l1 = 0;
@@ -1301,9 +1315,11 @@
     html += '<div class="bg-gray-50 rounded-lg p-6 text-left max-w-sm mx-auto">';
     html += '<table class="w-full text-sm"><tbody>';
     html += '<tr class="border-b border-gray-200"><td class="py-2 text-gray-600">Level 1 Points</td><td class="py-2 text-right font-bold">' + l1 + '</td></tr>';
-    html += '<tr class="border-b border-gray-200"><td class="py-2 text-gray-600">Step 2: Geometry</td><td class="py-2 text-right font-bold">' + level2State.geometryScore + ' / 2</td></tr>';
-    html += '<tr class="border-b border-gray-200"><td class="py-2 text-gray-600">Step 3: Assembly</td><td class="py-2 text-right font-bold">' + level2State.buildScore + ' / 6</td></tr>';
-    html += '<tr class="border-b border-gray-200"><td class="py-2 text-gray-600">Step 4: Naming</td><td class="py-2 text-right font-bold">' + level2State.namingScore + ' / 2</td></tr>';
+    html += '<tr class="border-b border-gray-200"><td class="py-2 text-gray-600">Step 1: Choose metal &amp; ligands</td><td class="py-2 text-right font-bold">' + (level2State.setupScore || 0) + ' / 2</td></tr>';
+    html += '<tr class="border-b border-gray-200"><td class="py-2 text-gray-600">Step 2: Predict type</td><td class="py-2 text-right font-bold">' + (level2State.typeScore || 0) + ' / 2</td></tr>';
+    html += '<tr class="border-b border-gray-200"><td class="py-2 text-gray-600">Step 3: Coordination number</td><td class="py-2 text-right font-bold">' + (level2State.cnScore || 0) + ' / 1</td></tr>';
+    html += '<tr class="border-b border-gray-200"><td class="py-2 text-gray-600">Step 4: Geometry</td><td class="py-2 text-right font-bold">' + (level2State.geometryScore || 0) + ' / 1</td></tr>';
+    html += '<tr class="border-b border-gray-200"><td class="py-2 text-gray-600">Step 5: 3D build</td><td class="py-2 text-right font-bold">' + (level2State.buildScore || 0) + ' / 6</td></tr>';
     html += '<tr class="text-lg"><td class="pt-3 font-bold text-gray-800">Grand Total</td><td class="pt-3 text-right font-bold text-[#4187a0]">' + grand + '</td></tr>';
     html += '</tbody></table></div>';
 

@@ -430,36 +430,23 @@
     var html = '<h2 class="text-xl font-bold text-gray-800 mb-1">1. Predict the type of complex <span class="text-sm font-normal text-gray-400">(2 pts)</span></h2>';
     html += '<p class="text-gray-500 text-sm mb-3">Based on the metal charge and your chosen ligands, is the complex neutral, an anion, or a cation?</p>';
 
-    // Charge-contribution table
+    // Ligand list — per the latest spec we no longer expose the
+    // charge / count / contribution columns; players figure those out
+    // themselves from the ligands they collected.
     html += '<div class="overflow-x-auto mb-4 rounded-lg border border-gray-200">';
     html += '<table class="w-full text-sm">';
     html += '<thead class="bg-gray-50 text-gray-700"><tr>';
     html += '<th class="text-left px-3 py-2 font-semibold">Ligand</th>';
-    html += '<th class="text-center px-3 py-2 font-semibold">Charge</th>';
-    html += '<th class="text-center px-3 py-2 font-semibold">No. of ligand(s)</th>';
-    html += '<th class="text-center px-3 py-2 font-semibold">Charge contribution</th>';
     html += '</tr></thead><tbody>';
     charge.rows.forEach(function (r) {
-      var contrib = r.charge * r.count;
+      var label = r.count > 1 ? (r.name + ' &times; ' + r.count) : r.name;
       html += '<tr class="border-t border-gray-100">';
-      html += '<td class="px-3 py-2 font-medium text-gray-800">' + r.name + '</td>';
-      html += '<td class="text-center px-3 py-2">' + (r.charge > 0 ? "+" + r.charge : r.charge) + '</td>';
-      html += '<td class="text-center px-3 py-2">' + r.count + '</td>';
-      html += '<td class="text-center px-3 py-2 font-semibold">' + (contrib > 0 ? "+" + contrib : contrib) + '</td>';
+      html += '<td class="px-3 py-2 font-medium text-gray-800">' + label + '</td>';
       html += '</tr>';
     });
     // Metal row
     html += '<tr class="border-t border-gray-100 bg-blue-50">';
     html += '<td class="px-3 py-2 font-medium text-gray-800">Metal: ' + (level2State.selectedMetal ? level2State.selectedMetal.name : "—") + '</td>';
-    html += '<td class="text-center px-3 py-2 font-semibold">' + (charge.metalCharge > 0 ? "+" + charge.metalCharge : charge.metalCharge) + '</td>';
-    html += '<td class="text-center px-3 py-2">1</td>';
-    html += '<td class="text-center px-3 py-2 font-semibold">' + (charge.metalCharge > 0 ? "+" + charge.metalCharge : charge.metalCharge) + '</td>';
-    html += '</tr>';
-    // Total row
-    html += '<tr class="border-t-2 border-gray-300 bg-gray-50">';
-    html += '<td class="px-3 py-2 font-bold text-gray-800" colspan="3">Total Charge</td>';
-    html += '<td class="text-center px-3 py-2 text-lg font-black ' + (charge.total === 0 ? "text-gray-700" : (charge.total < 0 ? "text-red-700" : "text-blue-700")) + '">';
-    html += (charge.total > 0 ? "+" + charge.total : charge.total) + '</td>';
     html += '</tr>';
     html += '</tbody></table></div>';
 

@@ -16,9 +16,9 @@ import Level2IntroModal from "../components/game-board/level2-intro-modal.astro"
       <p id="player-info" class="text-center text-gray-600 mt-1 text-sm"></p>
     </div>
 
-    <!-- Step Indicator -->
+    <!-- Step Indicator (Setup + Q1..Q4) -->
     <div class="flex items-center justify-center gap-0 mb-6 w-full max-w-md">
-      {[1, 2, 3, 4].map((n, i) => (
+      {[1, 2, 3, 4, 5].map((n, i) => (
         <>
           <div
             class="step-dot flex items-center justify-center rounded-full text-white font-bold text-sm shrink-0"
@@ -26,7 +26,7 @@ import Level2IntroModal from "../components/game-board/level2-intro-modal.astro"
           >
             {n}
           </div>
-          {i < 3 && <div class="step-line flex-1" />}
+          {i < 4 && <div class="step-line flex-1" />}
         </>
       ))}
     </div>

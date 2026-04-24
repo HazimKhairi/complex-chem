@@ -83,6 +83,11 @@
     level2Score: 0,
     /** Indices into playerLigands selected by the user in Step 1. */
     selectedLigandIdxs: [],
+    /** Q1 — type of complex (neutral/anion/cation). */
+    typeAnswer: null,
+    typeScore: 0,
+    typeAttempts: 0,
+    typeDone: false,
   };
 
   var currentStep = 1;
@@ -192,12 +197,14 @@
     currentStep = step;
     updateStepIndicator(step);
     var bc = $("builder-container");
-    if (bc) bc.classList.toggle("hidden", step !== 3);
+    // 3D builder only shown on step 4 now (old step 3)
+    if (bc) bc.classList.toggle("hidden", step !== 4);
     switch (step) {
-      case 1: renderStep1(); break;
-      case 2: renderStep2(); break;
-      case 3: renderStep3(); break;
-      case 4: renderStep4(); break;
+      case 1: renderStep1(); break;                  // Setup: metal + ligand picker
+      case 2: renderStep2_Q1_type(); break;          // Q1: neutral/anion/cation
+      case 3: renderStep2(); break;                  // Q2: geometry (legacy impl)
+      case 4: renderStep3(); break;                  // Q3: 3D build
+      case 5: renderStep4(); break;                  // Q4: IUPAC name
       default: renderResults(); break;
     }
   }
@@ -351,7 +358,165 @@
     } });
   }
 
-  // ── Step 2: Pick Geometry (2 pts) ───────────────────────
+  // ── Step 2: Q1 — Predict the type of complex (2 pts) ────
+  // Formula: total charge = metal charge + Σ(ligand charge × count).
+  //   0 → neutral, <0 → anion, >0 → cation.
+
+  function summariseSelectedLigands() {
+    // Group selected ligands by id → count, keeping chemistry details
+    var sel = getSelectedLigands();
+    if (sel.length === 0) sel = playerLigands;
+    var byId = {};
+    sel.forEach(function (lig) {
+      var key = lig.id || (lig.name || "?").toLowerCase();
+      if (!byId[key]) {
+        var chem = LIGAND_CHEMISTRY[key] || LIGAND_CHEMISTRY[(lig.id || "").toLowerCase()];
+        byId[key] = {
+          id: key,
+          name: lig.name || key,
+          charge: chem ? chem.charge : 0,
+          count: 0,
+        };
+      }
+      byId[key].count++;
+    });
+    return Object.keys(byId).map(function (k) { return byId[k]; });
+  }
+
+  function computeTotalCharge() {
+    var metalCharge = level2State.selectedMetal ? level2State.selectedMetal.charge : 0;
+    var rows = summariseSelectedLigands();
+    var ligandTotal = 0;
+    rows.forEach(function (r) { ligandTotal += r.charge * r.count; });
+    return { total: metalCharge + ligandTotal, metalCharge: metalCharge, ligandTotal: ligandTotal, rows: rows };
+  }
+
+  function classifyComplex(total) {
+    if (total === 0) return "neutral";
+    if (total < 0) return "anion";
+    return "cation";
+  }
+
+  function renderStep2_Q1_type() {
+    var c = $("step-container");
+    var charge = computeTotalCharge();
+    var correct = classifyComplex(charge.total);
+    var done = level2State.typeDone;
+    var chosen = level2State.typeAnswer;
+
+    var html = '<h2 class="text-xl font-bold text-gray-800 mb-1">1. Predict the type of complex <span class="text-sm font-normal text-gray-400">(2 pts)</span></h2>';
+    html += '<p class="text-gray-500 text-sm mb-3">Based on the metal charge and your chosen ligands, is the complex neutral, an anion, or a cation?</p>';
+
+    // Charge-contribution table
+    html += '<div class="overflow-x-auto mb-4 rounded-lg border border-gray-200">';
+    html += '<table class="w-full text-sm">';
+    html += '<thead class="bg-gray-50 text-gray-700"><tr>';
+    html += '<th class="text-left px-3 py-2 font-semibold">Ligand</th>';
+    html += '<th class="text-center px-3 py-2 font-semibold">Charge</th>';
+    html += '<th class="text-center px-3 py-2 font-semibold">No. of ligand(s)</th>';
+    html += '<th class="text-center px-3 py-2 font-semibold">Charge contribution</th>';
+    html += '</tr></thead><tbody>';
+    charge.rows.forEach(function (r) {
+      var contrib = r.charge * r.count;
+      html += '<tr class="border-t border-gray-100">';
+      html += '<td class="px-3 py-2 font-medium text-gray-800">' + r.name + '</td>';
+      html += '<td class="text-center px-3 py-2">' + (r.charge > 0 ? "+" + r.charge : r.charge) + '</td>';
+      html += '<td class="text-center px-3 py-2">' + r.count + '</td>';
+      html += '<td class="text-center px-3 py-2 font-semibold">' + (contrib > 0 ? "+" + contrib : contrib) + '</td>';
+      html += '</tr>';
+    });
+    // Metal row
+    html += '<tr class="border-t border-gray-100 bg-blue-50">';
+    html += '<td class="px-3 py-2 font-medium text-gray-800">Metal: ' + (level2State.selectedMetal ? level2State.selectedMetal.name : "—") + '</td>';
+    html += '<td class="text-center px-3 py-2 font-semibold">' + (charge.metalCharge > 0 ? "+" + charge.metalCharge : charge.metalCharge) + '</td>';
+    html += '<td class="text-center px-3 py-2">1</td>';
+    html += '<td class="text-center px-3 py-2 font-semibold">' + (charge.metalCharge > 0 ? "+" + charge.metalCharge : charge.metalCharge) + '</td>';
+    html += '</tr>';
+    // Total row
+    html += '<tr class="border-t-2 border-gray-300 bg-gray-50">';
+    html += '<td class="px-3 py-2 font-bold text-gray-800" colspan="3">Total Charge</td>';
+    html += '<td class="text-center px-3 py-2 text-lg font-black ' + (charge.total === 0 ? "text-gray-700" : (charge.total < 0 ? "text-red-700" : "text-blue-700")) + '">';
+    html += (charge.total > 0 ? "+" + charge.total : charge.total) + '</td>';
+    html += '</tr>';
+    html += '</tbody></table></div>';
+
+    // 3-option answer
+    var options = [
+      { id: "neutral", label: "Neutral", hint: "Total = 0" },
+      { id: "anion",   label: "Anion",   hint: "Total < 0" },
+      { id: "cation",  label: "Cation",  hint: "Total > 0" },
+    ];
+    html += '<div class="grid grid-cols-3 gap-3 mb-3">';
+    options.forEach(function (opt) {
+      var cls = 'p-3 rounded-lg font-semibold text-sm border-2 transition text-center ';
+      if (done) {
+        if (opt.id === correct) cls += 'border-green-500 bg-green-50 text-green-700 ';
+        else if (opt.id === chosen) cls += 'border-red-500 bg-red-50 text-red-700 ';
+        else cls += 'border-gray-200 text-gray-400 ';
+        cls += 'cursor-default ';
+      } else {
+        if (opt.id === chosen) cls += 'border-[#4187a0] bg-[#4187a0]/10 text-[#4187a0] ';
+        else cls += 'border-gray-200 hover:border-[#4187a0] cursor-pointer ';
+      }
+      html += '<button class="type-opt ' + cls + '" data-val="' + opt.id + '"' + (done ? ' disabled' : '') + '>';
+      html += '<div>' + opt.label + '</div>';
+      html += '<div class="text-[11px] font-normal opacity-70 mt-1">' + opt.hint + '</div>';
+      html += '</button>';
+    });
+    html += '</div>';
+
+    if (done) {
+      var pts = level2State.typeScore;
+      if (pts > 0) {
+        html += '<div class="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm text-center font-semibold mb-3">Correct! +' + pts + ' point' + (pts > 1 ? 's' : '') + '</div>';
+      } else {
+        html += '<div class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm text-center mb-3">Not quite. The correct answer was <strong>' + correct + '</strong>.</div>';
+      }
+    } else if (level2State.typeAttempts > 0) {
+      html += '<div class="p-3 bg-orange-50 border border-orange-200 rounded-lg text-orange-700 text-sm text-center mb-3">Try again. Attempt ' + level2State.typeAttempts + '/2</div>';
+    }
+
+    html += navButtons({ back: true, next: true, nextDisabled: !done && !chosen, nextLabel: done ? "Next: Geometry" : "Submit" });
+    c.innerHTML = html;
+
+    document.querySelectorAll(".type-opt").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        if (done) return;
+        level2State.typeAnswer = this.getAttribute("data-val");
+        renderStep2_Q1_type();
+      });
+    });
+
+    bindNav({
+      onBack: function () { renderStep(1); },
+      onNext: function () {
+        if (done) { renderStep(3); return; }
+        if (!level2State.typeAnswer) return;
+
+        level2State.typeAttempts++;
+        var isRight = level2State.typeAnswer === correct;
+        if (isRight) {
+          level2State.typeScore = level2State.typeAttempts === 1 ? 2 : 1;
+          level2State.typeDone = true;
+          level2State.level2Score += level2State.typeScore;
+          updateScoreBar();
+          if (window.AudioManager) window.AudioManager.play("correct");
+          renderStep2_Q1_type();
+        } else if (level2State.typeAttempts >= 2) {
+          level2State.typeScore = 0;
+          level2State.typeDone = true;
+          updateScoreBar();
+          if (window.AudioManager) window.AudioManager.play("wrong");
+          renderStep2_Q1_type();
+        } else {
+          if (window.AudioManager) window.AudioManager.play("wrong");
+          renderStep2_Q1_type();
+        }
+      },
+    });
+  }
+
+  // ── Step 3: Pick Geometry (2 pts) ───────────────────────
 
   function renderStep2() {
     var c = $("step-container");
@@ -432,8 +597,8 @@
     }
 
     bindNav({
-      onBack: function () { renderStep(1); },
-      onNext: function () { renderStep(3); },
+      onBack: function () { renderStep(2); },
+      onNext: function () { renderStep(4); },
     });
   }
 
@@ -601,7 +766,7 @@
         + '<p class="text-sm text-gray-500 mb-6">Your complex: [' + level2State.selectedMetal.name + '] with ' + placed.length + ' ligands</p>'
         + navButtons({ back: false, next: true, nextLabel: "Next: Name Your Complex" })
         + '</div>';
-      bindNav({ onNext: function () { renderStep(4); } });
+      bindNav({ onNext: function () { renderStep(5); } });
     } else if (level2State.buildAttempts >= 3) {
       level2State.buildScore = 0;
       level2State.buildDone = true;
@@ -614,7 +779,7 @@
         + '<p class="text-gray-600 mb-6">0 points for assembly</p>'
         + navButtons({ back: false, next: true, nextLabel: "Next: Name Your Complex" })
         + '</div>';
-      bindNav({ onNext: function () { renderStep(4); } });
+      bindNav({ onNext: function () { renderStep(5); } });
     } else {
       var c = $("step-container");
       c.innerHTML = '<div class="text-center py-4">'
@@ -786,7 +951,7 @@
   // ── Results ─────────────────────────────────────────────
 
   function renderResults() {
-    updateStepIndicator(5);
+    updateStepIndicator(6);
     var bc = $("builder-container"); if (bc) bc.classList.add("hidden");
     var c = $("step-container");
     var l1 = 0;

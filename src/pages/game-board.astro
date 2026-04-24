@@ -186,6 +186,12 @@ import InfoModal from "../components/game/info-modal.astro";
   ligandColorsScript.type = "application/javascript";
   document.head.appendChild(ligandColorsScript);
 
+  // Swap horse pieces + avatars to chosen blook characters
+  const characterSwapScript = document.createElement("script");
+  characterSwapScript.src = "scripts/character-swap.js";
+  characterSwapScript.type = "application/javascript";
+  document.head.appendChild(characterSwapScript);
+
   // SKIPPED: turn-indicator-integration.js (user doesn't want turn indicator badge)
   // SKIPPED: ui-animations.js & ui-polish.js (extra UI features)
 

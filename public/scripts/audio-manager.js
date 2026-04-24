@@ -20,6 +20,8 @@ window.AudioManager = (function () {
     'fate-card': '/audio/sfx/fate-card.wav',
     'ligand': '/audio/sfx/ligand.wav',
     'level-2-start': '/audio/sfx/level-2-start.wav',
+    'char-hover': '/audio/sfx/char-hover.wav',
+    'char-select': '/audio/sfx/char-select.wav',
   };
 
   var cache = {};

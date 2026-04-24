@@ -1,0 +1,104 @@
+---
+/*
+ * Reusable Blooket-style character picker.
+ *
+ * Props:
+ *   slot        — string key. Character id is written to sessionStorage
+ *                 as `character-<slot>` (e.g. "character-p1", "character-solo").
+ *   label       — heading shown above the grid.
+ *   defaultId?  — character id to preselect when no prior choice exists.
+ *
+ * Plays a tick sound on hover and a confirm sound on select via
+ * window.AudioManager (keys "char-hover" and "char-select").
+ *
+ * All characters come from src/data/characters.ts — add rows there to
+ * expand the roster, no picker edits required.
+ */
+
+import { CHARACTERS } from "../../data/characters";
+
+interface Props {
+  slot: string;
+  label?: string;
+  defaultId?: string;
+}
+
+const { slot, label = "Pick your character", defaultId = "panda" } = Astro.props;
+---
+
+<section
+  class="character-picker space-y-3"
+  data-slot={slot}
+  data-default={defaultId}
+>
+  <header class="flex items-center justify-between gap-3">
+    <h3 class="text-sm font-bold text-gray-800">{label}</h3>
+    <p class="text-xs text-gray-500">
+      <span class="selected-name font-semibold text-ludon-blue">{CHARACTERS.find(c => c.id === defaultId)?.name ?? ""}</span>
+    </p>
+  </header>
+
+  <div
+    class="char-grid grid grid-cols-5 sm:grid-cols-6 gap-2 bg-gray-50 p-3 rounded-xl max-h-[180px] overflow-y-auto"
+  >
+    {CHARACTERS.map((char) => (
+      <button
+        type="button"
+        class={`char-btn relative flex items-center justify-center rounded-lg border-2 border-transparent ${char.tint} aspect-square p-1 transition-all hover:scale-105 hover:border-ludon-blue aria-selected:border-ludon-green aria-selected:ring-2 aria-selected:ring-ludon-green aria-selected:shadow-md`}
+        data-char-id={char.id}
+        aria-label={char.name}
+        title={`${char.name}${char.tag ? " — " + char.tag : ""}`}
+      >
+        <img
+          src={char.image}
+          alt={char.name}
+          class="w-full h-full object-contain pointer-events-none"
+          loading="lazy"
+        />
+      </button>
+    ))}
+  </div>
+</section>
+
+<script>
+  // Wire up every character-picker on the page. Each picker is independent.
+  (() => {
+    const pickers = document.querySelectorAll<HTMLElement>(".character-picker");
+
+    pickers.forEach((picker) => {
+      const slot = picker.dataset.slot;
+      const defaultId = picker.dataset.default || "panda";
+      if (!slot) return;
+
+      const key = `character-${slot}`;
+      const saved = sessionStorage.getItem(key) || defaultId;
+      sessionStorage.setItem(key, saved);
+
+      const buttons = picker.querySelectorAll<HTMLButtonElement>(".char-btn");
+      const nameLabel = picker.querySelector<HTMLElement>(".selected-name");
+
+      function syncSelected(activeId: string) {
+        buttons.forEach((b) => {
+          b.setAttribute("aria-selected", b.dataset.charId === activeId ? "true" : "false");
+        });
+        const btn = Array.from(buttons).find((b) => b.dataset.charId === activeId);
+        if (nameLabel) nameLabel.textContent = btn?.getAttribute("aria-label") ?? "";
+      }
+
+      syncSelected(saved);
+
+      buttons.forEach((btn) => {
+        btn.addEventListener("mouseenter", () => {
+          if ((window as any).AudioManager) (window as any).AudioManager.play("char-hover");
+        });
+        btn.addEventListener("click", () => {
+          const id = btn.dataset.charId;
+          if (!id) return;
+          sessionStorage.setItem(key, id);
+          syncSelected(id);
+          if ((window as any).AudioManager) (window as any).AudioManager.play("char-select");
+        });
+      });
+    });
+  })();
+</script>

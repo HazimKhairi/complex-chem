@@ -22,6 +22,9 @@ import SelectGameMode from "../components/select-game-mode.astro";
   </main>
 </Layout>
 
+<!-- AudioManager needed for character-picker hover/select SFX -->
+<script is:inline src="/scripts/audio-manager.js"></script>
+
 <script>
   sessionStorage.setItem("computer", "false");
 </script>

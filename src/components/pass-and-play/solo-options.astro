@@ -4,6 +4,7 @@ import redHorse from "../../assets/horses/red.png";
 import blueHorse from "../../assets/horses/blue.png";
 import yellowHorse from "../../assets/horses/yellow.png";
 import greenHorse from "../../assets/horses/green.png";
+import CharacterPicker from "./character-picker.astro";
 ---
 
 <section id="solo-options" class="space-y-5 hidden">
@@ -55,6 +56,8 @@ import greenHorse from "../../assets/horses/green.png";
       </button>
     </div>
   </div>
+
+  <CharacterPicker slot="p1" label="Pick your blook" defaultId="panda" />
 
   <button id="start-solo-game" class="bg-ludon-green text-white rounded-xl p-2.5 text-lg w-full">Start</button>
 </section>

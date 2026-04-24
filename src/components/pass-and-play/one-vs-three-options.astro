@@ -4,6 +4,7 @@ import redHorse from "../../assets/horses/red.png";
 import blueHorse from "../../assets/horses/blue.png";
 import yellowHorse from "../../assets/horses/yellow.png";
 import greenHorse from "../../assets/horses/green.png";
+import CharacterPicker from "./character-picker.astro";
 ---
 
 <section id="one-vs-three-options" class="space-y-5 hidden">
@@ -50,6 +51,11 @@ import greenHorse from "../../assets/horses/green.png";
       class="h-9 rounded-xl text-center w-full bg-white"
     />
   </div>
+  <CharacterPicker slot="p1" label="Player 1 blook" defaultId="panda" />
+  <CharacterPicker slot="p2" label="Player 2 blook" defaultId="frog" />
+  <CharacterPicker slot="p3" label="Player 3 blook" defaultId="dog" />
+  <CharacterPicker slot="p4" label="Player 4 blook" defaultId="cat" />
+
   <button id="start-game-one-vs-three" class="bg-ludon-green text-white rounded-xl p-2.5 text-lg w-full">Start</button>
 </section>
 

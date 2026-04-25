@@ -1,4 +1,17 @@
-<div class="w-[108px] h-[108px] sm:w-[114px] sm:h-[114px] md:w-[120px] md:h-[120px] lg:w-[126px] lg:h-[126px] bg-[url('/ludo-home.jpg')] bg-contain [&_img]:w-[22px] [&_img]:sm:w-[24px] [&_img]:md:w-[26px] [&_img]:lg:w-[28px] [&_img]:mx-auto [&_img]:relative [&_img]:z-20 [&_img]:drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
+<div class="relative w-[108px] h-[108px] sm:w-[114px] sm:h-[114px] md:w-[120px] md:h-[120px] lg:w-[126px] lg:h-[126px] [&_img]:w-[22px] [&_img]:sm:w-[24px] [&_img]:md:w-[26px] [&_img]:lg:w-[28px] [&_img]:mx-auto [&_img]:relative [&_img]:z-20 [&_img]:drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
+  <!-- 4 triangle wedges drawn in SVG so colours stay in sync with the
+       new bold home palette (was a static jpg with the old colours). -->
+  <!-- Triangle direction matches each colour's winning-path approach:
+       top  = blue  (BlueMiddlePath sits above the centre)
+       left = red   (RedMiddlePath sits to the left)
+       right = green (GreenMiddlePath sits to the right)
+       bottom = yellow (YellowMiddlePath sits below) -->
+  <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="absolute inset-0 w-full h-full pointer-events-none" aria-hidden="true">
+    <polygon points="0,0 100,0 50,50" fill="#046cfc"/>
+    <polygon points="100,0 100,100 50,50" fill="#0cc704"/>
+    <polygon points="100,100 0,100 50,50" fill="#fcbc04"/>
+    <polygon points="0,100 0,0 50,50" fill="#fc0404"/>
+  </svg>
   <table id="win" class="winning-cells-table">
     <tr>
       <td></td>

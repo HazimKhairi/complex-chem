@@ -7,6 +7,9 @@ import { defineConfig } from "astro/config";
 export default defineConfig({
   output: 'server',
   adapter: vercel(),
+  // Hide the floating Astro dev toolbar in the browser. Hazim doesn't
+  // want it overlapping the in-game UI.
+  devToolbar: { enabled: false },
   vite: {
     plugins: [tailwindcss()],
   },

@@ -492,25 +492,38 @@
     var html = '<h2 class="text-xl font-bold text-gray-800 mb-1">1. Predict the type of complex <span class="text-sm font-normal text-gray-400">(2 pts)</span></h2>';
     html += '<p class="text-gray-500 text-sm mb-3">Based on the metal charge and your chosen ligands, is the complex neutral, an anion, or a cation?</p>';
 
-    // Ligand list — per the latest spec we no longer expose the
-    // charge / count / contribution columns; players figure those out
-    // themselves from the ligands they collected.
-    html += '<div class="overflow-x-auto mb-4 rounded-lg border border-gray-200">';
+    // Per latest spec: keep Ligand + Charge columns (no X across all
+    // rows). Number-of-ligands and contribution columns stay removed
+    // — students compute the total themselves from this minimal data.
+    html += '<div class="overflow-x-auto mb-3 rounded-lg border border-gray-200">';
     html += '<table class="w-full text-sm">';
     html += '<thead class="bg-gray-50 text-gray-700"><tr>';
     html += '<th class="text-left px-3 py-2 font-semibold">Ligand</th>';
+    html += '<th class="text-center px-3 py-2 font-semibold">Charge</th>';
     html += '</tr></thead><tbody>';
+    function fmtCharge(c) {
+      if (c > 0) return '+' + c;
+      return String(c);
+    }
     charge.rows.forEach(function (r) {
       var label = r.count > 1 ? (r.name + ' &times; ' + r.count) : r.name;
       html += '<tr class="border-t border-gray-100">';
       html += '<td class="px-3 py-2 font-medium text-gray-800">' + label + '</td>';
+      html += '<td class="text-center px-3 py-2">' + fmtCharge(r.charge) + '</td>';
       html += '</tr>';
     });
     // Metal row
     html += '<tr class="border-t border-gray-100 bg-blue-50">';
     html += '<td class="px-3 py-2 font-medium text-gray-800">Metal: ' + (level2State.selectedMetal ? level2State.selectedMetal.name : "—") + '</td>';
+    html += '<td class="text-center px-3 py-2 font-semibold">' + fmtCharge(charge.metalCharge) + '</td>';
     html += '</tr>';
     html += '</tbody></table></div>';
+
+    // Rule reminder so students remember which sign maps to which class.
+    html += '<div class="mb-4 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-xs">';
+    html += '<strong>Charge of complex</strong> = sum of (ligand charge × count) + metal charge<br>';
+    html += '0 = <strong>neutral</strong> &nbsp;·&nbsp; &minus;ve = <strong>anion</strong> &nbsp;·&nbsp; +ve = <strong>cation</strong>';
+    html += '</div>';
 
     // 3-option answer
     var options = [

@@ -769,11 +769,24 @@
     var done = level2State.cnDone;
     var chosen = level2State.cnAnswer;
 
-    var html = '<div class="flex items-center justify-between mb-1">';
-    html += '<h2 class="text-xl font-bold text-gray-800">2. Predict the coordination number <span class="text-sm font-normal text-gray-400">(3, 4, 5 or 6)</span></h2>';
-    html += '<button type="button" class="px-3 py-1 rounded-full bg-[#4187a0] text-white text-xs font-bold hover:bg-[#357a91]" onclick="window.__l2InfoBubble(\'cn\')">What is CN?</button>';
+    var html = '<h2 class="text-xl font-bold text-gray-800 mb-3">2. Predict the coordination number <span class="text-sm font-normal text-gray-400">(3, 4, 5 or 6)</span></h2>';
+
+    // Always-visible speech bubbles per spec image — left bubble
+    // explains "Type of denticity", right bubble explains "Denticity".
+    html += '<div class="grid sm:grid-cols-2 gap-3 mb-4">';
+    html += '  <div class="relative px-4 py-3 rounded-2xl bg-sky-50 border-2 border-sky-200 text-sky-900 text-xs leading-relaxed shadow-sm">';
+    html += '    <p class="font-semibold mb-1">Type of denticity</p>';
+    html += '    <p class="mb-1">Refers to the classification of ligands based on their denticity.</p>';
+    html += '    <ul class="list-disc list-inside space-y-0.5">';
+    html += '      <li><strong>Monodentate (1)</strong> &rarr; 1 donor atom</li>';
+    html += '      <li><strong>Bidentate (2)</strong> &rarr; 2 donor atoms</li>';
+    html += '    </ul>';
+    html += '  </div>';
+    html += '  <div class="relative px-4 py-3 rounded-2xl bg-sky-50 border-2 border-sky-200 text-sky-900 text-xs leading-relaxed shadow-sm">';
+    html += '    <p class="font-semibold mb-1">Denticity</p>';
+    html += '    <p>The number of donor atoms in a ligand that can bind to the central metal ion.</p>';
+    html += '  </div>';
     html += '</div>';
-    html += '<p class="text-gray-500 text-sm mb-4">Sum the bonding positions each ligand takes up. Tap the info pills for help.</p>';
 
     // Per latest spec: keep Ligand + Type of denticity + Denticity (d)
     // + No. of ligand(s) (n). The "No. of coordination sites (d × n)"
@@ -782,10 +795,7 @@
     html += '<table class="w-full text-sm">';
     html += '<thead class="bg-[#4187a0] text-white"><tr>';
     html += '<th class="text-left px-3 py-2 font-semibold">Ligand(s)</th>';
-    html += '<th class="px-3 py-2 font-semibold">';
-    html += 'Type of denticity ';
-    html += '<button type="button" class="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-white/20 text-white text-xs font-bold hover:bg-white/30" onclick="window.__l2InfoBubble(\'denticity\')">i</button>';
-    html += '</th>';
+    html += '<th class="px-3 py-2 font-semibold">Type of denticity</th>';
     html += '<th class="text-center px-3 py-2 font-semibold">Denticity, d</th>';
     html += '<th class="text-center px-3 py-2 font-semibold">No. of ligand(s), n</th>';
     html += '</tr></thead><tbody>';

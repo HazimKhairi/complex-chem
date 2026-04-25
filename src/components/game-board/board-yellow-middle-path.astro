@@ -12,27 +12,27 @@ import { cn } from "../../lib/utils";
     "border-collapse m-0 p-0",
   )}
 >
-  <!-- BOTTOM ARM — between bottom-left and bottom-right home corners.
-       Per latest spec (image #25), per-cell layout (top of arm = closer
+  <!-- BOTTOM ARM — between bottom-left (red) and bottom-right (blue) home corners.
+       Per latest spec (image #27), per-cell layout (top of arm = closer
        to centre; bottom of arm = closer to bottom edge):
-         Row 1: complex     | r56 | bipy
+         Row 1: PPh₃        | r56 | ⚠ (fate)
          Row 2: Cl          | r55 | ox
-         Row 3: PPh₃        | r54 | complex
-         Row 4: NH₃         | r53 | ⚠ (fate)
-         Row 5: START (r)   | r52 | py
+         Row 3: complex     | r54 | en
+         Row 4: CN⁻         | r53 | complex
+         Row 5: START (r)   | r52 | O²⁻
   -->
   <tr>
-    <td
-      class="g44 y31 r5 b18"
-      style="background: #eab308 url('/complexes/5.png') center/cover no-repeat !important;"
-    ></td>
-    <td class="r56 " style="background-color:#f48c94"></td>
-    <td class="g32 y19 r45 b6"
+    <td class="g44 y31 r5 b18"
       ><span
         class="text-[10px] text-white flex items-center justify-center h-full absolute inset-0 z-0 pointer-events-none"
-        >bipy</span
+        >PPh₃</span
       ></td
     >
+    <td class="r56 " style="background-color:#f48c94"></td>
+    <td
+      class="g32 y19 r45 b6"
+      style="background: #eab308 url('/complexes/fate_card.png') center/cover no-repeat !important;"
+    ></td>
   </tr>
   <tr>
     <td class="g43 y30 r4 b17"
@@ -50,29 +50,29 @@ import { cn } from "../../lib/utils";
     >
   </tr>
   <tr>
-    <td class="g42 y29 r3 b16"
+    <td
+      class="g42 y29 r3 b16"
+      style="background: #eab308 url('/complexes/5.png') center/cover no-repeat !important;"
+    ></td>
+    <td class="r54 " style="background-color:#f48c94"></td>
+    <td class="g34 y21 r47 b8"
       ><span
         class="text-[10px] text-white flex items-center justify-center h-full absolute inset-0 z-0 pointer-events-none"
-        >PPh₃</span
+        >en</span
       ></td
     >
-    <td class="r54 " style="background-color:#f48c94"></td>
-    <td
-      class="g34 y21 r47 b8"
-      style="background: #eab308 url('/complexes/6.png') center/cover no-repeat !important;"
-    ></td>
   </tr>
   <tr>
     <td class="g41 y28 r2 b15"
       ><span
         class="text-[10px] text-white flex items-center justify-center h-full absolute inset-0 z-0 pointer-events-none"
-        >NH₃</span
+        >CN⁻</span
       ></td
     >
     <td class="r53 " style="background-color:#f48c94"></td>
     <td
       class="g35 y22 r48 b9"
-      style="background: #eab308 url('/complexes/fate_card.png') center/cover no-repeat !important;"
+      style="background: #eab308 url('/complexes/6.png') center/cover no-repeat !important;"
     ></td>
   </tr>
   <tr>
@@ -86,7 +86,7 @@ import { cn } from "../../lib/utils";
     <td class="g36 y23 r49 b10"
       ><span
         class="text-[10px] text-white flex items-center justify-center h-full absolute inset-0 z-0 pointer-events-none"
-        >py</span
+        >O²⁻</span
       ></td
     >
   </tr>

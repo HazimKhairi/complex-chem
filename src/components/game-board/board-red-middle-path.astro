@@ -12,11 +12,11 @@ import { cn } from "../../lib/utils";
     "border-collapse m-0 p-0",
   )}
 >
-  <!-- LEFT ARM — between top-left and bottom-left home corners.
-       Per latest spec (image #25), per-cell layout:
-         Top    : START | phen | CO₃²⁻ | ⚠ (fate) | complex
+  <!-- LEFT ARM — between top-left (green) and bottom-left (red) home corners.
+       Per latest spec (image #27), per-cell layout:
+         Top    : START (green's, kept) | H₂O | ⚠ (fate) | complex | phen
          Winning: g52-g56 (green's stretch, no labels)
-         Bottom : acac | complex | H₂O | ⚠ (fate) | bipy
+         Bottom : NH₃ | acac | complex | ⚠ (fate) | O²⁻
   -->
   <tr>
     <td class="g1 y40 r14 b27 start-tile start-tile-green"
@@ -28,23 +28,23 @@ import { cn } from "../../lib/utils";
     <td class="g2 y41 r15 b28"
       ><span
         class="text-[10px] text-white flex items-center justify-center h-full absolute inset-0 z-0 pointer-events-none"
-        >phen</span
-      ></td
-    >
-    <td class="g3 y42 r16 b29"
-      ><span
-        class="text-[10px] text-white flex items-center justify-center h-full absolute inset-0 z-0 pointer-events-none"
-        >CO₃²⁻</span
+        >H₂O</span
       ></td
     >
     <td
-      class="g4 y43 r17 b30"
+      class="g3 y42 r16 b29"
       style="background: #ef4444 url('/complexes/fate_card.png') center/cover no-repeat !important;"
     ></td>
     <td
-      class="g5 y44 r18 b31"
+      class="g4 y43 r17 b30"
       style="background: #ef4444 url('/complexes/7.png') center/cover no-repeat !important;"
     ></td>
+    <td class="g5 y44 r18 b31"
+      ><span
+        class="text-[10px] text-white flex items-center justify-center h-full absolute inset-0 z-0 pointer-events-none"
+        >phen</span
+      ></td
+    >
   </tr>
   <tr class="middle-row-green">
     <td class="g52 " style="background-color:#9cecc4"></td>
@@ -57,19 +57,19 @@ import { cn } from "../../lib/utils";
     <td class="g50 y37 r11 b24"
       ><span
         class="text-[10px] text-white flex items-center justify-center h-full absolute inset-0 z-0 pointer-events-none"
+        >NH₃</span
+      ></td
+    >
+    <td class="g49 y36 r10 b23"
+      ><span
+        class="text-[10px] text-white flex items-center justify-center h-full absolute inset-0 z-0 pointer-events-none"
         >acac</span
       ></td
     >
     <td
-      class="g49 y36 r10 b23"
+      class="g48 y35 r9 b22"
       style="background: #ef4444 url('/complexes/8.png') center/cover no-repeat !important;"
     ></td>
-    <td class="g48 y35 r9 b22"
-      ><span
-        class="text-[10px] text-white flex items-center justify-center h-full absolute inset-0 z-0 pointer-events-none"
-        >H₂O</span
-      ></td
-    >
     <td
       class="g47 y34 r8 b21"
       style="background: #ef4444 url('/complexes/fate_card.png') center/cover no-repeat !important;"
@@ -77,7 +77,7 @@ import { cn } from "../../lib/utils";
     <td class="g46 y33 r7 b20"
       ><span
         class="text-[10px] text-white flex items-center justify-center h-full absolute inset-0 z-0 pointer-events-none"
-        >bipy</span
+        >O²⁻</span
       ></td
     >
   </tr>

@@ -12,18 +12,20 @@ import { cn } from "../../lib/utils";
     "border-collapse m-0 p-0",
   )}
 >
-  <!-- RIGHT ARM — between top-right and bottom-right home corners.
-       Per latest spec (image #25), per-cell layout (left col is closer
+  <!-- RIGHT ARM — between top-right (yellow) and bottom-right (blue) home corners.
+       Per latest spec (image #27), per-cell layout (left col is closer
        to centre; right col is closer to outer edge / blue home):
-         Top    : complex | ⚠ (fate) | O²⁻ | complex | NH₃
+         Top    : bipy | ⚠ (fate) | H₂O | complex | acac
          Winning: b52-b56 (blue's stretch, no labels)
          Bottom : complex | ⚠ (fate) | CO₃²⁻ | phen | START (blue's start, kept)
   -->
   <tr>
-    <td
-      class="g19 y6 r32 b45"
-      style="background: #10b981 url('/complexes/9.png') center/cover no-repeat !important;"
-    ></td>
+    <td class="g19 y6 r32 b45"
+      ><span
+        class="text-[10px] text-white flex items-center justify-center h-full absolute inset-0 z-0 pointer-events-none"
+        >bipy</span
+      ></td
+    >
     <td
       class="g20 y7 r33 b46"
       style="background: #10b981 url('/complexes/fate_card.png') center/cover no-repeat !important;"
@@ -31,7 +33,7 @@ import { cn } from "../../lib/utils";
     <td class="g21 y8 r34 b47"
       ><span
         class="text-[10px] text-white flex items-center justify-center h-full absolute inset-0 z-0 pointer-events-none"
-        >O²⁻</span
+        >H₂O</span
       ></td
     >
     <td
@@ -41,7 +43,7 @@ import { cn } from "../../lib/utils";
     <td class="g23 y10 r36 b49"
       ><span
         class="text-[10px] text-white flex items-center justify-center h-full absolute inset-0 z-0 pointer-events-none"
-        >NH₃</span
+        >acac</span
       ></td
     >
   </tr>

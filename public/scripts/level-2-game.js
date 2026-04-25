@@ -519,11 +519,6 @@
     html += '</tr>';
     html += '</tbody></table></div>';
 
-    // Rule reminder so students remember which sign maps to which class.
-    html += '<div class="mb-4 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-xs">';
-    html += '<strong>Charge of complex</strong> = sum of (ligand charge × count) + metal charge<br>';
-    html += '0 = <strong>neutral</strong> &nbsp;·&nbsp; &minus;ve = <strong>anion</strong> &nbsp;·&nbsp; +ve = <strong>cation</strong>';
-    html += '</div>';
 
     // 3-option answer
     var options = [
@@ -716,11 +711,6 @@
     });
     html += '</tbody></table></div>';
 
-    // Rule reminder so students know how to combine d and n.
-    html += '<div class="mb-4 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-xs">';
-    html += '<strong>Coordination number</strong> = sum of (denticity &times; count) for every ligand<br>';
-    html += 'Monodentate (d = 1) &nbsp;·&nbsp; Bidentate (d = 2)';
-    html += '</div>';
 
     // 4-option answer
     var opts = [3, 4, 5, 6];

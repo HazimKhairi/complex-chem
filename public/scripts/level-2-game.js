@@ -47,6 +47,17 @@
     "Trigonal bipyramidal", "Square pyramidal", "Octahedral",
   ];
 
+  // Image + CN tag for the Step 4 geometry picker. Files live under
+  // /public/assets/geometry/ — names match GEOMETRY_MAP exactly.
+  var GEOMETRY_META = {
+    "Trigonal planar":      { img: "/assets/geometry/trigonal-planar.png",      cn: 3 },
+    "Tetrahedral":          { img: "/assets/geometry/tetrahedral.png",          cn: 4 },
+    "Square planar":        { img: "/assets/geometry/square-planar.png",        cn: 4 },
+    "Trigonal bipyramidal": { img: "/assets/geometry/trigonal-bipyramidal.png", cn: 5 },
+    "Square pyramidal":     { img: "/assets/geometry/square-pyramidal.png",     cn: 5 },
+    "Octahedral":           { img: "/assets/geometry/octahedral.png",           cn: 6 },
+  };
+
   var SPHERE_COLORS_CSS = {
     red: "#EF4444", blue: "#3B82F6", orange: "#F97316", green: "#10B981",
   };
@@ -814,17 +825,29 @@
     var done = level2State.geometryDone;
     html += '<div class="grid grid-cols-2 sm:grid-cols-3 gap-3">';
     ALL_GEOMETRIES.forEach(function (geo) {
+      var meta = GEOMETRY_META[geo] || {};
       var isCorrect = correctList.indexOf(geo) >= 0;
-      var cls = 'p-3 rounded-lg font-semibold text-sm border-2 transition text-center ';
+      var matchesCN = meta.cn === cn;
+      // Card styling depends on state
+      var cls = 'geo-btn group relative rounded-xl border-2 transition-all overflow-hidden bg-white text-center flex flex-col items-center';
       if (done) {
-        if (isCorrect) cls += 'border-green-500 bg-green-50 text-green-700 ';
-        else if (geo === level2State.selectedGeometry && !isCorrect) cls += 'border-red-500 bg-red-50 text-red-700 ';
-        else cls += 'border-gray-200 text-gray-400 ';
-        cls += 'cursor-default ';
+        if (isCorrect) cls += ' border-green-500 ring-2 ring-green-200 shadow-md';
+        else if (geo === level2State.selectedGeometry && !isCorrect) cls += ' border-red-500 bg-red-50';
+        else cls += ' border-gray-200 opacity-60';
+        cls += ' cursor-default';
       } else {
-        cls += 'border-gray-200 hover:border-[#4187a0] cursor-pointer ';
+        cls += ' border-gray-200 hover:border-[#4187a0] hover:shadow-lg hover:-translate-y-0.5 cursor-pointer';
       }
-      html += '<button class="geo-btn ' + cls + '" data-val="' + geo + '"' + (done ? ' disabled' : '') + '>' + geo + '</button>';
+      var cnPillCls = matchesCN
+        ? 'absolute top-1.5 right-1.5 px-2 py-0.5 rounded-full bg-amber-400 text-amber-950 text-[10px] font-black shadow tracking-wider'
+        : 'absolute top-1.5 right-1.5 px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 text-[10px] font-bold tracking-wider';
+      html += '<button class="' + cls + '" data-val="' + geo + '"' + (done ? ' disabled' : '') + '>';
+      html +=   '<span class="' + cnPillCls + '">CN ' + meta.cn + '</span>';
+      html +=   '<div class="w-full aspect-square bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-2">';
+      html +=     '<img src="' + meta.img + '" alt="' + geo + '" class="max-w-full max-h-full object-contain transition-transform group-hover:scale-110" loading="lazy" />';
+      html +=   '</div>';
+      html +=   '<div class="w-full px-2 py-2 text-xs sm:text-sm font-semibold text-gray-800 leading-tight">' + geo + '</div>';
+      html += '</button>';
     });
     html += '</div>';
 

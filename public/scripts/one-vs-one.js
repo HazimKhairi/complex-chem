@@ -43,6 +43,11 @@ lastPosGH4 = 0;
 // Pass-and-play wizard always writes horse-1='green' for 1v1
 // (slots P1 vs P2). Legacy computer 1v1 component still writes
 // 'red' (slots P1+P4) or 'blue' (slots P2+P3).
+
+// Pre-declare ALL four name globals so findWinner can read any pair
+// without hitting ReferenceError when the inactive ones are unused.
+var Player1Name, Player2Name, Player3Name, Player4Name;
+
 //Code for second horse combination of onevs1
 if (sessionStorage.getItem("one-vs-one-horse-1") == "blue") {
   x = 2;

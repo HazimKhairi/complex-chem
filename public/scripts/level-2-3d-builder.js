@@ -245,6 +245,17 @@
         scene.remove(slot.ballMesh);
         slot.ballMesh = null;
       }
+      // Also wipe the donor-atom label sprite — without this the
+      // O / N / P / Cl text floats in space after Reset.
+      if (slot.labelMesh) {
+        scene.remove(slot.labelMesh);
+        slot.labelMesh = null;
+      }
+      if (slot._arcMesh) {
+        scene.remove(slot._arcMesh);
+        slot._arcMesh = null;
+      }
+      slot._pairedWith = undefined;
       slot.ligand = null;
       if (slot.ghostMesh) slot.ghostMesh.visible = true;
       if (slot.ringMesh) slot.ringMesh.visible = true;

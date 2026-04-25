@@ -13,40 +13,76 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
   <GameSettingsMenu />
   <Level2IntroModal />
   <IndicatorPanel />
-  <main class="h-dvh px-3 py-2 flex flex-col items-center gap-2 overflow-hidden">
-    <!-- Header (compact) -->
-    <div class="w-full max-w-6xl text-center">
-      <h1 class="text-lg sm:text-xl lg:text-2xl font-bold text-ludon-blue leading-tight">
-        LEVEL 2 — Build Your Complex
-      </h1>
-      <p id="player-info" class="text-gray-600 text-xs"></p>
-    </div>
-
-    <!-- Step Indicator -->
-    <div class="flex items-center justify-center gap-0 w-full max-w-xl">
-      {[1, 2, 3, 4, 5].map((n, i) => (
-        <>
-          <div
-            class="step-dot flex items-center justify-center rounded-full text-white font-bold text-xs shrink-0"
-            data-step={n}
-          >
-            {n}
+  <main class="h-dvh px-3 py-2 flex flex-col items-center gap-2 overflow-hidden bg-[#fef9e7]">
+    <!-- TOP HUD — gradient game bar with brand, step indicator, score chip -->
+    <div class="w-full max-w-6xl rounded-2xl shadow-lg overflow-hidden flex-shrink-0 bg-gradient-to-r from-[#1e3a8a] via-[#2563eb] to-[#1e40af]">
+      <div class="flex items-center justify-between gap-3 px-4 py-2">
+        <!-- Brand cluster -->
+        <div class="flex items-center gap-2 min-w-0">
+          <div class="w-9 h-9 rounded-xl bg-amber-400 flex items-center justify-center font-black text-blue-900 text-base shadow-md">
+            L2
           </div>
-          {i < 4 && <div class="step-line flex-1" />}
-        </>
-      ))}
+          <div class="min-w-0">
+            <p class="text-white font-black text-sm sm:text-base leading-tight truncate" style="font-family: 'Fredoka', sans-serif;">
+              Build Your Complex
+            </p>
+            <p id="player-info" class="text-blue-100 text-[10px] truncate"></p>
+          </div>
+        </div>
+
+        <!-- Step Indicator (5 stages) -->
+        <div class="hidden sm:flex items-center justify-center gap-0 flex-1 max-w-md">
+          {[1, 2, 3, 4, 5].map((n, i) => (
+            <>
+              <div
+                class="step-dot flex items-center justify-center rounded-full text-white font-bold text-xs shrink-0"
+                data-step={n}
+              >
+                {n}
+              </div>
+              {i < 4 && <div class="step-line flex-1" />}
+            </>
+          ))}
+        </div>
+
+        <!-- Score chip (gold leaderboard vibe) -->
+        <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-400 to-yellow-500 shadow-md">
+          <svg class="w-3.5 h-3.5 text-amber-900" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 2l2.39 7.36H22l-6.19 4.5L18.2 21 12 16.27 5.8 21l2.39-7.14L2 9.36h7.61z"/>
+          </svg>
+          <span class="text-[10px] font-black text-amber-900 uppercase tracking-wider">Score</span>
+          <span id="hud-total-score" class="text-sm font-black text-blue-900 tabular-nums">0</span>
+        </div>
+      </div>
+
+      <!-- Step Indicator (mobile fallback row) -->
+      <div class="sm:hidden flex items-center justify-center gap-0 px-4 pb-2 max-w-md mx-auto">
+        {[1, 2, 3, 4, 5].map((n, i) => (
+          <>
+            <div
+              class="step-dot flex items-center justify-center rounded-full text-white font-bold text-xs shrink-0"
+              data-step={n}
+            >
+              {n}
+            </div>
+            {i < 4 && <div class="step-line flex-1" />}
+          </>
+        ))}
+      </div>
     </div>
 
-    <!-- Collected ligands strip -->
+    <!-- Collected ligands HUD rail -->
     <div
       id="collected-ligands-strip"
-      class="w-full max-w-6xl bg-white rounded-xl shadow-sm px-3 py-2 hidden flex-shrink-0"
+      class="w-full max-w-6xl bg-white rounded-2xl shadow-md border-2 border-blue-100 px-3 py-2 hidden flex-shrink-0"
     >
-      <div class="flex items-center justify-between mb-1">
-        <p class="text-[10px] font-bold uppercase tracking-wider text-ludon-blue">Your collected ligands</p>
-        <p class="text-[10px] text-gray-500"><span id="cl-count">0</span> total</p>
+      <div class="flex items-center gap-2 overflow-x-auto">
+        <span class="text-[10px] font-black uppercase tracking-wider text-blue-700 flex-shrink-0">Inventory</span>
+        <span class="text-[10px] text-gray-400 flex-shrink-0">·</span>
+        <span class="text-[10px] text-gray-500 flex-shrink-0"><span id="cl-count">0</span> ligand(s)</span>
+        <span class="text-[10px] text-gray-300 flex-shrink-0">|</span>
+        <div id="collected-ligands-list" class="flex flex-nowrap gap-1.5 overflow-x-auto"></div>
       </div>
-      <div id="collected-ligands-list" class="flex flex-wrap gap-1.5"></div>
     </div>
 
     <!-- Two-column workspace: step content (left) + 3D builder (right
@@ -85,24 +121,33 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
       </div>
     </div>
 
-    <!-- Score Bar (compact) -->
-    <div class="w-full max-w-6xl bg-white rounded-xl shadow-sm px-4 py-2 flex justify-around text-center flex-shrink-0">
-      <div>
-        <p class="text-[10px] text-gray-500 uppercase tracking-wide">Level 1</p>
-        <p id="l1-score" class="text-sm font-bold text-ludon-blue">0</p>
+    <!-- Bottom Score Bar — three pill badges with bold numerals -->
+    <div class="w-full max-w-6xl flex gap-2 flex-shrink-0">
+      <div class="flex-1 bg-white border-2 border-blue-200 rounded-xl px-3 py-2 flex items-center justify-between shadow-sm">
+        <span class="text-[10px] font-black text-blue-700 uppercase tracking-widest">Level 1</span>
+        <span id="l1-score" class="text-base font-black text-blue-700 tabular-nums">0</span>
       </div>
-      <div class="border-l border-gray-200"></div>
-      <div>
-        <p class="text-[10px] text-gray-500 uppercase tracking-wide">Level 2</p>
-        <p id="l2-score" class="text-sm font-bold text-ludon-green">0</p>
+      <div class="flex-1 bg-white border-2 border-emerald-200 rounded-xl px-3 py-2 flex items-center justify-between shadow-sm">
+        <span class="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Level 2</span>
+        <span id="l2-score" class="text-base font-black text-emerald-700 tabular-nums">0</span>
       </div>
-      <div class="border-l border-gray-200"></div>
-      <div>
-        <p class="text-[10px] text-gray-500 uppercase tracking-wide">Grand Total</p>
-        <p id="total-score" class="text-base font-bold text-ludon-red">0</p>
+      <div class="flex-1 bg-gradient-to-r from-amber-400 to-orange-500 rounded-xl px-3 py-2 flex items-center justify-between shadow-md">
+        <span class="text-[10px] font-black text-orange-900 uppercase tracking-widest">Total</span>
+        <span id="total-score" class="text-lg font-black text-blue-900 tabular-nums">0</span>
       </div>
     </div>
   </main>
+
+  <!-- Mirror total-score updates into the HUD chip too -->
+  <script is:inline>
+    (function () {
+      var src = document.getElementById('total-score');
+      var dst = document.getElementById('hud-total-score');
+      if (!src || !dst) return;
+      var obs = new MutationObserver(function () { dst.textContent = src.textContent; });
+      obs.observe(src, { childList: true, characterData: true, subtree: true });
+    })();
+  </script>
 
   <script is:inline>
     if (!sessionStorage.getItem("game-state")) {
@@ -136,27 +181,50 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
   </script>
 </Layout>
 
+<!-- Game-feel typeface for the L2 HUD heading -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" />
+
 <style>
+  /* Step indicator inside the dark HUD bar — small, glowing pills */
   .step-dot {
-    width: 32px;
-    height: 32px;
-    background-color: #d1d5db;
-    transition: background-color 0.3s, transform 0.3s;
+    width: 26px;
+    height: 26px;
+    background-color: rgba(255, 255, 255, 0.18);
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
   }
   .step-dot.active {
-    background-color: #4187a0;
-    transform: scale(1.15);
+    background-color: #fbbf24;
+    color: #1e3a8a !important;
+    border-color: #fde68a;
+    transform: scale(1.18);
+    box-shadow: 0 0 0 4px rgba(251, 191, 36, 0.25);
   }
   .step-dot.done {
     background-color: #10b981;
+    border-color: #6ee7b7;
   }
   .step-line {
     height: 3px;
-    background-color: #d1d5db;
+    background-color: rgba(255, 255, 255, 0.2);
     transition: background-color 0.3s;
+    margin: 0 2px;
+    border-radius: 2px;
   }
   .step-line.done {
     background-color: #10b981;
+  }
+
+  /* Subtle entrance animation for the workspace whenever a new step
+     renders — fade + slight upward slide. */
+  #step-container {
+    animation: l2-step-in 280ms cubic-bezier(.2,.7,.2,1);
+  }
+  @keyframes l2-step-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 </style>
 

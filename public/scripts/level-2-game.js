@@ -692,10 +692,10 @@
     html += '</div>';
     html += '<p class="text-gray-500 text-sm mb-4">Sum the bonding positions each ligand takes up. Tap the info pills for help.</p>';
 
-    // Table — only Ligand(s) + Type of denticity per latest spec.
-    // Players work out coordination sites / counts / contribution / total
-    // themselves before picking 3, 4, 5 or 6 below.
-    html += '<div class="overflow-x-auto mb-4 rounded-lg border border-gray-200">';
+    // Per latest spec: keep Ligand + Type of denticity + Denticity (d)
+    // + No. of ligand(s) (n). The "No. of coordination sites (d × n)"
+    // column is X'd out — students multiply themselves and sum to a CN.
+    html += '<div class="overflow-x-auto mb-3 rounded-lg border border-gray-200">';
     html += '<table class="w-full text-sm">';
     html += '<thead class="bg-[#4187a0] text-white"><tr>';
     html += '<th class="text-left px-3 py-2 font-semibold">Ligand(s)</th>';
@@ -703,15 +703,24 @@
     html += 'Type of denticity ';
     html += '<button type="button" class="ml-1 inline-flex items-center justify-center w-5 h-5 rounded-full bg-white/20 text-white text-xs font-bold hover:bg-white/30" onclick="window.__l2InfoBubble(\'denticity\')">i</button>';
     html += '</th>';
+    html += '<th class="text-center px-3 py-2 font-semibold">Denticity, d</th>';
+    html += '<th class="text-center px-3 py-2 font-semibold">No. of ligand(s), n</th>';
     html += '</tr></thead><tbody>';
     rows.forEach(function (r) {
-      var label = r.count > 1 ? (r.name + ' &times; ' + r.count) : r.name;
       html += '<tr class="border-t border-gray-100">';
-      html += '<td class="px-3 py-2 font-medium text-gray-800">' + label + '</td>';
+      html += '<td class="px-3 py-2 font-medium text-gray-800">' + r.name + '</td>';
       html += '<td class="text-center px-3 py-2">' + r.type.toLowerCase() + '</td>';
+      html += '<td class="text-center px-3 py-2">' + r.denticity + '</td>';
+      html += '<td class="text-center px-3 py-2">' + r.count + '</td>';
       html += '</tr>';
     });
     html += '</tbody></table></div>';
+
+    // Rule reminder so students know how to combine d and n.
+    html += '<div class="mb-4 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-xs">';
+    html += '<strong>Coordination number</strong> = sum of (denticity &times; count) for every ligand<br>';
+    html += 'Monodentate (d = 1) &nbsp;·&nbsp; Bidentate (d = 2)';
+    html += '</div>';
 
     // 4-option answer
     var opts = [3, 4, 5, 6];

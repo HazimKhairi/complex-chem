@@ -64,15 +64,17 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
         <p class="text-gray-400 text-center mt-20">Loading...</p>
       </div>
 
-      <!-- 3D Canvas (hidden until Step 5) -->
-      <div id="builder-container" class="hidden min-h-0 flex flex-col">
-        <div class="bg-white rounded-2xl shadow-md overflow-hidden flex-1 flex flex-col min-h-0">
-          <canvas id="three-canvas" class="w-full flex-1 min-h-[200px]" style="touch-action:none;"></canvas>
-          <div class="px-3 py-2 border-t border-gray-100">
+      <!-- 3D Canvas (hidden until Step 5). max-h-full + min-h-0 keep
+           the whole card capped to its grid cell so the score bar
+           never gets pushed below the viewport. -->
+      <div id="builder-container" class="hidden min-h-0 max-h-full flex flex-col">
+        <div class="bg-white rounded-2xl shadow-md overflow-hidden flex-1 flex flex-col min-h-0 max-h-full">
+          <canvas id="three-canvas" class="w-full flex-1 min-h-0" style="touch-action:none;"></canvas>
+          <div class="px-3 py-1.5 border-t border-gray-100 flex-shrink-0">
             <p class="text-[10px] text-gray-500 uppercase tracking-wide mb-1">Your Ligands — drag onto empty slots</p>
-            <div id="ligand-inventory" class="flex flex-wrap gap-1.5 justify-center min-h-[40px]"></div>
+            <div id="ligand-inventory" class="flex flex-wrap gap-1.5 justify-center min-h-[36px]"></div>
           </div>
-          <div class="px-3 py-2 border-t border-gray-100 flex justify-between items-center">
+          <div class="px-3 py-1.5 border-t border-gray-100 flex justify-between items-center flex-shrink-0">
             <div class="text-xs text-gray-600">Slots filled: <strong id="slots-filled">0</strong> / <strong id="slots-total">0</strong></div>
             <div class="flex gap-2">
               <button id="btn-reset-3d" class="px-3 py-1.5 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 text-xs font-semibold">Reset</button>

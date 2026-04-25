@@ -89,3 +89,23 @@ window.BoardPath = {
     return horseClassCaps.charAt(0).toLowerCase();
   }
 };
+
+// Auto-initialise on DOM ready so callers (movement scripts, watchdog,
+// auto-move) can rely on BoardPath.initialized === true. Tests call
+// init() manually with their own jsdom, so that path still works.
+(function () {
+  if (typeof window === 'undefined' || typeof document === 'undefined') return;
+  function tryInit() {
+    if (window.BoardPath.initialized) return;
+    // Wait until at least one path cell is in the DOM
+    if (!document.querySelector('td.r1, td.b1, td.y1, td.g1')) {
+      return setTimeout(tryInit, 50);
+    }
+    window.BoardPath.init();
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', tryInit, { once: true });
+  } else {
+    tryInit();
+  }
+})();

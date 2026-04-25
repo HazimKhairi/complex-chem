@@ -923,13 +923,26 @@ function moveDice() {
         z++;
         var stepsToTake = Math.min(6, Math.max(1, Number(randomDice) || 1));
         var prefix = identifyPlayer.substring(1);
+        var bp = window.BoardPath;
+        var useBP = bp && bp.initialized && bp.paths && bp.paths[prefix] && bp.paths[prefix].length > 0;
         var visited = [];
         var pos = 0;
         for (var i = 0; i < stepsToTake; i++) {
-          if (window.BoardPath && window.BoardPath.getNextPos) {
-            pos = window.BoardPath.getNextPos(prefix, pos);
+          if (useBP) {
+            pos = bp.getNextPos(prefix, pos);
+            var sf = 0;
+            while (!document.querySelector("td." + prefix + pos) && sf < 10) {
+              pos = bp.getNextPos(prefix, pos);
+              sf++;
+            }
           } else {
-            pos = pos + 1;
+            var next = pos + 1;
+            var sf2 = 0;
+            while (!document.querySelector("td." + prefix + next) && next <= 57 && sf2 < 10) {
+              next++;
+              sf2++;
+            }
+            pos = next;
           }
           visited.push(pos);
         }

@@ -17,13 +17,12 @@ describe('BoardPath', () => {
       expect(window.BoardPath).toBeDefined();
     });
 
-    it('should start uninitialized', () => {
-      // Reset and reload
+    it('should start uninitialized when no path cells exist', () => {
+      // Reset and reload WITHOUT building the board first — auto-init
+      // should defer until path cells appear in the DOM.
       delete window.BoardPath;
       document.body.innerHTML = '';
-      buildBoardDOM();
       loadScript('board-path.js');
-      // Before init, paths are empty
       expect(window.BoardPath.initialized).toBe(false);
     });
 

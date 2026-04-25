@@ -49,13 +49,31 @@ window.AutoMovePiece = {
 
       // Compute the path positions we'll visit. Step 0 = home (lastPos
       // 0 → first valid cell). Step 1..stepsToTake = subsequent cells.
+      // Wait for BoardPath to be initialized (DOM scan complete).
+      const bp = window.BoardPath;
+      const useBP = bp && bp.initialized && bp.paths && bp.paths[prefix] && bp.paths[prefix].length > 0;
+
       const visited = [];
       let pos = 0;
       for (let i = 0; i < stepsToTake; i++) {
-        if (window.BoardPath && window.BoardPath.getNextPos) {
-          pos = window.BoardPath.getNextPos(prefix, pos);
+        if (useBP) {
+          pos = bp.getNextPos(prefix, pos);
+          // getNextPos can fall back to currentPos+1 for unknown cells.
+          // Skip until we find a real cell (handles deeper gaps).
+          let safety = 0;
+          while (!document.querySelector(`td.${prefix}${pos}`) && safety < 10) {
+            pos = bp.getNextPos(prefix, pos);
+            safety++;
+          }
         } else {
-          pos = pos + 1;
+          // No BoardPath — manually skip absent cells
+          let next = pos + 1;
+          let safety = 0;
+          while (!document.querySelector(`td.${prefix}${next}`) && next <= 57 && safety < 10) {
+            next++;
+            safety++;
+          }
+          pos = next;
         }
         visited.push(pos);
       }

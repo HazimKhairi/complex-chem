@@ -935,27 +935,38 @@ function moveDice() {
         "." + userSelectedHorse == identifyPlayer + "h4"
       ) {
         z++;
-        var targetPos = Math.min(6, Math.max(1, Number(randomDice) || 1));
+        var stepsToTake = Math.min(6, Math.max(1, Number(randomDice) || 1));
+        var prefix = identifyPlayer.substring(1);
+        var visited = [];
+        var pos = 0;
+        for (var i = 0; i < stepsToTake; i++) {
+          if (window.BoardPath && window.BoardPath.getNextPos) {
+            pos = window.BoardPath.getNextPos(prefix, pos);
+          } else {
+            pos = pos + 1;
+          }
+          visited.push(pos);
+        }
+        var targetPos = visited[visited.length - 1];
+
         $("." + userSelectedHorse).remove();
         $("#player-" + x).find("div").removeClass("sixgif");
 
-        // Animated exit-from-home: walk the piece 1 → targetPos at 480 ms
-        // per step instead of jumping straight to targetPos.
-        var stepIdx = 1;
+        var stepIdx = 0;
         var imgHtml = `<img class="${userSelectedHorse} ${identifyColor}" src="horses/${identifyColor}.png">`;
         var posVar = `lastPos${userSelectedHorse.split(' ')[0].toUpperCase()}`;
-        function placeAt(pos) {
-          $(identifyPlayer + pos).append(imgHtml);
-          $(identifyPlayer + pos + " > img").css("opacity", "");
+        function placeAt(p) {
+          $(identifyPlayer + p).append(imgHtml);
+          $(identifyPlayer + p + " > img").css("opacity", "");
           if (window.AudioManager) window.AudioManager.play("horse-move");
-          mergeHorseClass = identifyPlayer + pos;
+          mergeHorseClass = identifyPlayer + p;
           mergeHorses();
         }
-        function removeAt(pos) {
-          $(`${identifyPlayer}${pos} img.${userSelectedHorse}`).remove();
+        function removeAt(p) {
+          $(`${identifyPlayer}${p} img.${userSelectedHorse}`).remove();
         }
-        placeAt(stepIdx);
-        window[posVar] = stepIdx;
+        placeAt(visited[stepIdx]);
+        window[posVar] = visited[stepIdx];
 
         function finishExit() {
           setTimeout(function () {
@@ -975,16 +986,16 @@ function moveDice() {
           }
         }
 
-        if (targetPos === 1) {
+        if (visited.length === 1) {
           finishExit();
         } else {
           window._moveInProgress = true;
           var exitTimer = setInterval(function () {
-            removeAt(stepIdx);
+            removeAt(visited[stepIdx]);
             stepIdx++;
-            placeAt(stepIdx);
-            window[posVar] = stepIdx;
-            if (stepIdx >= targetPos) {
+            placeAt(visited[stepIdx]);
+            window[posVar] = visited[stepIdx];
+            if (stepIdx >= visited.length - 1) {
               clearInterval(exitTimer);
               window._moveInProgress = false;
               finishExit();

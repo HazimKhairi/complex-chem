@@ -961,43 +961,53 @@ function moveDice() {
         "." + userSelectedHorse == identifyPlayer + "h4"
       ) {
         z++;
-        var targetPos = Math.min(6, Math.max(1, Number(randomDice) || 1));
+        var stepsToTake = Math.min(6, Math.max(1, Number(randomDice) || 1));
+        var prefix = identifyPlayer.substring(1); // ".g" → "g"
+        // Walk dice STEPS along the path, skipping corner gaps via BoardPath
+        var visited = [];
+        var pos = 0;
+        for (var i = 0; i < stepsToTake; i++) {
+          if (window.BoardPath && window.BoardPath.getNextPos) {
+            pos = window.BoardPath.getNextPos(prefix, pos);
+          } else {
+            pos = pos + 1;
+          }
+          visited.push(pos);
+        }
+        var targetPos = visited[visited.length - 1];
+
         $("." + userSelectedHorse).remove();
         $("#player-" + x).find("div").removeClass("sixgif");
 
-        // Animated exit: step the piece from cell 1 up to targetPos so
-        // the player sees it travel rather than flicker into place.
-        var stepIdx = 1;
         var imgHtml = `<img class="${userSelectedHorse} ${identifyColor}" src="horses/${identifyColor}.png">`;
-        function placeAt(pos) {
-          $(identifyPlayer + pos).append(imgHtml);
-          $(identifyPlayer + pos + " > img").css("opacity", "");
+        function placeAt(p) {
+          $(identifyPlayer + p).append(imgHtml);
+          $(identifyPlayer + p + " > img").css("opacity", "");
           if (window.AudioManager) window.AudioManager.play("horse-move");
-          mergeHorseClass = identifyPlayer + pos;
+          mergeHorseClass = identifyPlayer + p;
           mergeHorses();
         }
-        function removeAt(pos) {
-          $(`${identifyPlayer}${pos} img.${userSelectedHorse}`).remove();
+        function removeAt(p) {
+          $(`${identifyPlayer}${p} img.${userSelectedHorse}`).remove();
         }
 
-        // Drop on cell 1 to start the visible journey.
-        placeAt(stepIdx);
-        window[`lastPos${userSelectedHorse.split(' ')[0].toUpperCase()}`] = stepIdx;
+        var stepIdx = 0;
+        placeAt(visited[stepIdx]);
+        window[`lastPos${userSelectedHorse.split(' ')[0].toUpperCase()}`] = visited[stepIdx];
 
-        if (targetPos === 1) {
-          // Single-step exit, finish immediately.
-          finishExit(stepIdx);
+        if (visited.length === 1) {
+          finishExit(visited[stepIdx]);
         } else {
           window._moveInProgress = true;
           var exitTimer = setInterval(function () {
-            removeAt(stepIdx);
+            removeAt(visited[stepIdx]);
             stepIdx++;
-            placeAt(stepIdx);
-            window[`lastPos${userSelectedHorse.split(' ')[0].toUpperCase()}`] = stepIdx;
-            if (stepIdx >= targetPos) {
+            placeAt(visited[stepIdx]);
+            window[`lastPos${userSelectedHorse.split(' ')[0].toUpperCase()}`] = visited[stepIdx];
+            if (stepIdx >= visited.length - 1) {
               clearInterval(exitTimer);
               window._moveInProgress = false;
-              finishExit(stepIdx);
+              finishExit(visited[stepIdx]);
             }
           }, 480);
         }

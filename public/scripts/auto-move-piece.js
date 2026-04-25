@@ -40,27 +40,40 @@ window.AutoMovePiece = {
 
     console.log(`   Found piece in home:`, pieceInHome[0]);
 
-    // Execute movement (same logic as moveDice click handler)
+    // Execute movement — walk diceValue STEPS along the path, using
+    // BoardPath.getNextPos so that gap cells at perimeter corners are
+    // skipped (e.g. red path has no r6, jumps from r5 → r7).
     try {
-      // House rule: land directly on position = diceValue
-      const targetPos = Math.min(6, Math.max(1, diceValue));
-      const targetPathCell = `${identifyPlayer}${targetPos}`;
+      const stepsToTake = Math.min(6, Math.max(1, diceValue));
+      const prefix = identifyPlayer.substring(1); // ".r" → "r"
 
-      // SAFETY — if the target cell isn't in the DOM, DO NOT remove
-      // the piece from home. A missing cell used to cause the horse
-      // to silently disappear.
-      if ($(targetPathCell).length === 0) {
-        console.error(`❌ [AUTO-MOVE] Target cell ${targetPathCell} not found — aborting move, piece stays in home.`);
+      // Compute the path positions we'll visit. Step 0 = home (lastPos
+      // 0 → first valid cell). Step 1..stepsToTake = subsequent cells.
+      const visited = [];
+      let pos = 0;
+      for (let i = 0; i < stepsToTake; i++) {
+        if (window.BoardPath && window.BoardPath.getNextPos) {
+          pos = window.BoardPath.getNextPos(prefix, pos);
+        } else {
+          pos = pos + 1;
+        }
+        visited.push(pos);
+      }
+      const targetPos = visited[visited.length - 1];
+
+      // SAFETY — final landing cell must exist before we yank the piece
+      // from home. If it doesn't, abort; piece stays put.
+      const finalCell = `${identifyPlayer}${targetPos}`;
+      if ($(finalCell).length === 0) {
+        console.error(`❌ [AUTO-MOVE] Final cell ${finalCell} not in DOM — aborting move.`);
         return false;
       }
 
       // Remove piece from home
       $(horseDotClass).remove();
-
-      // Remove sixgif class
       $(`#player-${playerId}`).find("div").removeClass("sixgif");
 
-      console.log(`   Animating exit-from-home → ${targetPos} step(s)`);
+      console.log(`   Animating exit-from-home → ${stepsToTake} steps via cells [${visited.join(',')}]`);
 
       const imgHtml = `<img class="${horseClass} ${identifyColor}" src="horses/${identifyColor}.png">`;
       const posVarName = `lastPos${identifyPlayer.toUpperCase().substring(1)}H1`;
@@ -76,9 +89,10 @@ window.AutoMovePiece = {
         $(`${identifyPlayer}${pos} img.${horseClass}`).remove();
       };
 
-      let stepIdx = 1;
-      placeAt(stepIdx);
-      window[posVarName] = stepIdx;
+      // Drop on first visited cell
+      let stepIdx = 0;
+      placeAt(visited[stepIdx]);
+      window[posVarName] = visited[stepIdx];
 
       const finish = () => {
         setTimeout(function () {
@@ -92,16 +106,16 @@ window.AutoMovePiece = {
         console.log(`🎮 [AUTO-MOVE] Dispatched piece-moved: ${landedCellClass}`);
       };
 
-      if (targetPos === 1) {
+      if (visited.length === 1) {
         finish();
       } else {
         window._moveInProgress = true;
         const exitTimer = setInterval(() => {
-          removeAt(stepIdx);
+          removeAt(visited[stepIdx]);
           stepIdx++;
-          placeAt(stepIdx);
-          window[posVarName] = stepIdx;
-          if (stepIdx >= targetPos) {
+          placeAt(visited[stepIdx]);
+          window[posVarName] = visited[stepIdx];
+          if (stepIdx >= visited.length - 1) {
             clearInterval(exitTimer);
             window._moveInProgress = false;
             finish();

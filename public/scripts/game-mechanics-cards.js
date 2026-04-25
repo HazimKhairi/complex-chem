@@ -454,14 +454,19 @@ function handleQuestionAnswered(event) {
 }
 
 /**
- * Award question points to a player
+ * Award (or, with negative `points`, deduct) points for a player.
+ * Fate cards like "Minus Card" pass a negative value through this same
+ * function — clamp the running total to 0 so the score never goes
+ * negative.
  */
 function awardQuestionPoints(playerId, points, difficulty) {
-  gameState.playerPoints[playerId] += points;
+  const before = gameState.playerPoints[playerId] || 0;
+  gameState.playerPoints[playerId] = Math.max(0, before + points);
   updatePointsDisplay(playerId);
   saveState();
 
-  console.log(`💰 Player ${playerId} total points: ${gameState.playerPoints[playerId]}`);
+  const delta = gameState.playerPoints[playerId] - before;
+  console.log(`💰 Player ${playerId} ${delta >= 0 ? '+' : ''}${delta} pts → total: ${gameState.playerPoints[playerId]}`);
 }
 
 /**

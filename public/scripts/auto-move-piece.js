@@ -122,16 +122,16 @@ window.AutoMovePiece = {
    * Get player color
    */
   getPlayerColor(playerId) {
-    const colors = {1: 'red', 2: 'blue', 3: 'yellow', 4: 'green'};
-    return colors[playerId] || 'blue';
+    const colors = {1: 'green', 2: 'yellow', 3: 'red', 4: 'blue'};
+    return colors[playerId] || 'yellow';
   },
 
   /**
    * Get player identifier
    */
   getPlayerIdentifier(playerId) {
-    const identifiers = {1: '.r', 2: '.b', 3: '.y', 4: '.g'};
-    return identifiers[playerId] || '.b';
+    const identifiers = {1: '.g', 2: '.y', 3: '.r', 4: '.b'};
+    return identifiers[playerId] || '.y';
   }
 };
 

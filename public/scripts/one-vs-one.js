@@ -39,11 +39,18 @@ lastPosGH2 = 0;
 lastPosGH3 = 0;
 lastPosGH4 = 0;
 
+// New player→color mapping: P1=green, P2=yellow, P3=red, P4=blue.
+// Pass-and-play wizard always writes horse-1='green' for 1v1
+// (slots P1 vs P2). Legacy computer 1v1 component still writes
+// 'red' (slots P1+P4) or 'blue' (slots P2+P3).
 //Code for second horse combination of onevs1
 if (sessionStorage.getItem("one-vs-one-horse-1") == "blue") {
   x = 2;
   $("#player-2-name").text(sessionStorage.getItem("one-vs-one-player-1-name"));
   $("#player-3-name").text(sessionStorage.getItem("one-vs-one-player-2-name"));
+} else if (sessionStorage.getItem("one-vs-one-horse-1") == "green") {
+  $("#player-1-name").text(sessionStorage.getItem("one-vs-one-player-1-name"));
+  $("#player-2-name").text(sessionStorage.getItem("one-vs-one-player-2-name"));
 } else {
   $("#player-1-name").text(sessionStorage.getItem("one-vs-one-player-1-name"));
   $("#player-4-name").text(sessionStorage.getItem("one-vs-one-player-2-name"));
@@ -86,6 +93,21 @@ if (sessionStorage.getItem("one-vs-one-horse-1") == "red") {
 
   Player2Name = sessionStorage.getItem("one-vs-one-player-1-name");
   Player3Name = sessionStorage.getItem("one-vs-one-player-2-name");
+} else if (sessionStorage.getItem("one-vs-one-horse-1") == "green") {
+  // Pass-and-play wizard: P1 (green) vs P2 (yellow). Hide P3+P4.
+  $("#player-3-area").css("opacity", 0);
+  $("#player-4-area").css("opacity", 0);
+
+  $("#player-3 > table img").remove();
+  $("#player-4 > table img").remove();
+  $("#player-3 > p").css("opacity", 0);
+  $("#player-4 > p").css("opacity", 0);
+
+  $("#player-1 > p").text("Player 1");
+  $("#player-2 > p").text("Player 2");
+
+  Player1Name = sessionStorage.getItem("one-vs-one-player-1-name");
+  Player2Name = sessionStorage.getItem("one-vs-one-player-2-name");
 }
 
 //Code for playing game sound on game start
@@ -128,6 +150,9 @@ function transferDiceCode() {
     x = 2;
   } else if (x == 4 && sessionStorage.getItem("one-vs-one-horse-1") == "blue") {
     x = 2;
+  } else if (x == 3 && sessionStorage.getItem("one-vs-one-horse-1") == "green") {
+    // Pass-and-play wizard: P1 (green) vs P2 (yellow). Skip P3 → wrap to P1.
+    x = 1;
   }
 
   identifyPlayerInfo();
@@ -181,25 +206,25 @@ function identifyPlayerInfo() {
   identifyColor = ""; //Used to add color class to a horse
   accurateMoveHorseVal = ""; //Used in accurate move horse function
   if (x == 1) {
-    identifyPlayer = ".r";
-    identifyPlayer2 = "R"; // Used for highlighting horses
-    identifyColor = "red";
-    accurateMoveHorseVal = ".rh";
+    identifyPlayer = ".g";
+    identifyPlayer2 = "G"; // Used for highlighting horses
+    identifyColor = "green";
+    accurateMoveHorseVal = ".gh";
   } else if (x == 2) {
-    identifyPlayer = ".b";
-    identifyPlayer2 = "B";
-    identifyColor = "blue";
-    accurateMoveHorseVal = ".bh";
-  } else if (x == 3) {
     identifyPlayer = ".y";
     identifyPlayer2 = "Y";
     identifyColor = "yellow";
     accurateMoveHorseVal = ".yh";
+  } else if (x == 3) {
+    identifyPlayer = ".r";
+    identifyPlayer2 = "R";
+    identifyColor = "red";
+    accurateMoveHorseVal = ".rh";
   } else if (x == 4) {
-    identifyPlayer = ".g";
-    identifyPlayer2 = "G";
-    identifyColor = "green";
-    accurateMoveHorseVal = ".gh";
+    identifyPlayer = ".b";
+    identifyPlayer2 = "B";
+    identifyColor = "blue";
+    accurateMoveHorseVal = ".bh";
   }
 }
 
@@ -1157,7 +1182,19 @@ $("#winners #winner-3").remove();
 $("#winners #winner-4").remove();
 
 function findWinner() {
-  if (identifyPlayer == ".r") {
+  // Active-pair detection depends on which 1v1 combo is in play:
+  //   - Pass-and-play wizard: horse-1='green' → P1 (green) vs P2 (yellow)
+  //   - Legacy computer red-green combo: horse-1='red' → P1 (green) vs P4 (blue)
+  //   - Legacy computer blue-yellow combo: horse-1='blue' → P2 (yellow) vs P3 (red)
+  const horse1 = sessionStorage.getItem("one-vs-one-horse-1");
+  if (horse1 == "green") {
+    // P1 (.g) vs P2 (.y)
+    if (identifyPlayer == ".g") {
+      gameParticipants = [".g57", ".y57"];
+    } else if (identifyPlayer == ".y") {
+      gameParticipants = [".y57", ".g57"];
+    }
+  } else if (identifyPlayer == ".r") {
     gameParticipants = [".r57", ".g57"]; // Game participants excludes current player or player with dice
   } else if (identifyPlayer == ".g") {
     gameParticipants = [".g57", ".r57"];
@@ -1185,7 +1222,20 @@ function findWinner() {
         "background-position": "center",
       });
 
-      if (x == 1) {
+      // Active-pair partner depends on the 1v1 combo. Pass-and-play
+      // wizard pairs P1↔P2; legacy computer combos pair P1↔P4 or P2↔P3.
+      const horse1Pair = sessionStorage.getItem("one-vs-one-horse-1");
+      if (horse1Pair == "green" && x == 1) {
+        firstWinner = Player1Name;
+        secondWinner = Player2Name;
+        xOfFirst = x;
+        xOfSecond = 2;
+      } else if (horse1Pair == "green" && x == 2) {
+        firstWinner = Player2Name;
+        secondWinner = Player1Name;
+        xOfFirst = x;
+        xOfSecond = 1;
+      } else if (x == 1) {
         firstWinner = Player1Name;
         secondWinner = Player4Name;
         xOfFirst = x;

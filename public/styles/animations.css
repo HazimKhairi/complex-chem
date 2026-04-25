@@ -711,7 +711,9 @@
 
 /* Ensure middle row extends properly on all devices */
 .middle-row-red,
-.middle-row-green {
+.middle-row-green,
+.middle-row-blue,
+.middle-row-yellow {
   white-space: nowrap;
 }
 

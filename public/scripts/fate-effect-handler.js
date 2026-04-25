@@ -61,16 +61,16 @@ window.FateEffectHandler = {
    * Helper: Get player color identifier
    */
   getPlayerColor(playerId) {
-    const colors = { 1: 'R', 2: 'B', 3: 'Y', 4: 'G' };
-    return colors[playerId] || 'B';
+    const colors = { 1: 'G', 2: 'Y', 3: 'R', 4: 'B' };
+    return colors[playerId] || 'Y';
   },
 
   /**
    * Helper: Get player color class
    */
   getPlayerColorClass(playerId) {
-    const colors = { 1: 'red', 2: 'blue', 3: 'yellow', 4: 'green' };
-    return colors[playerId] || 'blue';
+    const colors = { 1: 'green', 2: 'yellow', 3: 'red', 4: 'blue' };
+    return colors[playerId] || 'yellow';
   },
 
   /**

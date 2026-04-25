@@ -10,10 +10,10 @@
 
   // Color mapping for player IDs
   const PLAYER_COLORS = {
-    1: 'r', // Red
-    2: 'b', // Blue
-    3: 'y', // Yellow
-    4: 'g'  // Green
+    1: 'g', // Green
+    2: 'y', // Yellow
+    3: 'r', // Red
+    4: 'b'  // Blue
   };
 
   const HOME_POSITION = 57; // All pieces must reach position 57 to be home
@@ -104,7 +104,14 @@
       const player1Name = sessionStorage.getItem('one-vs-one-player-1-name');
       const player2Name = sessionStorage.getItem('one-vs-one-player-2-name');
 
-      if (horse1 === 'red') {
+      // New player→color mapping: P1=green, P2=yellow, P3=red, P4=blue.
+      // Pass-and-play wizard always writes horse-1='green' for 1v1
+      // (P1 vs P2). Legacy computer 1v1 component still writes
+      // 'red'/'blue' for its red-green / blue-yellow combos.
+      if (horse1 === 'green') {
+        if (playerId === 1) return player1Name || 'Player 1';
+        if (playerId === 2) return player2Name || 'Player 2';
+      } else if (horse1 === 'red') {
         if (playerId === 1) return player1Name || 'Player 1';
         if (playerId === 4) return player2Name || 'Player 2';
       } else if (horse1 === 'blue') {
@@ -145,12 +152,13 @@
     const avatar = sessionStorage.getItem(`player-${playerId}-avatar`);
     if (avatar) return avatar;
 
-    // Default avatars based on player color
+    // Default avatars based on player color.
+    // New player→color mapping: P1=green, P2=yellow, P3=red, P4=blue.
     const colorAvatars = {
-      1: '/avatars/red-player.png',
-      2: '/avatars/blue-player.png',
-      3: '/avatars/yellow-player.png',
-      4: '/avatars/green-player.png'
+      1: '/avatars/green-player.png',
+      2: '/avatars/yellow-player.png',
+      3: '/avatars/red-player.png',
+      4: '/avatars/blue-player.png'
     };
 
     return colorAvatars[playerId] || '/avatars/default.png';

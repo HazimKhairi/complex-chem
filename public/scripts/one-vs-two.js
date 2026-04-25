@@ -183,25 +183,25 @@ function identifyPlayerInfo() {
   identifyColor = ""; //Used to add color class to a horse
   accurateMoveHorseVal = ""; //Used in accurate move horse function
   if (x == 1) {
-    identifyPlayer = ".r";
-    identifyPlayer2 = "R"; // Used for highlighting horses
-    identifyColor = "red";
-    accurateMoveHorseVal = ".rh";
+    identifyPlayer = ".g";
+    identifyPlayer2 = "G"; // Used for highlighting horses
+    identifyColor = "green";
+    accurateMoveHorseVal = ".gh";
   } else if (x == 2) {
-    identifyPlayer = ".b";
-    identifyPlayer2 = "B";
-    identifyColor = "blue";
-    accurateMoveHorseVal = ".bh";
-  } else if (x == 3) {
     identifyPlayer = ".y";
     identifyPlayer2 = "Y";
     identifyColor = "yellow";
     accurateMoveHorseVal = ".yh";
+  } else if (x == 3) {
+    identifyPlayer = ".r";
+    identifyPlayer2 = "R";
+    identifyColor = "red";
+    accurateMoveHorseVal = ".rh";
   } else if (x == 4) {
-    identifyPlayer = ".g";
-    identifyPlayer2 = "G";
-    identifyColor = "green";
-    accurateMoveHorseVal = ".gh";
+    identifyPlayer = ".b";
+    identifyPlayer2 = "B";
+    identifyColor = "blue";
+    accurateMoveHorseVal = ".bh";
   }
 }
 

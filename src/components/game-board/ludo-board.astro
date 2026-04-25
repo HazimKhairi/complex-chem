@@ -13,9 +13,9 @@ import PlayerHome from "./player-home.astro";
 
 <section id="ludo-board" class="mt-10 mb-5">
   <div class="flex justify-center w-full game-row" id="top-game-row">
-    <PlayerHome id={1} horseImg={RedHorseImg} horseColor="red" />
+    <PlayerHome id={1} horseImg={GreenHorseImg} horseColor="green" />
     <BoardBlueMiddlePath />
-    <PlayerHome id={2} horseImg={BlueHorseImg} horseColor="blue" />
+    <PlayerHome id={2} horseImg={YellowHorseImg} horseColor="yellow" />
   </div>
 
   <div id="middle-game-row" class="flex w-full justify-center">
@@ -25,8 +25,8 @@ import PlayerHome from "./player-home.astro";
   </div>
 
   <div class="flex justify-center w-full game-row" id="bottom-game-row">
-    <PlayerHome id={3} horseImg={YellowHorseImg} horseColor="yellow" />
+    <PlayerHome id={3} horseImg={RedHorseImg} horseColor="red" />
     <BoardYellowMiddlePath />
-    <PlayerHome id={4} horseImg={GreenHorseImg} horseColor="green" />
+    <PlayerHome id={4} horseImg={BlueHorseImg} horseColor="blue" />
   </div>
 </section>

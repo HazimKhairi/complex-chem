@@ -31,7 +31,7 @@ import CharacterPicker from "./character-picker.astro";
 </section>
 
 <script>
-  // 3-player slots auto-assigned: Player 1 = red, Player 2 = blue, Player 3 = yellow.
+  // 3-player slots auto-assigned: Player 1 = green, Player 2 = yellow, Player 3 = red.
   // Colour choice is hidden from the user; blook picker drives visuals.
   const p1Input = document.getElementById("one-vs-two-p1-name") as HTMLInputElement | null;
   const p2Input = document.getElementById("one-vs-two-p2-name") as HTMLInputElement | null;
@@ -39,13 +39,13 @@ import CharacterPicker from "./character-picker.astro";
   const startButton = document.getElementById("start-game-one-vs-two") as HTMLButtonElement | null;
 
   // Fixed colour assignment — legacy game logic still reads these keys.
-  sessionStorage.setItem("one-vs-two-player-1", "1"); // red
-  sessionStorage.setItem("one-vs-two-player-2", "2"); // blue
-  sessionStorage.setItem("one-vs-two-player-3", "3"); // yellow
-  sessionStorage.setItem("one-vs-two-not-selected-player", "4"); // green unused
-  sessionStorage.setItem("game-participants-1", ".r57");
-  sessionStorage.setItem("game-participants-2", ".b57");
-  sessionStorage.setItem("game-participants-3", ".y57");
+  sessionStorage.setItem("one-vs-two-player-1", "1"); // green
+  sessionStorage.setItem("one-vs-two-player-2", "2"); // yellow
+  sessionStorage.setItem("one-vs-two-player-3", "3"); // red
+  sessionStorage.setItem("one-vs-two-not-selected-player", "4"); // blue unused
+  sessionStorage.setItem("game-participants-1", ".g57");
+  sessionStorage.setItem("game-participants-2", ".y57");
+  sessionStorage.setItem("game-participants-3", ".r57");
 
   function saveNames() {
     sessionStorage.setItem("one-vs-two-player-1-name", p1Input?.value?.trim() || "Player 1");

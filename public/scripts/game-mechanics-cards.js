@@ -1259,10 +1259,10 @@ function restorePiecePositions() {
 
   // Map player numbers to their color prefixes
   const playerColors = {
-    1: 'r', // red
-    2: 'b', // blue
-    3: 'y', // yellow
-    4: 'g'  // green
+    1: 'g', // green
+    2: 'y', // yellow
+    3: 'r', // red
+    4: 'b'  // blue
   };
 
   Object.keys(gameState.piecePositions).forEach(key => {

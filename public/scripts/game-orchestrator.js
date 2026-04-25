@@ -125,72 +125,52 @@ function handlePieceLanded(playerId, landedCell) {
   orchestratorState.currentPlayer = playerId;
   orchestratorState.lastLandedCell = landedCell;
 
-  // Step 1: Get cell element and detect tile type
-  console.log("🔍 [ORCHESTRATOR] Step 1: Detecting tile type...");
+  try {
+    // Step 1: Get cell element and detect tile type
+    console.log("🔍 [ORCHESTRATOR] Step 1: Detecting tile type...");
 
-  // Get tile info using TileDetector
-  // landedCell can be either a class string (e.g., ".r5", "r5") or an element
-  let tileInfo = null;
-  let tileType = "normal";
+    // Get tile info using TileDetector
+    // landedCell can be either a class string (e.g., ".r5", "r5") or an element
+    let tileInfo = null;
+    let tileType = "normal";
 
-  if (typeof landedCell === "string") {
-    // Remove leading dot if present
-    const className = landedCell.startsWith(".") ? landedCell.substring(1) : landedCell;
-    tileInfo = window.TileDetector.getTileByClassName(className);
+    if (typeof landedCell === "string") {
+      // Remove leading dot if present
+      const className = landedCell.startsWith(".") ? landedCell.substring(1) : landedCell;
+      tileInfo = window.TileDetector.getTileByClassName(className);
 
-    if (tileInfo) {
-      tileType = tileInfo.type;
-    } else {
-      console.warn(`⚠️ [ORCHESTRATOR] Could not find tile with class: ${className}`);
+      if (tileInfo) {
+        tileType = tileInfo.type;
+      } else {
+        console.warn(`⚠️ [ORCHESTRATOR] Could not find tile with class: ${className}`);
+      }
+    } else if (landedCell && landedCell.tagName === "TD") {
+      // It's already a cell element
+      tileType = window.TileDetector.getTileType(landedCell);
     }
-  } else if (landedCell && landedCell.tagName === "TD") {
-    // It's already a cell element
-    tileType = window.TileDetector.getTileType(landedCell);
-  }
 
-  console.log(`   Tile type: ${tileType}`);
+    console.log(`   Tile type: ${tileType}`);
 
-  // Step 2: Check if tile requires a card modal
-  if (tileType === "normal" || tileType === "safe" || tileType === "start" || tileType === "home") {
-    console.log(`✅ [ORCHESTRATOR] Normal tile - no card needed`);
-    // No modal needed, progress turn immediately
-    progressTurn();
-    return;
-  }
-
-  // Step 3: Show appropriate card modal
-  console.log(`🎴 [ORCHESTRATOR] Step 2: Showing ${tileType} modal...`);
-  orchestratorState.awaitingModalClose = true;
-
-  switch (tileType) {
-    case "ligand":
-      console.log("🧪 [ORCHESTRATOR] Triggering ligand collection");
-      // Pass the cell element to extract specific ligand name
-      // tileInfo.element is set when landedCell is a string (most common case)
-      // landedCell is used directly when it's already a TD element
-      const cellElement = tileInfo?.element || (landedCell?.tagName === 'TD' ? landedCell : null);
-      console.log(`   Cell element for ligand:`, cellElement);
-      window.GameMechanics.collectLigand(playerId, cellElement);
-      break;
-
-    case "question":
-      console.log("❓ [ORCHESTRATOR] Triggering question card");
-      const tileColor = tileInfo?.backgroundColor || null;
-      if (tileColor) console.log(`   Tile color: ${tileColor}`);
-      window.GameMechanics.showQuestion(playerId, tileColor);
-      break;
-
-    case "fate":
-      console.log("🔺 [ORCHESTRATOR] Triggering fate card");
-      window.GameMechanics.showFate(playerId);
-      break;
-
-    default:
-      console.warn(`⚠️ [ORCHESTRATOR] Unknown tile type: ${tileType}`);
+    // Step 2: Check if tile requires a card modal
+    if (tileType === "normal" || tileType === "safe" || tileType === "start" || tileType === "home") {
+      console.log(`✅ [ORCHESTRATOR] Normal tile - no card needed`);
+      // No modal needed, progress turn immediately
       progressTurn();
-  }
+      return;
+    }
 
-  console.log("⏳ [ORCHESTRATOR] Waiting for modal to close...");
+    // Modal showing is now handled directly by game-mechanics-cards.js
+    // via its own piece-moved listener (more reliable than orchestrator chain)
+    // Orchestrator just handles turn progression via modal close events
+    console.log(`🎴 [ORCHESTRATOR] Special tile: ${tileType} - modal handled by game-mechanics-cards.js`);
+    orchestratorState.awaitingModalClose = true;
+
+    console.log("⏳ [ORCHESTRATOR] Waiting for modal to close...");
+  } catch (error) {
+    console.error("❌ [ORCHESTRATOR] Error handling piece landing:", error);
+    orchestratorState.isProcessing = false;
+    orchestratorState.awaitingModalClose = false;
+  }
 }
 
 /**
@@ -216,26 +196,31 @@ function handleModalClosed() {
 function progressTurn() {
   console.log("\n⏭️ [ORCHESTRATOR] === FINISHING TURN ===");
 
-  // Step 3: Check for win condition
-  console.log("🏆 [ORCHESTRATOR] Step 3: Checking win condition...");
-  const winner = window.WinChecker.checkWinCondition();
+  try {
+    // Step 3: Check for win condition
+    console.log("🏆 [ORCHESTRATOR] Step 3: Checking win condition...");
+    const winner = window.WinChecker.checkWinCondition();
 
-  if (winner) {
-    console.log(`🎉 [ORCHESTRATOR] WINNER DETECTED: Player ${winner}!`);
+    if (winner) {
+      console.log(`🎉 [ORCHESTRATOR] WINNER DETECTED: Player ${winner}!`);
+      orchestratorState.isProcessing = false;
+      return;
+    }
+
+    // NOTE: We do NOT call TurnManager.nextTurn() here because:
+    // - Movement scripts already set window.x to next player after piece lands
+    // - TurnManager continuous sync (every 100ms) automatically detects this
+    // - Calling nextTurn() here would cause DOUBLE advancement (skip a player)
+
+    console.log("✅ [ORCHESTRATOR] Turn progression handled by movement script + continuous sync");
+
+    orchestratorState.currentPlayer = window.TurnManager.getCurrentPlayer();
+  } catch (error) {
+    console.error("❌ [ORCHESTRATOR] Error in progressTurn:", error);
+  } finally {
     orchestratorState.isProcessing = false;
-    return;
+    orchestratorState.lastLandedCell = null;
   }
-
-  // NOTE: We do NOT call TurnManager.nextTurn() here because:
-  // - Movement scripts already set window.x to next player after piece lands
-  // - TurnManager continuous sync (every 100ms) automatically detects this
-  // - Calling nextTurn() here would cause DOUBLE advancement (skip a player)
-
-  console.log("✅ [ORCHESTRATOR] Turn progression handled by movement script + continuous sync");
-
-  orchestratorState.currentPlayer = window.TurnManager.getCurrentPlayer();
-  orchestratorState.isProcessing = false;
-  orchestratorState.lastLandedCell = null;
 
   console.log("✅ [ORCHESTRATOR] Turn complete - ready for next move");
   console.log("==========================================\n");

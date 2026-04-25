@@ -54,9 +54,9 @@ describe('WinChecker', () => {
     });
 
     it('should count pieces in home cell', () => {
-      const homeCell = document.querySelector('td.r57');
+      const homeCell = document.querySelector('td.g57');
       const img = document.createElement('img');
-      img.classList.add('rh1');
+      img.classList.add('gh1');
       homeCell.appendChild(img);
       expect(window.WinChecker.getPiecesInHome(1)).toBe(1);
     });
@@ -73,7 +73,7 @@ describe('WinChecker', () => {
     });
 
     it('should return true when piece is in home (single piece mode)', () => {
-      const homeCell = document.querySelector('td.r57');
+      const homeCell = document.querySelector('td.g57');
       homeCell.appendChild(document.createElement('img'));
       expect(window.WinChecker.hasPlayerWon(1)).toBe(true);
     });
@@ -134,7 +134,7 @@ describe('WinChecker', () => {
 
   describe('checkWinCondition', () => {
     it('should detect new winner', () => {
-      const homeCell = document.querySelector('td.r57');
+      const homeCell = document.querySelector('td.g57');
       homeCell.appendChild(document.createElement('img'));
       const found = window.WinChecker.checkWinCondition();
       expect(found).toBe(true);
@@ -147,16 +147,16 @@ describe('WinChecker', () => {
 
     it('should end game when required winners reached (1v1 = 2)', () => {
       sessionStorage.setItem('game-option', 'one-vs-one');
-      document.querySelector('td.r57').appendChild(document.createElement('img'));
       document.querySelector('td.g57').appendChild(document.createElement('img'));
+      document.querySelector('td.b57').appendChild(document.createElement('img'));
       window.WinChecker.checkWinCondition();
       expect(window.WinChecker.isGameEnded()).toBe(true);
     });
 
     it('should return false after game ended', () => {
       sessionStorage.setItem('game-option', 'one-vs-one');
-      document.querySelector('td.r57').appendChild(document.createElement('img'));
       document.querySelector('td.g57').appendChild(document.createElement('img'));
+      document.querySelector('td.b57').appendChild(document.createElement('img'));
       window.WinChecker.checkWinCondition();
       expect(window.WinChecker.checkWinCondition()).toBe(false);
     });
@@ -171,7 +171,7 @@ describe('WinChecker', () => {
     });
 
     it('should include correct per-player info', () => {
-      const homeCell = document.querySelector('td.r57');
+      const homeCell = document.querySelector('td.g57');
       homeCell.appendChild(document.createElement('img'));
       window.WinChecker.checkWinCondition();
 

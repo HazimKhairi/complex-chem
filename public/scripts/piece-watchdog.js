@@ -19,8 +19,8 @@
   // Only run on game-board pages
   if (!/game-board/.test(location.pathname)) return;
 
-  var COLOR_FOR_PLAYER = { 1: 'red', 2: 'blue', 3: 'yellow', 4: 'green' };
-  var LETTER_FOR_PLAYER = { 1: 'r', 2: 'b', 3: 'y', 4: 'g' };
+  var COLOR_FOR_PLAYER = { 1: 'green', 2: 'yellow', 3: 'red', 4: 'blue' };
+  var LETTER_FOR_PLAYER = { 1: 'g', 2: 'y', 3: 'r', 4: 'b' };
 
   function getActivePlayerIds() {
     try {
@@ -31,11 +31,12 @@
     } catch (e) {}
     var opt = sessionStorage.getItem('game-option');
     if (opt === 'solo') {
-      var horse = sessionStorage.getItem('solo-horse') || 'red';
-      var map = { red: 1, blue: 2, yellow: 3, green: 4 };
+      var horse = sessionStorage.getItem('solo-horse') || 'green';
+      var map = { red: 3, blue: 4, yellow: 2, green: 1 };
       return [map[horse] || 1];
     }
-    if (opt === 'one-vs-one') return [1, 4];
+    // Pass-and-play 1v1 wizard pairs P1 (green) vs P2 (yellow).
+    if (opt === 'one-vs-one') return [1, 2];
     if (opt === 'one-vs-two') return [1, 2, 3];
     if (opt === 'one-vs-three') return [1, 2, 3, 4];
     return [];

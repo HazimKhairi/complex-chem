@@ -9,7 +9,7 @@ import { QUESTION_CARDS_IMAGE } from "../data/question-cards-image";
 const GAME_STATE_KEY = "complex-chem-game-state";
 
 export function initializeGame(playerCount: 2 | 3 | 4, playerNames: string[]): GameState {
-  const colors: PlayerColor[] = ["red", "blue", "yellow", "green"];
+  const colors: PlayerColor[] = ["green", "yellow", "red", "blue"];
 
   const players: Player[] = [];
   for (let i = 0; i < playerCount; i++) {

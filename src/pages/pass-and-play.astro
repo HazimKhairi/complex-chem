@@ -184,10 +184,10 @@ import { CHARACTERS } from "../data/characters";
   type ModeId = "solo" | "one-vs-one" | "one-vs-two" | "one-vs-three";
 
   const MODE_TO_COLORS: Record<ModeId, string[]> = {
-    "solo":         ["red"],
-    "one-vs-one":   ["red", "green"],
-    "one-vs-two":   ["red", "green", "blue"],
-    "one-vs-three": ["red", "green", "blue", "yellow"],
+    "solo":         ["green"],
+    "one-vs-one":   ["green", "yellow"],
+    "one-vs-two":   ["green", "yellow", "red"],
+    "one-vs-three": ["green", "yellow", "red", "blue"],
   };
 
   const COLOR_LABEL: Record<string, string> = {
@@ -326,8 +326,8 @@ import { CHARACTERS } from "../data/characters";
       sessionStorage.setItem("solo-horse", colors[0]);
       sessionStorage.setItem("character-p1", p.characterId);
       // Legacy keys expected by one-vs-one.js / solo-patch.js
-      sessionStorage.setItem("one-vs-one-horse-1", "red");
-      sessionStorage.setItem("one-vs-one-horse-2", "green");
+      sessionStorage.setItem("one-vs-one-horse-1", "green");
+      sessionStorage.setItem("one-vs-one-horse-2", "yellow");
       sessionStorage.setItem("one-vs-one-player-1-name", p.name);
       sessionStorage.setItem("one-vs-one-player-2-name", "");
     } else if (currentMode === "one-vs-one") {

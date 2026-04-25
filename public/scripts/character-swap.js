@@ -15,10 +15,10 @@
 
   // Map board class (set by one-vs-*.js) to player id
   var CLASS_TO_PLAYER = {
-    'rh1': 1, 'rh2': 1, 'rh3': 1, 'rh4': 1,
-    'bh1': 2, 'bh2': 2, 'bh3': 2, 'bh4': 2,
-    'yh1': 3, 'yh2': 3, 'yh3': 3, 'yh4': 3,
-    'gh1': 4, 'gh2': 4, 'gh3': 4, 'gh4': 4,
+    'gh1': 1, 'gh2': 1, 'gh3': 1, 'gh4': 1,
+    'yh1': 2, 'yh2': 2, 'yh3': 2, 'yh4': 2,
+    'rh1': 3, 'rh2': 3, 'rh3': 3, 'rh4': 3,
+    'bh1': 4, 'bh2': 4, 'bh3': 4, 'bh4': 4,
   };
 
   // Default blook per player slot if none chosen — cycles through the roster

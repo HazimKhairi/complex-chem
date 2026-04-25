@@ -24,10 +24,10 @@ import CharacterPicker from "./character-picker.astro";
 </section>
 
 <script>
-  // Solo mode defaults to playing as the red slot (player 1) behind the
+  // Solo mode defaults to playing as the green slot (player 1) behind the
   // scenes. The chosen blook replaces the horse visually via
   // character-swap.js, so the colour is never shown to the user.
-  const SOLO_COLOUR = "red";
+  const SOLO_COLOUR = "green";
 
   const nameInput = document.getElementById("solo-player-name") as HTMLInputElement | null;
   const startButton = document.getElementById("start-solo-game") as HTMLButtonElement | null;
@@ -48,8 +48,8 @@ import CharacterPicker from "./character-picker.astro";
     sessionStorage.setItem("solo-horse", SOLO_COLOUR);
 
     // Keys expected by the legacy one-vs-one.js / solo-patch.js
-    sessionStorage.setItem("one-vs-one-horse-1", "red");
-    sessionStorage.setItem("one-vs-one-horse-2", "green");
+    sessionStorage.setItem("one-vs-one-horse-1", "green");
+    sessionStorage.setItem("one-vs-one-horse-2", "yellow");
     sessionStorage.setItem("one-vs-one-player-1-name", name);
     sessionStorage.setItem("one-vs-one-player-2-name", "");
 

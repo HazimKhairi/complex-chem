@@ -38,15 +38,15 @@ import CharacterPicker from "./character-picker.astro";
 </section>
 
 <script>
-  // 2-player game uses slots Player 1 (red) and Player 2 (green)
+  // 2-player game uses slots Player 1 (green) and Player 2 (yellow)
   // behind the scenes. Blook character picker drives the visual.
   const p1Input = document.getElementById("one-vs-one-p1-name") as HTMLInputElement | null;
   const p2Input = document.getElementById("one-vs-one-p2-name") as HTMLInputElement | null;
   const startButton = document.getElementById("start-game") as HTMLButtonElement | null;
 
-  // Default colour pair — fixed to red (slot 1) vs green (slot 4)
-  sessionStorage.setItem("one-vs-one-horse-1", "red");
-  sessionStorage.setItem("one-vs-one-horse-2", "green");
+  // Default colour pair — fixed to green (slot 1) vs yellow (slot 2)
+  sessionStorage.setItem("one-vs-one-horse-1", "green");
+  sessionStorage.setItem("one-vs-one-horse-2", "yellow");
 
   function saveNames() {
     sessionStorage.setItem("one-vs-one-player-1-name", p1Input?.value?.trim() || "Player 1");

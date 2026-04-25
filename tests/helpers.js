@@ -86,9 +86,9 @@ export function buildPlayerAreas() {
     homeCell.classList.add('bg-gray-200');
 
     const horseImg = document.createElement('img');
-    const prefixes = { 1: 'r', 2: 'b', 3: 'y', 4: 'g' };
+    const prefixes = { 1: 'g', 2: 'y', 3: 'r', 4: 'b' };
     horseImg.classList.add(`${prefixes[i]}h1`);
-    const colors = { 1: 'red', 2: 'blue', 3: 'yellow', 4: 'green' };
+    const colors = { 1: 'green', 2: 'yellow', 3: 'red', 4: 'blue' };
     horseImg.classList.add(colors[i]);
     horseImg.src = `horses/${colors[i]}.png`;
     homeCell.appendChild(horseImg);

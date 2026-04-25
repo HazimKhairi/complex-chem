@@ -635,20 +635,28 @@
 
     if (gameOption === 'solo') {
       state.gameMode = 'solo';
-      const soloHorse = sessionStorage.getItem('solo-horse') || 'red';
-      const horseToPlayer = { red: 1, blue: 2, yellow: 3, green: 4 };
+      // New player→color mapping: P1=green, P2=yellow, P3=red, P4=blue.
+      const soloHorse = sessionStorage.getItem('solo-horse') || 'green';
+      const horseToPlayer = { green: 1, yellow: 2, red: 3, blue: 4 };
       const soloPlayer = horseToPlayer[soloHorse] || 1;
       setActivePlayers([soloPlayer]);
     } else if (gameOption === 'one-vs-one') {
       state.gameMode = '1v1';
       const horse1 = sessionStorage.getItem('one-vs-one-horse-1');
 
-      if (horse1 === 'red') {
-        setActivePlayers([1, 4]); // Red vs Green
+      // Pass-and-play wizard writes 'green' (P1 vs P2). Legacy
+      // computer 1v1 component still writes 'red' (P1+P4 in old
+      // mapping, the red-green combo) or 'blue' (P2+P3, the
+      // blue-yellow combo) — kept for backwards compat with that
+      // unmaintained UI path.
+      if (horse1 === 'green') {
+        setActivePlayers([1, 2]); // Green vs Yellow (wizard default)
+      } else if (horse1 === 'red') {
+        setActivePlayers([1, 4]);
       } else if (horse1 === 'blue') {
-        setActivePlayers([2, 3]); // Blue vs Yellow
+        setActivePlayers([2, 3]);
       } else {
-        setActivePlayers([1, 4]); // Default
+        setActivePlayers([1, 2]); // Default to wizard pairing
       }
     } else if (gameOption === 'one-vs-two') {
       state.gameMode = '1v2';

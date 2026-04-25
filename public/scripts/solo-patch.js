@@ -17,7 +17,7 @@
   var soloName = sessionStorage.getItem("solo-player-name") || "Player 1";
 
   // Color → player number (matches game-board.astro layout)
-  var horseToPlayer = { red: 1, blue: 2, yellow: 3, green: 4 };
+  var horseToPlayer = { red: 3, blue: 4, yellow: 2, green: 1 };
   var soloPlayer = horseToPlayer[soloHorse] || 1;
 
   // Mark solo mode globally for any listener

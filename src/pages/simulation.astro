@@ -93,13 +93,16 @@ const featuredBlooks = CHARACTERS.slice(0, 8);
     // Clear any prior state
     sessionStorage.clear();
 
-    // Solo-mode config (piggybacks on solo-patch.js)
+    // Solo-mode config (piggybacks on solo-patch.js).
+    // After the player→colour remap, P1 = green; the solo player is
+    // therefore "green" so character-p1 (which is the blook we just
+    // set) is the right key for the podium / character-swap.
     sessionStorage.setItem("game-option", "solo");
     sessionStorage.setItem("solo-mode", "true");
-    sessionStorage.setItem("solo-horse", "red");
+    sessionStorage.setItem("solo-horse", "green");
     sessionStorage.setItem("solo-player-name", name);
-    sessionStorage.setItem("one-vs-one-horse-1", "red");
-    sessionStorage.setItem("one-vs-one-horse-2", "green");
+    sessionStorage.setItem("one-vs-one-horse-1", "green");
+    sessionStorage.setItem("one-vs-one-horse-2", "yellow");
     sessionStorage.setItem("one-vs-one-player-1-name", name);
     sessionStorage.setItem("one-vs-one-player-2-name", "");
     sessionStorage.setItem("character-p1", blook.id);

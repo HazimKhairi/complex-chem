@@ -138,8 +138,21 @@
       playerLigands = [];
     }
 
-    var nameKey = gameOption + "-player-" + level2State.playerId + "-name";
-    level2State.playerName = sessionStorage.getItem(nameKey) || ("Player " + level2State.playerId);
+    // Resolve player name. Solo / simulation modes don't write
+    // "solo-player-{N}-name" — they use "solo-player-name" (no slot
+    // suffix) and also "one-vs-one-player-1-name". Fall back through
+    // the candidates before defaulting to "Player N".
+    var nameCandidates = [
+      gameOption + "-player-" + level2State.playerId + "-name",
+      "solo-player-name",
+      "one-vs-one-player-1-name",
+    ];
+    var foundName = null;
+    for (var ni = 0; ni < nameCandidates.length; ni++) {
+      var v = sessionStorage.getItem(nameCandidates[ni]);
+      if (v) { foundName = v; break; }
+    }
+    level2State.playerName = foundName || ("Player " + level2State.playerId);
 
     var info = document.getElementById("player-info");
     if (info) info.textContent = level2State.playerName + " \u2014 " + playerLigands.length + " ligand(s) collected";
@@ -867,7 +880,7 @@
     if (displayLigands.length === 0) displayLigands = playerLigands;
 
     var html = '<h2 class="text-xl font-bold text-gray-800 mb-1">3. State the possible complex geometry <span class="text-sm font-normal text-gray-400">(2 pts)</span></h2>';
-    html += '<p class="text-gray-500 text-sm mb-3">Your coordination number is <strong class="text-[#4187a0]">CN = ' + cn + '</strong>. Pick the matching geometry from the six options below.</p>';
+    html += '<p class="text-gray-500 text-sm mb-3">Pick the geometry that matches your coordination number from the six options below.</p>';
 
     // CN → Geometry reference table per spec (6 rows across 4 CN values)
     html += '<div class="overflow-x-auto mb-4 rounded-lg border border-gray-200">';
@@ -876,10 +889,11 @@
     html += '<th class="text-left px-3 py-2 font-semibold w-32">Coordination no.</th>';
     html += '<th class="text-left px-3 py-2 font-semibold text-red-100">Geometry</th>';
     html += '</tr></thead><tbody>';
+    // Reference table only — no row highlighted, the player has to
+    // work out their own CN before picking the geometry.
     [3, 4, 5, 6].forEach(function (n) {
       var geos = GEOMETRY_MAP[n] || [];
-      var highlight = n === cn ? 'bg-yellow-50 font-semibold' : '';
-      html += '<tr class="border-t border-gray-100 ' + highlight + '">';
+      html += '<tr class="border-t border-gray-100">';
       html += '<td class="px-3 py-2 align-top">' + n + '</td>';
       html += '<td class="px-3 py-2 text-red-600">' + geos.map(function (g) { return '<div>' + g + '</div>'; }).join('') + '</td>';
       html += '</tr>';
@@ -891,8 +905,6 @@
     ALL_GEOMETRIES.forEach(function (geo) {
       var meta = GEOMETRY_META[geo] || {};
       var isCorrect = correctList.indexOf(geo) >= 0;
-      var matchesCN = meta.cn === cn;
-      // Card styling depends on state
       var cls = 'geo-btn group relative rounded-xl border-2 transition-all overflow-hidden bg-white text-center flex flex-col items-center';
       if (done) {
         if (isCorrect) cls += ' border-green-500 ring-2 ring-green-200 shadow-md';
@@ -902,11 +914,7 @@
       } else {
         cls += ' border-gray-200 hover:border-[#4187a0] hover:shadow-lg hover:-translate-y-0.5 cursor-pointer';
       }
-      var cnPillCls = matchesCN
-        ? 'absolute top-1.5 right-1.5 px-2 py-0.5 rounded-full bg-amber-400 text-amber-950 text-[10px] font-black shadow tracking-wider'
-        : 'absolute top-1.5 right-1.5 px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 text-[10px] font-bold tracking-wider';
       html += '<button class="' + cls + '" data-val="' + geo + '"' + (done ? ' disabled' : '') + '>';
-      html +=   '<span class="' + cnPillCls + '">CN ' + meta.cn + '</span>';
       html +=   '<div class="w-full aspect-square bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-2">';
       html +=     '<img src="' + meta.img + '" alt="' + geo + '" class="max-w-full max-h-full object-contain transition-transform group-hover:scale-110" loading="lazy" />';
       html +=   '</div>';

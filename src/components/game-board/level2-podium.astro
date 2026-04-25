@@ -189,8 +189,15 @@
   type PodiumEntry = { playerId: number; playerName: string; score: number };
 
   function blookSrc(playerId: number): string {
-    const charId = sessionStorage.getItem(`character-p${playerId}`);
-    return charId ? `/characters/blook/${charId}.png` : "/horses/red.png";
+    // Solo / simulation modes save the chosen blook under
+    // character-p1 even when the running player slot is different.
+    // Fall through p{N} → p1 → first available character key.
+    const tryKeys = [`character-p${playerId}`, "character-p1", "character-p2", "character-p3", "character-p4"];
+    for (const key of tryKeys) {
+      const charId = sessionStorage.getItem(key);
+      if (charId) return `/characters/blook/${charId}.png`;
+    }
+    return "/horses/red.png";
   }
 
   function getSlot(rank: number) {

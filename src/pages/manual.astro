@@ -9,16 +9,16 @@
  */
 import Layout from "../layouts/Layout.astro";
 
-// Order matters — file numbers have gaps (1,2,3,4,6,10).
-// Sources are the designer-drawn JPGs, compressed to WebP for smaller
-// payload (~75% smaller than the originals).
+// Pages 6.webp and 10.webp were answer/cheat-sheet pages — removed
+// because they let players see correct answers to the in-game
+// questions (client complaint). Manual now shows the 4 rules pages
+// only. The webp files are still on disk in case the answer pages
+// are repurposed or republished elsewhere.
 const PAGES = [
   "/assets/manual/1.webp",
   "/assets/manual/2.webp",
   "/assets/manual/3.webp",
   "/assets/manual/4.webp",
-  "/assets/manual/6.webp",
-  "/assets/manual/10.webp",
 ];
 ---
 

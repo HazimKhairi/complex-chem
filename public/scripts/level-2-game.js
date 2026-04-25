@@ -179,6 +179,67 @@
     var et  = $("total-score"); if (et) et.textContent = l1 + l2;
   }
 
+  // Sphere colour name → CSS background.
+  var SPHERE_COLOR_CSS = {
+    red:    '#ef4444',
+    blue:   '#3b82f6',
+    orange: '#f97316',
+    green:  '#10b981',
+  };
+
+  /**
+   * Renders the always-visible "Your collected ligands" strip above the
+   * step container. Groups duplicates with × count, shows each ligand's
+   * sphere colour + bond atom + denticity tag so players can reference
+   * what they have without leaving the current step.
+   */
+  function renderCollectedLigandsStrip() {
+    var strip = $("collected-ligands-strip");
+    var list = $("collected-ligands-list");
+    var count = $("cl-count");
+    if (!strip || !list) return;
+
+    if (!playerLigands || playerLigands.length === 0) {
+      strip.classList.add("hidden");
+      return;
+    }
+
+    // Group by id
+    var byId = {};
+    playerLigands.forEach(function (lig) {
+      var key = lig.id || (lig.name || "?").toLowerCase();
+      if (!byId[key]) {
+        var chem = LIGAND_CHEMISTRY[key] || LIGAND_CHEMISTRY[(lig.id || "").toLowerCase()] || {};
+        byId[key] = {
+          name: lig.name || key,
+          sphere: chem.sphere || 'red',
+          bond: chem.bond || '?',
+          type: chem.type || 'Monodentate',
+          denticity: chem.denticity || 1,
+          count: 0,
+        };
+      }
+      byId[key].count++;
+    });
+
+    var html = Object.keys(byId).map(function (k) {
+      var r = byId[k];
+      var bg = SPHERE_COLOR_CSS[r.sphere] || '#9ca3af';
+      var typeLabel = r.type === 'Bidentate' ? 'Bi' : 'Mono';
+      return ''
+        + '<div class="flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50" title="' + r.name + ' — ' + r.type + ', donor: ' + r.bond + '">'
+        +   '<span class="inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-[10px] font-black shadow" style="background:' + bg + '">' + r.bond + '</span>'
+        +   '<span class="text-sm font-semibold text-gray-800">' + r.name + '</span>'
+        +   (r.count > 1 ? '<span class="text-xs font-bold text-gray-500">&times;' + r.count + '</span>' : '')
+        +   '<span class="text-[10px] uppercase tracking-wide text-gray-400">' + typeLabel + '</span>'
+        + '</div>';
+    }).join('');
+
+    list.innerHTML = html;
+    if (count) count.textContent = String(playerLigands.length);
+    strip.classList.remove("hidden");
+  }
+
   function navButtons(opts) {
     var html = '<div class="flex justify-between mt-8">';
     if (opts.back) {
@@ -205,6 +266,7 @@
   function renderStep(step) {
     currentStep = step;
     updateStepIndicator(step);
+    renderCollectedLigandsStrip();
     var bc = $("builder-container");
     // 3D builder only shown on step 5 (was step 4)
     if (bc) bc.classList.toggle("hidden", step !== 5);

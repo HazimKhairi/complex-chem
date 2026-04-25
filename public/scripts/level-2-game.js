@@ -8,22 +8,23 @@
 
   // ── Chemistry Data ───────────────────────────────────────
 
-  // bond = symbol of the donor atom shown on the 3D sphere
-  // (matches the "Shape sphere bond" column in the chemistry indicator).
+  // bond  = donor atom shown on the 3D sphere ("Shape sphere bond")
+  // image = filename in /public/assets/ligand-cards/ used by the
+  //         click-to-open card popup (logo half + description half)
   var LIGAND_CHEMISTRY = {
-    h2o:  { name: "H\u2082O",    charge: 0,  denticity: 1, type: "Monodentate", sphere: "red",    bond: "O" },
-    nh3:  { name: "NH\u2083",    charge: 0,  denticity: 1, type: "Monodentate", sphere: "blue",   bond: "N" },
-    py:   { name: "py",          charge: 0,  denticity: 1, type: "Monodentate", sphere: "blue",   bond: "N" },
-    pph3: { name: "PPh\u2083",   charge: 0,  denticity: 1, type: "Monodentate", sphere: "orange", bond: "P" },
-    cn:   { name: "CN\u207B",    charge: -1, denticity: 1, type: "Monodentate", sphere: "blue",   bond: "N" },
-    o2:   { name: "O\u00B2\u207B", charge: -2, denticity: 1, type: "Monodentate", sphere: "red",  bond: "O" },
-    cl:   { name: "Cl\u207B",   charge: -1, denticity: 1, type: "Monodentate", sphere: "green",   bond: "Cl" },
-    ox:   { name: "Ox\u00B2\u207B",  charge: -2, denticity: 2, type: "Bidentate", sphere: "red",  bond: "O" },
-    acac: { name: "acac\u207B", charge: -1, denticity: 2, type: "Bidentate",  sphere: "red",      bond: "O" },
-    co32: { name: "CO\u2083\u00B2\u207B", charge: -2, denticity: 2, type: "Bidentate", sphere: "red", bond: "O" },
-    phen: { name: "phen",       charge: 0,  denticity: 2, type: "Bidentate",  sphere: "blue",     bond: "N" },
-    bipy: { name: "bipy",       charge: 0,  denticity: 2, type: "Bidentate",  sphere: "blue",     bond: "N" },
-    en:   { name: "en",         charge: 0,  denticity: 2, type: "Bidentate",  sphere: "blue",     bond: "N" },
+    h2o:  { name: "H\u2082O",    charge: 0,  denticity: 1, type: "Monodentate", sphere: "red",    bond: "O",  image: "1.png"  },
+    nh3:  { name: "NH\u2083",    charge: 0,  denticity: 1, type: "Monodentate", sphere: "blue",   bond: "N",  image: "2.png"  },
+    py:   { name: "py",          charge: 0,  denticity: 1, type: "Monodentate", sphere: "blue",   bond: "N",  image: "3.png"  },
+    pph3: { name: "PPh\u2083",   charge: 0,  denticity: 1, type: "Monodentate", sphere: "orange", bond: "P",  image: "4.png"  },
+    cn:   { name: "CN\u207B",    charge: -1, denticity: 1, type: "Monodentate", sphere: "blue",   bond: "N",  image: "5.png"  },
+    o2:   { name: "O\u00B2\u207B", charge: -2, denticity: 1, type: "Monodentate", sphere: "red",  bond: "O",  image: "6.png"  },
+    cl:   { name: "Cl\u207B",   charge: -1, denticity: 1, type: "Monodentate", sphere: "green",   bond: "Cl", image: "7.png"  },
+    ox:   { name: "Ox\u00B2\u207B",  charge: -2, denticity: 2, type: "Bidentate", sphere: "red",  bond: "O",  image: "8.png"  },
+    acac: { name: "acac\u207B", charge: -1, denticity: 2, type: "Bidentate",  sphere: "red",      bond: "O",  image: "9.png"  },
+    co32: { name: "CO\u2083\u00B2\u207B", charge: -2, denticity: 2, type: "Bidentate", sphere: "red", bond: "O", image: "10.png" },
+    phen: { name: "phen",       charge: 0,  denticity: 2, type: "Bidentate",  sphere: "blue",     bond: "N",  image: "11.png" },
+    bipy: { name: "bipy",       charge: 0,  denticity: 2, type: "Bidentate",  sphere: "blue",     bond: "N",  image: "12.png" },
+    en:   { name: "en",         charge: 0,  denticity: 2, type: "Bidentate",  sphere: "blue",     bond: "N",  image: "13.png" },
   };
 
   var CENTRAL_METALS = [
@@ -238,17 +239,80 @@
       var bg = SPHERE_COLOR_CSS[r.sphere] || '#9ca3af';
       var typeLabel = r.type === 'Bidentate' ? 'Bi' : 'Mono';
       return ''
-        + '<div class="flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50" title="' + r.name + ' — ' + r.type + ', donor: ' + r.bond + '">'
+        + '<button type="button" class="ligand-strip-pill flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 hover:bg-white hover:border-[#4187a0] hover:shadow-sm transition" data-ligand-id="' + k + '" title="' + r.name + ' — click to view card">'
         +   '<span class="inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-[10px] font-black shadow" style="background:' + bg + '">' + r.bond + '</span>'
         +   '<span class="text-sm font-semibold text-gray-800">' + r.name + '</span>'
         +   (r.count > 1 ? '<span class="text-xs font-bold text-gray-500">&times;' + r.count + '</span>' : '')
         +   '<span class="text-[10px] uppercase tracking-wide text-gray-400">' + typeLabel + '</span>'
-        + '</div>';
+        + '</button>';
     }).join('');
 
     list.innerHTML = html;
     if (count) count.textContent = String(playerLigands.length);
     strip.classList.remove("hidden");
+
+    // Wire up click → open the flippable ligand card popup
+    list.querySelectorAll('.ligand-strip-pill').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var id = btn.getAttribute('data-ligand-id');
+        if (id) openLigandCardPopup(id);
+      });
+    });
+  }
+
+  /**
+   * Pop up a single ligand card showing the designer-drawn front
+   * (logo) on first display; click it to flip to the back
+   * (description). Click overlay or the × to dismiss.
+   */
+  function openLigandCardPopup(ligandId) {
+    var chem = LIGAND_CHEMISTRY[ligandId];
+    if (!chem) return;
+    var imgPath = '/assets/ligand-cards/' + (chem.image || '1.png');
+    var color = SPHERE_COLOR_CSS[chem.sphere] || '#4187a0';
+
+    // Reuse single overlay
+    var overlay = document.getElementById('ligand-card-popup');
+    if (overlay) overlay.remove();
+
+    overlay = document.createElement('div');
+    overlay.id = 'ligand-card-popup';
+    overlay.className = 'fixed inset-0 z-[90] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4';
+    overlay.innerHTML = ''
+      + '<div class="relative w-full max-w-sm" style="perspective:1200px;">'
+      +   '<button id="ligand-card-close" class="absolute -top-3 -right-3 z-10 w-9 h-9 rounded-full bg-white text-gray-700 shadow-lg text-xl leading-none font-black hover:bg-gray-100" aria-label="Close">&times;</button>'
+      +   '<div id="ligand-card-flip" class="relative w-full" style="aspect-ratio:3/4; transform-style:preserve-3d; transition:transform 600ms cubic-bezier(.2,.7,.2,1); cursor:pointer;">'
+      +     '<div class="absolute inset-0 rounded-2xl border-4 overflow-hidden bg-white shadow-2xl" style="border-color:' + color + '; backface-visibility:hidden;">'
+      +       '<div class="w-full h-full bg-no-repeat" style="background-image:url(\'' + imgPath + '\'); background-position:0% center; background-size:200%;"></div>'
+      +       '<div class="absolute bottom-2 right-2 px-3 py-1 bg-black/70 text-white text-xs rounded-full font-semibold pointer-events-none">Click to flip</div>'
+      +     '</div>'
+      +     '<div class="absolute inset-0 rounded-2xl border-4 overflow-hidden bg-white shadow-2xl" style="border-color:' + color + '; backface-visibility:hidden; transform:rotateY(180deg);">'
+      +       '<div class="w-full h-full bg-no-repeat" style="background-image:url(\'' + imgPath + '\'); background-position:100% center; background-size:200%;"></div>'
+      +       '<div class="absolute bottom-2 right-2 px-3 py-1 bg-black/70 text-white text-xs rounded-full font-semibold pointer-events-none">Click to flip back</div>'
+      +     '</div>'
+      +   '</div>'
+      +   '<p class="mt-4 text-center text-white text-sm font-semibold tracking-wide">' + chem.name + ' &middot; ' + chem.type + ' &middot; donor: ' + chem.bond + '</p>'
+      + '</div>';
+    document.body.appendChild(overlay);
+
+    var card = overlay.querySelector('#ligand-card-flip');
+    var flipped = false;
+    if (card) {
+      card.addEventListener('click', function () {
+        flipped = !flipped;
+        card.style.transform = flipped ? 'rotateY(180deg)' : 'rotateY(0deg)';
+      });
+    }
+
+    function dismiss() { overlay.remove(); }
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) dismiss(); });
+    var closeBtn = overlay.querySelector('#ligand-card-close');
+    if (closeBtn) closeBtn.addEventListener('click', dismiss);
+    document.addEventListener('keydown', function esc(e) {
+      if (e.key === 'Escape') { dismiss(); document.removeEventListener('keydown', esc); }
+    });
+
+    if (window.AudioManager) window.AudioManager.play('book-flip');
   }
 
   function navButtons(opts) {

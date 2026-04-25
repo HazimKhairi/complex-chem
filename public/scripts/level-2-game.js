@@ -577,8 +577,24 @@
     var done = level2State.typeDone;
     var chosen = level2State.typeAnswer;
 
-    var html = '<h2 class="text-xl font-bold text-gray-800 mb-1">1. Predict the type of complex <span class="text-sm font-normal text-gray-400">(2 pts)</span></h2>';
-    html += '<p class="text-gray-500 text-sm mb-3">Based on the metal charge and your chosen ligands, is the complex neutral, an anion, or a cation?</p>';
+    var html = '<h2 class="text-xl font-bold text-gray-800 mb-3">1. Predict the type of complex <span class="text-sm font-normal text-gray-400">(2 pts)</span></h2>';
+
+    // Always-visible speech bubbles per spec — left bubble defines a
+    // complex, right bubble defines cation / anion / neutral.
+    html += '<div class="grid sm:grid-cols-2 gap-3 mb-4">';
+    html += '  <div class="px-4 py-3 rounded-2xl bg-sky-50 border-2 border-sky-200 text-sky-900 text-xs leading-relaxed shadow-sm">';
+    html += '    <p class="font-semibold mb-1">What is a complex?</p>';
+    html += '    <p>A complex is a species formed when a central metal ion is bonded to surrounding ligands through coordinate (dative) bonds.</p>';
+    html += '  </div>';
+    html += '  <div class="px-4 py-3 rounded-2xl bg-sky-50 border-2 border-sky-200 text-sky-900 text-xs leading-relaxed shadow-sm">';
+    html += '    <p class="font-semibold mb-1">Type of complex</p>';
+    html += '    <ul class="space-y-0.5">';
+    html += '      <li><strong>Cation</strong> &mdash; complex with an overall <strong>positive</strong> charge.</li>';
+    html += '      <li><strong>Anion</strong> &mdash; complex with an overall <strong>negative</strong> charge.</li>';
+    html += '      <li><strong>Neutral</strong> &mdash; complex with <strong>no</strong> overall charge.</li>';
+    html += '    </ul>';
+    html += '  </div>';
+    html += '</div>';
 
     // Per latest spec: keep Ligand + Charge columns (no X across all
     // rows). Number-of-ligands and contribution columns stay removed

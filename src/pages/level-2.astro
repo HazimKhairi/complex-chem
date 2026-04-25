@@ -53,10 +53,13 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
          when visible). When the builder is hidden the step container
          expands to use the full width. -->
     <div id="l2-workspace" class="w-full max-w-6xl flex-1 min-h-0 grid grid-cols-1 gap-3 lg:grid-cols-1" data-builder-visible="false">
-      <!-- Step Content Container -->
+      <!-- Step Content Container — hugs its own content height
+           (self-start) so a short message like "Try again" doesn't
+           leave a giant empty white card. Caps at the available
+           viewport height, scrolls internally if content is taller. -->
       <div
         id="step-container"
-        class="bg-white rounded-2xl shadow-md p-4 sm:p-5 overflow-y-auto min-h-0"
+        class="bg-white rounded-2xl shadow-md p-4 sm:p-5 self-start w-full max-h-full overflow-y-auto"
       >
         <p class="text-gray-400 text-center mt-20">Loading...</p>
       </div>

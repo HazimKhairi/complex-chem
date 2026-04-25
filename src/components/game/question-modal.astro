@@ -40,15 +40,25 @@
         <!-- Feedback will be shown here -->
       </div>
 
-      <!-- Submit Button with modern styling -->
-      <button id="submit-answer-btn" class="group relative w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3.5 sm:py-4 rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] overflow-hidden">
-        <span class="relative flex items-center justify-center gap-2">
-          <span>Submit Answer</span>
-          <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
-          </svg>
-        </span>
-      </button>
+      <!-- Action row: Submit + Skip -->
+      <div class="flex flex-col sm:flex-row gap-2">
+        <button id="submit-answer-btn" class="group relative flex-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-3.5 sm:py-4 rounded-2xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] overflow-hidden">
+          <span class="relative flex items-center justify-center gap-2">
+            <span>Submit Answer</span>
+            <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+            </svg>
+          </span>
+        </button>
+        <button
+          id="skip-question-btn"
+          type="button"
+          class="px-6 py-3.5 sm:py-4 rounded-2xl border-2 border-gray-300 text-gray-600 font-bold text-sm sm:text-base hover:bg-gray-100 hover:border-gray-400 transition-colors"
+          title="Skip this question — no points awarded"
+        >
+          Skip
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -81,6 +91,11 @@
         detail: { answer: selectedAnswer }
       }));
     }
+  });
+
+  const skipBtn = document.getElementById("skip-question-btn");
+  skipBtn?.addEventListener("click", () => {
+    document.dispatchEvent(new CustomEvent("question-skipped"));
   });
 
   // Export function to set selected answer

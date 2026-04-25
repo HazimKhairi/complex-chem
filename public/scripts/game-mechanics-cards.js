@@ -374,6 +374,15 @@ function initGameMechanics() {
   // Listen for question answered events
   document.addEventListener("question-answered", handleQuestionAnswered);
 
+  // Skip = close the modal with no scoring change.
+  document.addEventListener("question-skipped", () => {
+    const modal = document.getElementById("question-modal");
+    if (!modal) return;
+    console.log("⏭️  Question skipped — no points awarded or deducted");
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+  });
+
   // Listen for piece movement to save positions
   // Tile handling (ligand/fate/question modals) is done by the inline script in game-board.astro
   document.addEventListener("piece-moved", (event) => {
@@ -453,6 +462,34 @@ function awardQuestionPoints(playerId, points, difficulty) {
   saveState();
 
   console.log(`💰 Player ${playerId} total points: ${gameState.playerPoints[playerId]}`);
+}
+
+/**
+ * Flash a small toast above the Skip button to nudge the player when
+ * they tried to use the Hint but had 0 points to spend. Auto-removes
+ * after a few seconds so it doesn't linger over the next question.
+ */
+function flashSkipNotice(message) {
+  const skipBtn = document.getElementById("skip-question-btn");
+  if (!skipBtn) return;
+  // Reuse a single notice element so spamming the button doesn't stack toasts.
+  let el = document.getElementById("skip-notice-toast");
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "skip-notice-toast";
+    el.className = "fixed left-1/2 -translate-x-1/2 bottom-6 z-[80] px-4 py-3 rounded-xl bg-amber-500 text-white text-sm font-semibold shadow-lg max-w-sm text-center animate-bounceIn";
+    document.body.appendChild(el);
+  }
+  el.textContent = message;
+  el.style.opacity = "1";
+  clearTimeout(window.__skipNoticeTimer);
+  window.__skipNoticeTimer = setTimeout(() => {
+    if (el) el.style.opacity = "0";
+  }, 3500);
+
+  // Subtle pulse on the Skip button so the player notices it.
+  skipBtn.classList.add("ring-4", "ring-amber-300");
+  setTimeout(() => skipBtn.classList.remove("ring-4", "ring-amber-300"), 1800);
 }
 
 /**
@@ -1003,7 +1040,16 @@ function showQuestion(playerId, tileColor = null) {
       if (hintBtn.disabled) return;
       const modalEl = document.getElementById("question-modal");
       const askingPlayerId = parseInt(modalEl?.dataset.playerId || 0);
-      if (askingPlayerId) deductPoints(askingPlayerId, 1);
+      const currentPts = askingPlayerId ? (gameState.playerPoints[askingPlayerId] || 0) : 0;
+
+      // Not enough points to afford the hint? Don't deduct (min is 0) —
+      // tell the player they can use Skip instead.
+      if (currentPts < 1) {
+        flashSkipNotice("You don't have any points to spend on a hint. Use the Skip button if you'd rather move on.");
+        return;
+      }
+
+      deductPoints(askingPlayerId, 1);
       hintBtn.disabled = true;
       hintBtn.querySelector("span:last-child").textContent = "USED";
       openQuestionHintPopup(question.hintTitle, question.hint);

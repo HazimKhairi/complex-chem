@@ -358,6 +358,20 @@
     var bc = $("builder-container");
     // 3D builder only shown on step 5 (was step 4)
     if (bc) bc.classList.toggle("hidden", step !== 5);
+    // Toggle 2-col workspace layout on lg+ when builder is showing.
+    var ws = $("l2-workspace");
+    if (ws) {
+      if (step === 5) {
+        ws.classList.add("lg:grid-cols-2");
+        ws.dataset.builderVisible = "true";
+      } else {
+        ws.classList.remove("lg:grid-cols-2");
+        ws.dataset.builderVisible = "false";
+      }
+      // Three.js canvas needs to know the new container size when the
+      // 2-col layout kicks in (no window-resize event fires).
+      setTimeout(function () { window.dispatchEvent(new Event('resize')); }, 0);
+    }
     // Latest spec (5 stages — IUPAC naming step removed):
     //   1) Choose metal + ligands       2 pts
     //   2) Predict type                 2 pts

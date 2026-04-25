@@ -258,22 +258,29 @@
     canvas.width = size;
     canvas.height = size;
     var ctx = canvas.getContext("2d");
-    // Transparent background — the sphere itself shows colour
     ctx.clearRect(0, 0, size, size);
-    ctx.font = "bold 92px system-ui, sans-serif";
+    // Bigger, bolder text. White fill + thick black outline so it
+    // reads on any sphere colour.
+    ctx.font = "900 140px system-ui, -apple-system, sans-serif";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    // Black text with a thin white outline so it reads on any sphere
-    ctx.strokeStyle = "rgba(255,255,255,0.9)";
-    ctx.lineWidth = 10;
+    ctx.lineJoin = "round";
+    ctx.strokeStyle = "#000";
+    ctx.lineWidth = 18;
     ctx.strokeText(text, size / 2, size / 2);
-    ctx.fillStyle = "#111";
+    ctx.fillStyle = "#fff";
     ctx.fillText(text, size / 2, size / 2);
     var tex = new THREE.CanvasTexture(canvas);
     tex.needsUpdate = true;
-    var mat = new THREE.SpriteMaterial({ map: tex, transparent: true });
+    var mat = new THREE.SpriteMaterial({
+      map: tex,
+      transparent: true,
+      depthTest: false,   // never get hidden behind the sphere
+      depthWrite: false,
+    });
     var sprite = new THREE.Sprite(mat);
-    sprite.scale.set(0.9, 0.9, 1);
+    sprite.scale.set(0.7, 0.7, 1);
+    sprite.renderOrder = 999;  // draw last → always on top
     return sprite;
   }
 

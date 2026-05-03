@@ -220,7 +220,7 @@ function handleQuestionAnswer(detail) {
 
       feedbackEl.innerHTML = `
         <div class="bg-green-100 border-2 border-green-500 text-green-800">
-          <p class="font-bold">Correct!</p>
+          <p class="font-bold">You are correct!</p>
           <p class="text-sm">You earned ${points} points!</p>
         </div>
       `;
@@ -236,7 +236,7 @@ function handleQuestionAnswer(detail) {
     } else {
       feedbackEl.innerHTML = `
         <div class="bg-red-100 border-2 border-red-500 text-red-800">
-          <p class="font-bold">Incorrect</p>
+          <p class="font-bold">You are wrong</p>
           <p class="text-sm">No points awarded</p>
         </div>
       `;

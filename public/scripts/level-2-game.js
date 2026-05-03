@@ -671,10 +671,12 @@
 
     if (done) {
       var pts = level2State.typeScore;
-      if (pts > 0) {
-        html += '<div class="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm text-center font-semibold mb-3">Correct! +' + pts + ' point' + (pts > 1 ? 's' : '') + '</div>';
+      var pickedRight = chosen === correct;
+      if (pickedRight) {
+        var ptsTxt = pts > 0 ? ' +' + pts + ' point' + (pts > 1 ? 's' : '') : '';
+        html += '<div class="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm text-center font-semibold mb-3">You are correct!' + ptsTxt + '</div>';
       } else {
-        html += '<div class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm text-center mb-3">Not quite. The correct answer was <strong>' + correct + '</strong>.</div>';
+        html += '<div class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm text-center mb-3">You are wrong. The correct answer was <strong>' + correct + '</strong>.</div>';
       }
     } else if (level2State.typeAttempts > 0) {
       html += '<div class="p-3 bg-orange-50 border border-orange-200 rounded-lg text-orange-700 text-sm text-center mb-3">Try again. Attempt ' + level2State.typeAttempts + '/2</div>';
@@ -866,10 +868,12 @@
 
     if (done) {
       var pts = level2State.cnScore;
-      if (pts > 0) {
-        html += '<div class="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm text-center font-semibold mb-3">Correct! CN = ' + cn + ' (+' + pts + ' pt' + (pts > 1 ? 's' : '') + ')</div>';
+      var pickedRight = chosen === cn;
+      if (pickedRight) {
+        var ptsTxt = pts > 0 ? ' (+' + pts + ' pt' + (pts > 1 ? 's' : '') + ')' : '';
+        html += '<div class="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm text-center font-semibold mb-3">You are correct! CN = ' + cn + ptsTxt + '</div>';
       } else {
-        html += '<div class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm text-center mb-3">Not quite. The correct CN was <strong>' + cn + '</strong>.</div>';
+        html += '<div class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm text-center mb-3">You are wrong. The correct CN was <strong>' + cn + '</strong>.</div>';
       }
     } else if (level2State.cnAttempts > 0) {
       html += '<div class="p-3 bg-orange-50 border border-orange-200 rounded-lg text-orange-700 text-sm text-center mb-3">Try again. Attempt ' + level2State.cnAttempts + '/2</div>';
@@ -961,13 +965,15 @@
 
     if (done) {
       var pts = level2State.geometryScore;
-      if (pts > 0) {
-        html += '<div class="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm text-center font-semibold">Correct! +' + pts + ' point' + (pts > 1 ? 's' : '') + '</div>';
+      var pickedRight = correctList.indexOf(level2State.selectedGeometry) >= 0;
+      if (pickedRight) {
+        var ptsTxt = pts > 0 ? ' +' + pts + ' point' + (pts > 1 ? 's' : '') : '';
+        html += '<div class="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm text-center font-semibold">You are correct!' + ptsTxt + '</div>';
       } else {
-        html += '<div class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm text-center">The correct geometry: <strong>' + correctList.join(", ") + '</strong></div>';
+        html += '<div class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm text-center">You are wrong. The correct geometry: <strong>' + correctList.join(", ") + '</strong></div>';
       }
     } else if (level2State.geometryAttempts > 0) {
-      html += '<div class="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg text-orange-700 text-sm text-center">Not quite! Try again. Attempts: ' + level2State.geometryAttempts + '/3</div>';
+      html += '<div class="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg text-orange-700 text-sm text-center">Try again. Attempts: ' + level2State.geometryAttempts + '/3</div>';
     }
 
     html += navButtons({ back: true, next: true, nextDisabled: !done });
@@ -1063,14 +1069,17 @@
 
     if (done) {
       var pts = level2State.pictureScore;
-      if (pts > 0) {
-        html += '<div class="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm text-center font-semibold mb-3">Correct! +' + pts + ' point' + (pts > 1 ? 's' : '') + '</div>';
+      var chosenPic = GEOMETRY_PICS.find(function (g) { return g.id === chosen; });
+      var pickedRight = !!(chosenPic && chosenPic.cn === cn);
+      if (pickedRight) {
+        var ptsTxt = pts > 0 ? ' +' + pts + ' point' + (pts > 1 ? 's' : '') : '';
+        html += '<div class="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm text-center font-semibold mb-3">You are correct!' + ptsTxt + '</div>';
       } else {
         var correctLabel = GEOMETRY_PICS.filter(function (g) { return g.cn === cn; }).map(function (g) { return g.label; }).join(' / ');
-        html += '<div class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm text-center mb-3">The correct answer was <strong>' + correctLabel + '</strong>.</div>';
+        html += '<div class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm text-center mb-3">You are wrong. The correct answer was <strong>' + correctLabel + '</strong>.</div>';
       }
     } else if (level2State.pictureAttempts > 0) {
-      html += '<div class="p-3 bg-orange-50 border border-orange-200 rounded-lg text-orange-700 text-sm text-center mb-3">Not quite. Try again — attempt ' + level2State.pictureAttempts + ' / 3</div>';
+      html += '<div class="p-3 bg-orange-50 border border-orange-200 rounded-lg text-orange-700 text-sm text-center mb-3">Try again &mdash; attempt ' + level2State.pictureAttempts + ' / 3</div>';
     }
 
     html += navButtons({ back: true, next: true, nextDisabled: !done && !chosen, nextLabel: done ? "Next: Build in 3D →" : "Submit" });
@@ -1310,7 +1319,7 @@
     } else {
       var c = $("step-container");
       c.innerHTML = '<div class="text-center py-4">'
-        + '<h2 class="text-lg font-bold text-orange-700 mb-2">Not quite right! Try again.</h2>'
+        + '<h2 class="text-lg font-bold text-orange-700 mb-2">You are wrong. Try again.</h2>'
         + '<p class="text-sm text-gray-600 mb-4">Attempts used: ' + level2State.buildAttempts + '/3</p>'
         + '<button id="btn-retry" class="px-6 py-2 rounded-lg bg-[#4187a0] text-white font-semibold hover:bg-[#357a91]">Retry</button>'
         + '</div>';
@@ -1453,10 +1462,12 @@
     html += '</div>';
 
     if (done) {
-      if (level2State.namingScore > 0) {
-        html += '<div class="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm text-center font-semibold">Correct! +2 points</div>';
+      var pickedRight = level2State.namingAnswer === correct;
+      if (pickedRight) {
+        var ptsTxt = level2State.namingScore > 0 ? ' +' + level2State.namingScore + ' point' + (level2State.namingScore > 1 ? 's' : '') : '';
+        html += '<div class="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm text-center font-semibold">You are correct!' + ptsTxt + '</div>';
       } else {
-        html += '<div class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm text-center">Incorrect. The answer is <strong>' + correct + '</strong></div>';
+        html += '<div class="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm text-center">You are wrong. The answer is <strong>' + correct + '</strong></div>';
       }
     }
 

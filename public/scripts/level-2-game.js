@@ -218,7 +218,7 @@
    * sphere colour + bond atom + denticity tag so players can reference
    * what they have without leaving the current step.
    */
-  function renderCollectedLigandsStrip() {
+  function renderCollectedLigandsStrip(step) {
     var strip = $("collected-ligands-strip");
     var list = $("collected-ligands-list");
     var count = $("cl-count");
@@ -229,9 +229,20 @@
       return;
     }
 
+    // From Step 2 onwards, narrow the strip down to only the ligands
+    // the player committed to in Step 1. Step 1 still shows everything
+    // collected so they can choose freely.
+    var sourceLigands = playerLigands;
+    var selIdxs = level2State && level2State.selectedLigandIdxs;
+    if (step && step >= 2 && Array.isArray(selIdxs) && selIdxs.length > 0) {
+      sourceLigands = selIdxs
+        .map(function (i) { return playerLigands[i]; })
+        .filter(Boolean);
+    }
+
     // Group by id
     var byId = {};
-    playerLigands.forEach(function (lig) {
+    sourceLigands.forEach(function (lig) {
       var key = lig.id || (lig.name || "?").toLowerCase();
       if (!byId[key]) {
         var chem = LIGAND_CHEMISTRY[key] || LIGAND_CHEMISTRY[(lig.id || "").toLowerCase()] || {};
@@ -261,7 +272,7 @@
     }).join('');
 
     list.innerHTML = html;
-    if (count) count.textContent = String(playerLigands.length);
+    if (count) count.textContent = String(sourceLigands.length);
     strip.classList.remove("hidden");
 
     // Wire up click → open the flippable ligand card popup
@@ -354,7 +365,7 @@
   function renderStep(step) {
     currentStep = step;
     updateStepIndicator(step);
-    renderCollectedLigandsStrip();
+    renderCollectedLigandsStrip(step);
     var bc = $("builder-container");
     // 3D builder only shown on step 5 (was step 4)
     if (bc) bc.classList.toggle("hidden", step !== 5);

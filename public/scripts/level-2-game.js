@@ -621,30 +621,25 @@
     html += '  </div>';
     html += '</div>';
 
-    // Per latest spec: keep Ligand + Charge columns (no X across all
-    // rows). Number-of-ligands and contribution columns stay removed
-    // — students compute the total themselves from this minimal data.
+    // Per latest spec: charge values are hidden so students must recall
+    // each ligand/metal charge themselves before summing.
     html += '<div class="overflow-x-auto mb-3 rounded-lg border border-gray-200">';
     html += '<table class="w-full text-sm">';
     html += '<thead class="bg-gray-50 text-gray-700"><tr>';
     html += '<th class="text-left px-3 py-2 font-semibold">Ligand</th>';
     html += '<th class="text-center px-3 py-2 font-semibold">Charge</th>';
     html += '</tr></thead><tbody>';
-    function fmtCharge(c) {
-      if (c > 0) return '+' + c;
-      return String(c);
-    }
     charge.rows.forEach(function (r) {
       var label = r.count > 1 ? (r.name + ' &times; ' + r.count) : r.name;
       html += '<tr class="border-t border-gray-100">';
       html += '<td class="px-3 py-2 font-medium text-gray-800">' + label + '</td>';
-      html += '<td class="text-center px-3 py-2">' + fmtCharge(r.charge) + '</td>';
+      html += '<td class="text-center px-3 py-2 text-gray-300">&mdash;</td>';
       html += '</tr>';
     });
     // Metal row
     html += '<tr class="border-t border-gray-100 bg-blue-50">';
     html += '<td class="px-3 py-2 font-medium text-gray-800">Metal: ' + (level2State.selectedMetal ? level2State.selectedMetal.name : "—") + '</td>';
-    html += '<td class="text-center px-3 py-2 font-semibold">' + fmtCharge(charge.metalCharge) + '</td>';
+    html += '<td class="text-center px-3 py-2 text-gray-300">&mdash;</td>';
     html += '</tr>';
     html += '</tbody></table></div>';
 
@@ -843,8 +838,8 @@
     rows.forEach(function (r) {
       html += '<tr class="border-t border-gray-100">';
       html += '<td class="px-3 py-2 font-medium text-gray-800">' + r.name + '</td>';
-      html += '<td class="text-center px-3 py-2">' + r.type.toLowerCase() + '</td>';
-      html += '<td class="text-center px-3 py-2">' + r.denticity + '</td>';
+      html += '<td class="text-center px-3 py-2 text-gray-300">&mdash;</td>';
+      html += '<td class="text-center px-3 py-2 text-gray-300">&mdash;</td>';
       html += '<td class="text-center px-3 py-2">' + r.count + '</td>';
       html += '</tr>';
     });

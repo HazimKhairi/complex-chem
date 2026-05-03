@@ -919,16 +919,23 @@ function openQuestionHintPopup(title, body) {
 }
 
 function showQuestion(playerId, tileColor = null) {
-  // Map tile background color to question difficulty
-  // Red zone (#ef4444) = hard, Yellow zone (#eab308) = medium,
-  // Green zone (#10b981) = easy, Blue zone (#3b82f6) = medium
+  // Map tile background colour → question difficulty.
+  // Red shades = hard, Yellow shades = medium, Green shades = easy.
+  // Two hexes per band: legacy Tailwind values + the new saturated
+  // home palette adopted in the image-#5 board recolour.
+  const DIFFICULTY_BY_COLOR = {
+    '#ef4444': 'hard',   // tailwind red-500 (legacy complex/fate)
+    '#fc0404': 'hard',   // saturated home red
+    '#eab308': 'medium', // tailwind yellow-600 (legacy bottom-arm)
+    '#fcbc04': 'medium', // saturated home yellow
+    '#10b981': 'easy',   // tailwind emerald-500 (legacy)
+    '#0cc704': 'easy',   // saturated home green
+    '#3b82f6': 'medium', // legacy blue (no longer on board)
+    '#046cfc': 'medium', // saturated home blue (defensive)
+  };
   let targetDifficulty = null;
   if (tileColor) {
-    const colorLower = tileColor.toLowerCase();
-    if (colorLower === '#ef4444') targetDifficulty = 'hard';
-    else if (colorLower === '#eab308') targetDifficulty = 'medium';
-    else if (colorLower === '#10b981') targetDifficulty = 'easy';
-    else if (colorLower === '#3b82f6') targetDifficulty = 'medium';
+    targetDifficulty = DIFFICULTY_BY_COLOR[tileColor.toLowerCase()] || null;
   }
 
   // Filter questions by zone difficulty, fallback to all if no match

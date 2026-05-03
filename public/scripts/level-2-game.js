@@ -926,25 +926,15 @@
     if (displayLigands.length === 0) displayLigands = playerLigands;
 
     var html = '<h2 class="text-xl font-bold text-gray-800 mb-1">3. State the possible complex geometry <span class="text-sm font-normal text-gray-400">(2 pts)</span></h2>';
-    html += '<p class="text-gray-500 text-sm mb-3">Pick the geometry that matches your coordination number from the six options below.</p>';
+    html += '<p class="text-gray-500 text-sm mb-3">Choose the correct geometry for your coordination number.</p>';
 
-    // CN → Geometry reference table per spec (6 rows across 4 CN values)
-    html += '<div class="overflow-x-auto mb-4 rounded-lg border border-gray-200">';
-    html += '<table class="w-full text-sm">';
-    html += '<thead class="bg-[#4187a0] text-white"><tr>';
-    html += '<th class="text-left px-3 py-2 font-semibold w-32">Coordination no.</th>';
-    html += '<th class="text-left px-3 py-2 font-semibold text-red-100">Geometry</th>';
-    html += '</tr></thead><tbody>';
-    // Reference table only — no row highlighted, the player has to
-    // work out their own CN before picking the geometry.
-    [3, 4, 5, 6].forEach(function (n) {
-      var geos = GEOMETRY_MAP[n] || [];
-      html += '<tr class="border-t border-gray-100">';
-      html += '<td class="px-3 py-2 align-top">' + n + '</td>';
-      html += '<td class="px-3 py-2 text-red-600">' + geos.map(function (g) { return '<div>' + g + '</div>'; }).join('') + '</td>';
-      html += '</tr>';
-    });
-    html += '</tbody></table></div>';
+    // Reminder: surface the CN they computed in Q2 so they don't have
+    // to flip back, but no longer reveal which geometries map to which
+    // CN — students must recall that themselves from the images.
+    var cnReminder = calcCN();
+    html += '<div class="mb-4 px-4 py-3 rounded-xl bg-sky-50 border-2 border-sky-200 text-sky-900 text-sm">';
+    html += '  <strong>Your CN that you calculated before is ' + cnReminder + '</strong> &mdash; choose the correct geometry for that CN.';
+    html += '</div>';
 
     var done = level2State.geometryDone;
     html += '<div class="grid grid-cols-2 sm:grid-cols-3 gap-3">';

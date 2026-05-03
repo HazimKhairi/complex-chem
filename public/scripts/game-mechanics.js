@@ -107,13 +107,13 @@ function testTile(playerId, tileType) {
  * Collect a random ligand
  */
 function collectLigand(playerId) {
-  // Get uncollected ligands
-  const uncollected = LIGANDS.filter(
-    (l) => !gameState.collectedLigandIds.includes(l.id)
-  );
+  // Per-player uncollected pool — global collectedLigandIds would block
+  // a 2nd player from picking up a type the 1st player already grabbed.
+  const playerHasIds = (gameState.playerLigands[playerId] || []).map((l) => l.id);
+  const uncollected = LIGANDS.filter((l) => playerHasIds.indexOf(l.id) < 0);
 
   if (uncollected.length === 0) {
-    console.log("All ligands collected!");
+    console.log(`Player ${playerId} already has every ligand!`);
     return;
   }
 

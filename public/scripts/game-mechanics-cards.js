@@ -787,8 +787,11 @@ function collectLigand(playerId, landedCell = null) {
     if (ligand) {
       console.log(`   ✅ Found matching ligand: ${ligand.name} (${ligand.id})`);
 
-      if (gameState.collectedLigandIds.includes(ligand.id)) {
-        console.log(`   Ligand "${ligandName}" already collected — skipping, treat as normal tile`);
+      // Per-player check — collectedLigandIds is global and would block
+      // Player 2 from picking up a ligand Player 1 already grabbed.
+      const playerHas = (gameState.playerLigands[playerId] || []).some(l => l.id === ligand.id);
+      if (playerHas) {
+        console.log(`   Player ${playerId} already has ligand "${ligand.id}" — skipping`);
         return;
       }
     } else {
@@ -797,16 +800,18 @@ function collectLigand(playerId, landedCell = null) {
     }
   }
 
-  // Fallback to random if ligand not found or not specified
+  // Fallback to random if ligand not found or not specified — pick from
+  // ligands THIS player doesn't yet have (per-player, not global).
   if (!ligand) {
     console.warn(`   ⚠️ Could not find ligand "${ligandName}", selecting random uncollected ligand`);
-    const uncollected = LIGANDS_DATA.filter(l => !gameState.collectedLigandIds.includes(l.id));
+    const playerHasIds = (gameState.playerLigands[playerId] || []).map(l => l.id);
+    const uncollected = LIGANDS_DATA.filter(l => playerHasIds.indexOf(l.id) < 0);
     if (uncollected.length === 0) {
-      console.error(`   All ligands collected!`);
+      console.error(`   Player ${playerId} already has every ligand!`);
       showLigandModal(
         { name: "—", color: "#9CA3AF", imageFile: "" },
         "No More Ligands",
-        "All ligands have been collected. Keep moving!"
+        "You've collected every ligand. Keep moving!"
       );
       return;
     }

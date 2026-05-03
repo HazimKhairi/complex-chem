@@ -14,9 +14,11 @@
   var BLUE = '#046cfc';
   var GREEN = '#0cc704';
   var ORANGE = '#f97316';
+  var YELLOW = '#fcbc04';
 
   // Uniform map — every instance of a ligand on the board takes the
-  // same colour as the indicator table specifies.
+  // same colour as the indicator table specifies, unless overridden
+  // per cell below.
   var LIGAND_COLORS = {
     'H₂O':   RED,
     'NH₃':   BLUE,
@@ -35,6 +37,12 @@
     'EDTA':  BLUE,
   };
 
+  // Per-instance overrides keyed by cell class. PPh₃ splits Orange (top
+  // arm g16) vs Yellow (bottom arm g44) per Hazim's per-tile spec.
+  var CELL_OVERRIDES = {
+    'g44': YELLOW,
+  };
+
   function applyColors() {
     var spans = document.querySelectorAll('.path td > span');
     var coloured = 0;
@@ -45,21 +53,30 @@
       var text = (span.textContent || '').trim();
       if (!text) return;
 
-      var color = LIGAND_COLORS[text];
-      if (!color) return;
-
       var td = span.parentElement;
       if (!td) return;
+
+      // Cell-class override wins over name lookup.
+      var color = null;
+      var classes = td.className.split(/\s+/);
+      for (var i = 0; i < classes.length; i++) {
+        if (CELL_OVERRIDES[classes[i]]) { color = CELL_OVERRIDES[classes[i]]; break; }
+      }
+      if (!color) color = LIGAND_COLORS[text];
+      if (!color) return;
 
       td.style.setProperty('background-color', color, 'important');
       td.style.setProperty('background-image', 'none', 'important');
       td.classList.add('ligand-tile');
 
-      // All four indicator colours (red/blue/green/orange) are mid-to-
-      // dark saturated → white text with a dark shadow reads on every one.
-      span.style.setProperty('color', '#fff', 'important');
+      // Yellow is light → dark text reads better. Every other colour is
+      // saturated → white text with a dark shadow.
+      var isLight = color.toLowerCase() === YELLOW.toLowerCase();
+      span.style.setProperty('color', isLight ? '#111' : '#fff', 'important');
       span.style.setProperty('font-weight', '900', 'important');
-      span.style.setProperty('text-shadow', '0 1px 2px rgba(0,0,0,0.55)', 'important');
+      span.style.setProperty('text-shadow', isLight
+        ? '0 1px 0 rgba(255,255,255,0.6)'
+        : '0 1px 2px rgba(0,0,0,0.55)', 'important');
       coloured++;
     });
 

@@ -1011,17 +1011,16 @@ function showQuestion(playerId, tileColor = null) {
             <button
               id="question-hint-btn"
               type="button"
-              class="px-3 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 border-2 border-amber-300 text-amber-900 text-xs font-bold flex items-center gap-1.5 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-amber-100"
-              aria-label="Show hint (costs 1 point)"
-              title="Reveal a Did-You-Know hint — costs 1 point"
+              class="px-3 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 border-2 border-amber-300 text-amber-900 text-xs font-bold flex items-center gap-1.5 shadow-sm transition-colors"
+              aria-label="Show note"
+              title="Reveal a Did-You-Know note"
             >
               <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5a6 6 0 0 0-12 0c0 1.3.5 2.6 1.5 3.5.8.8 1.3 1.5 1.5 2.5"/>
                 <path d="M9 18h6"/>
                 <path d="M10 22h4"/>
               </svg>
-              <span>Hint</span>
-              <span class="ml-1 px-1.5 py-0.5 rounded bg-red-500 text-white text-[10px] font-black tracking-tight">−1 PT</span>
+              <span>Note</span>
             </button>
           ` : ''}
         </div>
@@ -1035,28 +1034,11 @@ function showQuestion(playerId, tileColor = null) {
     </div>
   `;
 
-  // Wire up the Hint button — opens a quick-notes popup with the
-  // "Did you know?" fact from the original card design. First click
-  // costs the asking player 1 point; subsequent clicks are free
-  // (button disables itself after the first use).
+  // Wire up the Note button — opens a quick-notes popup with the
+  // "Did you know?" fact. Free to view, no point deduction.
   const hintBtn = document.getElementById("question-hint-btn");
   if (hintBtn) {
     hintBtn.addEventListener("click", () => {
-      if (hintBtn.disabled) return;
-      const modalEl = document.getElementById("question-modal");
-      const askingPlayerId = parseInt(modalEl?.dataset.playerId || 0);
-      const currentPts = askingPlayerId ? (gameState.playerPoints[askingPlayerId] || 0) : 0;
-
-      // Not enough points to afford the hint? Don't deduct (min is 0) —
-      // tell the player they can use Skip instead.
-      if (currentPts < 1) {
-        flashSkipNotice("You don't have any points to spend on a hint. Use the Skip button if you'd rather move on.");
-        return;
-      }
-
-      deductPoints(askingPlayerId, 1);
-      hintBtn.disabled = true;
-      hintBtn.querySelector("span:last-child").textContent = "USED";
       openQuestionHintPopup(question.hintTitle, question.hint);
     });
   }

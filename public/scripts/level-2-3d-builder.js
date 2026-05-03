@@ -299,6 +299,19 @@
     var slot = slotMeshes[slotIndex];
     if (!slot || slot.ligand) return false;
 
+    // Bidentate occupies 2 slots — refuse placement if no other empty
+    // slot exists to host the partner sphere.
+    if (ligand && ligand.denticity === 2) {
+      var hasFreePartner = false;
+      for (var k = 0; k < slotMeshes.length; k++) {
+        if (k !== slotIndex && slotMeshes[k] && !slotMeshes[k].ligand) {
+          hasFreePartner = true;
+          break;
+        }
+      }
+      if (!hasFreePartner) return false;
+    }
+
     var ballGeo = new THREE.SphereGeometry(0.45, 32, 32);
     var ballMat = new THREE.MeshPhongMaterial({ color: sphereColorHex, shininess: 60 });
     var ballMesh = new THREE.Mesh(ballGeo, ballMat);
@@ -324,10 +337,12 @@
     slot.labelMesh = label;
     slot.ligand = ligand;
 
-    // NOTE: bidentate auto-pair (tryPairBidentate) was removed — players
-    // were confused when one inventory pill produced two balls in the 3D
-    // view. One placement now always equals one ball; chelating ligands
-    // need to be placed once per coordination site they occupy.
+    // Bidentate ligands occupy 2 coordination sites — auto-fill the
+    // nearest empty slot with a matching sphere and link the pair with
+    // a curved bond arc. One inventory pill still equals one placement.
+    if (ligand && ligand.denticity === 2) {
+      tryPairBidentate(slotIndex, ligand, sphereColorHex);
+    }
 
     return true;
   }
@@ -365,7 +380,7 @@
     ball2.userData.slotIndex = best;
     scene.add(ball2);
 
-    var labelText = (ligand.name || ligand.id || "?").replace(/⁻|²⁻|³⁻|²⁺|³⁺/g, "").slice(0, 6);
+    var labelText = ligand.bond || (ligand.name || ligand.id || "?").replace(/⁻|²⁻|³⁻|²⁺|³⁺/g, "").slice(0, 4);
     var label2 = makeLabelSprite(labelText, sphereColorHex);
     label2.position.copy(ball2.position);
     scene.add(label2);

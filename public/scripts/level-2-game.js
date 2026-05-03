@@ -1263,16 +1263,19 @@
   }
 
   function validateBuild() {
-    // Check that placed ligands produce correct CN for the chosen geometry
+    // With bidentate auto-pair, each chelating ligand fills 2 slots from
+    // a single placement. Skip the partner entry (carries _paired marker)
+    // when summing denticity so we don't double-count.
     var placed = window.BoneBuilder.getPlacedLigands();
     var totalDent = 0;
     placed.forEach(function (lig) {
+      if (lig && lig._paired !== undefined) return; // partner slot
       var chem = LIGAND_CHEMISTRY[lig.id] || LIGAND_CHEMISTRY[(lig.id || '').toLowerCase()];
       if (chem) totalDent += chem.denticity; else totalDent += 1;
     });
     var expectedSlots = window.BoneBuilder.getTotalSlots();
-    // Valid if all slots filled AND total denticity matches slot count
-    return placed.length === expectedSlots && totalDent === expectedSlots;
+    var allSlotsFilled = window.BoneBuilder.getFilledCount() === expectedSlots;
+    return allSlotsFilled && totalDent === expectedSlots;
   }
 
   function handleBuildSubmit() {
@@ -1337,6 +1340,7 @@
 
     var ligCounts = {};  // iupac-name → { count, isComplex }
     placed.forEach(function (lig) {
+      if (lig && lig._paired !== undefined) return; // bidentate partner — already counted by primary
       var iupac = LIGAND_IUPAC[lig.id] || lig.name;
       if (!ligCounts[iupac]) ligCounts[iupac] = { count: 0, isComplex: !!COMPLEX_LIGAND_IDS[lig.id] };
       ligCounts[iupac].count++;
@@ -1358,6 +1362,7 @@
 
     var totalCharge = metal.charge;
     placed.forEach(function (lig) {
+      if (lig && lig._paired !== undefined) return; // bidentate partner
       var chem = LIGAND_CHEMISTRY[lig.id] || LIGAND_CHEMISTRY[(lig.id || '').toLowerCase()];
       if (chem) totalCharge += chem.charge;
     });

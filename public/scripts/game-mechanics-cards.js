@@ -923,7 +923,7 @@ function openQuestionHintPopup(title, body) {
   overlay.querySelector("#question-hint-ok").addEventListener("click", close);
 }
 
-function showQuestion(playerId, tileColor = null) {
+function showQuestion(playerId, tileColor = null, explicitDifficulty = null) {
   // Map tile background colour → question difficulty.
   // Red shades = hard, Yellow shades = medium, Green shades = easy.
   // Two hexes per band: legacy Tailwind values + the new saturated
@@ -938,8 +938,12 @@ function showQuestion(playerId, tileColor = null) {
     '#3b82f6': 'medium', // legacy blue (no longer on board)
     '#046cfc': 'medium', // saturated home blue (defensive)
   };
+  // Prefer explicit difficulty (data-difficulty attribute) — foolproof,
+  // doesn't depend on hex matching or stale builds. Color is fallback only.
   let targetDifficulty = null;
-  if (tileColor) {
+  if (explicitDifficulty && ['easy', 'medium', 'hard'].includes(explicitDifficulty)) {
+    targetDifficulty = explicitDifficulty;
+  } else if (tileColor) {
     targetDifficulty = DIFFICULTY_BY_COLOR[tileColor.toLowerCase()] || null;
   }
 

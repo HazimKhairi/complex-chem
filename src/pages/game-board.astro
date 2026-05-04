@@ -337,8 +337,10 @@ import InfoModal from "../components/game/info-modal.astro";
       if (tileType === 'ligand') {
         window.GameMechanics.collectLigand(playerId, cell);
       } else if (tileType === 'question') {
+        // Prefer explicit data-difficulty attribute (foolproof) over bg color regex.
+        var diffAttr = cell.getAttribute('data-difficulty');
         var bgMatch = (cell.getAttribute('style') || '').match(/background:\s*(#[0-9a-fA-F]+)/);
-        window.GameMechanics.showQuestion(playerId, bgMatch ? bgMatch[1] : null);
+        window.GameMechanics.showQuestion(playerId, bgMatch ? bgMatch[1] : null, diffAttr || null);
       } else if (tileType === 'fate') {
         window.GameMechanics.showFate(playerId);
       }

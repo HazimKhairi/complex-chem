@@ -37,11 +37,9 @@
     'EDTA':  BLUE,
   };
 
-  // Per-instance overrides keyed by cell class. PPh₃ splits Orange (top
-  // arm g16) vs Yellow (bottom arm g44) per Hazim's per-tile spec.
-  var CELL_OVERRIDES = {
-    'g44': YELLOW,
-  };
+  // Per-instance overrides keyed by cell class. None at present —
+  // PPh₃ is Orange on every arm.
+  var CELL_OVERRIDES = {};
 
   function applyColors() {
     var spans = document.querySelectorAll('.path td > span');

@@ -113,6 +113,50 @@
 
   var currentStep = 1;
 
+  // ── Persistence ─────────────────────────────────────────
+  // Level 2 progress is keyed per-player so that pass-and-play sessions
+  // don't bleed state across players. Saved on every render; restored
+  // on init; cleared once the player finishes.
+
+  var L2_SCHEMA_V = 1;
+
+  function level2StorageKey() {
+    return "level2-state-" + (level2State.playerId || "1");
+  }
+
+  function saveLevel2State() {
+    try {
+      sessionStorage.setItem(level2StorageKey(), JSON.stringify({
+        v: L2_SCHEMA_V,
+        currentStep: currentStep,
+        level2State: level2State,
+        savedAt: Date.now(),
+      }));
+    } catch (e) {}
+  }
+
+  function restoreLevel2State() {
+    try {
+      var raw = sessionStorage.getItem(level2StorageKey());
+      if (!raw) return false;
+      var snap = JSON.parse(raw);
+      if (!snap || snap.v !== L2_SCHEMA_V || !snap.level2State) return false;
+      // Preserve the freshly-resolved playerId/playerName from init() —
+      // they reflect the *current* device, not the snapshotted player.
+      var keepId = level2State.playerId;
+      var keepName = level2State.playerName;
+      Object.assign(level2State, snap.level2State, {
+        playerId: keepId, playerName: keepName,
+      });
+      currentStep = Number(snap.currentStep) || 1;
+      return true;
+    } catch (e) { return false; }
+  }
+
+  function clearLevel2State() {
+    try { sessionStorage.removeItem(level2StorageKey()); } catch (e) {}
+  }
+
   // ── Init ────────────────────────────────────────────────
 
   function init() {
@@ -172,8 +216,19 @@
       return;
     }
 
+    var resumed = restoreLevel2State();
     updateScoreBar();
-    renderStep(1);
+    renderStep(resumed ? (currentStep || 1) : 1);
+    if (resumed) showResumeToast();
+  }
+
+  function showResumeToast() {
+    var el = document.createElement("div");
+    el.className = "fixed top-4 left-1/2 -translate-x-1/2 z-[9999] px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold shadow-lg transition-opacity";
+    el.textContent = "Resumed your progress.";
+    document.body.appendChild(el);
+    setTimeout(function () { el.style.opacity = "0"; }, 2000);
+    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 2600);
   }
 
   // ── Helpers ─────────────────────────────────────────────
@@ -364,6 +419,7 @@
 
   function renderStep(step) {
     currentStep = step;
+    saveLevel2State();
     updateStepIndicator(step);
     renderCollectedLigandsStrip(step);
     var bc = $("builder-container");
@@ -436,6 +492,7 @@
   // ── Step 1: Q1 — Choose Metal + Ligands (CN must be 3–6) ───
 
   function renderStep1() {
+    saveLevel2State();
     var c = $("step-container");
     var selectedIdxs = level2State.selectedLigandIdxs || [];
     var selCN = calcCNForIndices(selectedIdxs);
@@ -596,6 +653,7 @@
   }
 
   function renderStep2_Q1_type() {
+    saveLevel2State();
     var c = $("step-container");
     var charge = computeTotalCharge();
     var correct = classifyComplex(charge.total);
@@ -757,6 +815,7 @@
       btn.addEventListener("click", function () {
         if (done) return;
         level2State.typeAnswer = this.getAttribute("data-val");
+        saveLevel2State();
         renderStep2_Q1_type();
       });
     });
@@ -765,6 +824,7 @@
       chip.addEventListener("click", function () {
         if (done) return;
         level2State.q1ChargeInputs[this.getAttribute("data-key")] = this.getAttribute("data-val");
+        saveLevel2State();
         renderStep2_Q1_type();
       });
     });
@@ -857,6 +917,7 @@
   window.__l2InfoBubble = openInfoBubble;
 
   function renderStep3_Q2_cn() {
+    saveLevel2State();
     var c = $("step-container");
     var cn = calcCN(); // correct CN derived from Step 1 selections
     var sel = getSelectedLigands();
@@ -987,6 +1048,7 @@
       btn.addEventListener("click", function () {
         if (done) return;
         level2State.cnAnswer = parseInt(this.getAttribute("data-val"), 10);
+        saveLevel2State();
         renderStep3_Q2_cn();
       });
     });
@@ -995,6 +1057,7 @@
       chip.addEventListener("click", function () {
         if (done) return;
         level2State.q2TypeInputs[this.getAttribute("data-key")] = this.getAttribute("data-val");
+        saveLevel2State();
         renderStep3_Q2_cn();
       });
     });
@@ -1002,6 +1065,7 @@
       chip.addEventListener("click", function () {
         if (done) return;
         level2State.q2DenticityInputs[this.getAttribute("data-key")] = this.getAttribute("data-val");
+        saveLevel2State();
         renderStep3_Q2_cn();
       });
     });
@@ -1039,6 +1103,7 @@
   // ── Step 4: Pick Geometry (2 pts) ───────────────────────
 
   function renderStep2() {
+    saveLevel2State();
     var c = $("step-container");
     var cn = calcCN();
     var correctList = GEOMETRY_MAP[cn] || [];
@@ -1148,6 +1213,7 @@
   ];
 
   function renderStep5_Q4_picture() {
+    saveLevel2State();
     var c = $("step-container");
     var bc = $("builder-container");
     if (bc) bc.classList.add("hidden"); // hide the 3D canvas during picture pick
@@ -1247,6 +1313,7 @@
   }
 
   function renderStep3() {
+    saveLevel2State();
     // Q4 gate — if the picture hasn't been picked yet, show that phase first.
     if (!level2State.pictureDone) {
       renderStep5_Q4_picture();
@@ -1670,6 +1737,9 @@
       finishedAt: Date.now(),
     };
     sessionStorage.setItem("level2-finals", JSON.stringify(finals));
+    // Player has finished — drop the in-progress snapshot so a fresh
+    // start (or device hand-off) doesn't resume into a finished game.
+    clearLevel2State();
   }
 
   /**

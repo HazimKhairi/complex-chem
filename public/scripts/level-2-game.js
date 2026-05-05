@@ -1270,10 +1270,14 @@
             level2State.geometryScore = pts;
             level2State.level2Score += pts;
             level2State.geometryDone = true;
+            if (window.AudioManager) window.AudioManager.play("correct");
           } else if (level2State.geometryAttempts >= 3) {
             level2State.selectedGeometry = correctList[0];
             level2State.geometryScore = 0;
             level2State.geometryDone = true;
+            if (window.AudioManager) window.AudioManager.play("wrong");
+          } else {
+            if (window.AudioManager) window.AudioManager.play("wrong");
           }
           updateScoreBar();
           renderStep2();

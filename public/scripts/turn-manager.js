@@ -195,6 +195,12 @@
         if (isCurrentPlayer && playerState !== PLAYER_STATES.FINISHED) {
           playerDiceArrow.style.visibility = 'visible';
           playerDiceArrow.style.opacity = '1';
+          // Restore arrow image if it was cleared by game-script rotation —
+          // happens when we skip a finished player and the new current
+          // player's arrow src was wiped during the previous transfer.
+          if (!playerDiceArrow.getAttribute('src')) {
+            playerDiceArrow.setAttribute('src', 'gifs/arrow1.gif');
+          }
         } else {
           playerDiceArrow.style.visibility = 'hidden';
           playerDiceArrow.style.opacity = '0';
@@ -739,7 +745,22 @@
   function startContinuousSync() {
     setInterval(() => {
       if (typeof window.x !== 'undefined') {
-        const gameScriptPlayer = window.x;
+        let gameScriptPlayer = window.x;
+
+        // If the game script handed the turn to a player that already
+        // finished Level 1 (winner), skip past them automatically.
+        if (isValidPlayerId(gameScriptPlayer) && state.playerStates[gameScriptPlayer] === PLAYER_STATES.FINISHED) {
+          let scan = gameScriptPlayer;
+          for (let i = 0; i < state.activePlayers.length; i++) {
+            scan = getNextActivePlayer(scan);
+            if (state.playerStates[scan] !== PLAYER_STATES.FINISHED) break;
+          }
+          if (scan !== gameScriptPlayer && state.playerStates[scan] !== PLAYER_STATES.FINISHED) {
+            console.log(`⏭️ [TurnManager] Skipping finished player ${gameScriptPlayer} → P${scan}`);
+            window.x = scan;
+            gameScriptPlayer = scan;
+          }
+        }
 
         // If game script player differs from our current player, sync it
         if (gameScriptPlayer !== state.currentPlayer && isValidPlayerId(gameScriptPlayer)) {

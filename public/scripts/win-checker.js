@@ -194,18 +194,131 @@
     // Sort winners by score (highest first)
     winners.sort((a, b) => b.score - a.score);
 
-    // Update winners modal
+    // Update winners modal contents (kept in sync, but hidden until everyone finishes)
     updateWinnersModal();
 
-    // Show modal after first winner
-    if (winners.length === 1) {
+    // Mark this player as FINISHED in TurnManager so turn rotation skips them
+    if (window.TurnManager && typeof window.TurnManager.setPlayerState === 'function' && window.TurnManager.STATES) {
+      try { window.TurnManager.setPlayerState(playerId, window.TurnManager.STATES.FINISHED); } catch (e) {}
+    }
+
+    // Only show the full-screen Level 1 Complete modal when EVERY active
+    // player has finished. Otherwise the modal would block the remaining
+    // players' interaction with the board.
+    var expected = getActivePlayerCount();
+    if (winners.length >= expected) {
       setTimeout(() => {
         showWinnersModal();
       }, 500);
+    } else {
+      // Show a non-blocking toast so others know this player is done
+      showFinisherToast(playerName, score, expected - winners.length);
     }
 
     // #12 — update Continue-to-Level-2 gating every time a new winner lands
     updateContinueGate();
+
+    // If the current player is the one who just finished, immediately hand
+    // the turn to the next non-finished active player so they aren't stuck.
+    advancePastFinishedPlayer(playerId);
+  }
+
+  /**
+   * Show a small non-blocking toast announcing a player finished.
+   * Stacks bottom-right so multiple finishers don't overlap.
+   */
+  function showFinisherToast(playerName, score, remaining) {
+    try {
+      var stackId = 'winchecker-toast-stack';
+      var stack = document.getElementById(stackId);
+      if (!stack) {
+        stack = document.createElement('div');
+        stack.id = stackId;
+        stack.style.cssText = 'position:fixed;right:16px;bottom:16px;z-index:90;display:flex;flex-direction:column;gap:8px;pointer-events:none;';
+        document.body.appendChild(stack);
+      }
+
+      var toast = document.createElement('div');
+      toast.style.cssText = [
+        'background:#ffffff',
+        'border:2px solid #10b981',
+        'border-radius:14px',
+        'box-shadow:0 10px 30px rgba(15,23,42,0.18)',
+        'padding:12px 16px',
+        'min-width:240px',
+        'max-width:320px',
+        'font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif',
+        'color:#0f172a',
+        'transform:translateY(8px)',
+        'opacity:0',
+        'transition:transform .25s ease, opacity .25s ease'
+      ].join(';');
+
+      var safeName = String(playerName || 'Player').replace(/[<>&"']/g, function (c) {
+        return ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&#39;' })[c];
+      });
+      var safeScore = parseInt(score, 10) || 0;
+      var remainingTxt = remaining > 0
+        ? ('Waiting for ' + remaining + ' more player' + (remaining > 1 ? 's' : '') + '…')
+        : 'All players done!';
+
+      toast.innerHTML = ''
+        + '<div style="font-weight:800;font-size:14px;line-height:1.2;margin-bottom:2px;">'
+        +   safeName + ' finished Level 1'
+        + '</div>'
+        + '<div style="font-size:12px;color:#475569;">'
+        +   'Score: <span style="font-weight:700;color:#0f172a;">' + safeScore + '</span> &middot; ' + remainingTxt
+        + '</div>';
+
+      stack.appendChild(toast);
+      // Animate in
+      requestAnimationFrame(function () {
+        toast.style.transform = 'translateY(0)';
+        toast.style.opacity = '1';
+      });
+      // Auto-dismiss
+      setTimeout(function () {
+        toast.style.transform = 'translateY(8px)';
+        toast.style.opacity = '0';
+        setTimeout(function () { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 250);
+      }, 4200);
+    } catch (e) {
+      console.warn('[WinChecker] toast render failed:', e);
+    }
+  }
+
+  /**
+   * If a player just finished and they happen to be the current player, push
+   * the turn forward so the remaining non-finished player can act. Without
+   * this, window.x can stay on the finished player and block the dice arrow.
+   */
+  function advancePastFinishedPlayer(justFinishedId) {
+    try {
+      if (typeof window.x === 'undefined') return;
+      if (window.x !== justFinishedId) return;
+
+      var active = (window.TurnManager && window.TurnManager.getActivePlayers)
+        ? window.TurnManager.getActivePlayers()
+        : [1, 2, 3, 4];
+      if (!Array.isArray(active) || active.length === 0) return;
+
+      // Find next active player who is not already a winner
+      var idx = active.indexOf(justFinishedId);
+      if (idx < 0) idx = 0;
+      for (var step = 1; step <= active.length; step++) {
+        var candidate = active[(idx + step) % active.length];
+        if (!winners.find(function (w) { return w.playerId === candidate; })) {
+          window.x = candidate;
+          if (window.TurnManager && typeof window.TurnManager.setCurrentPlayer === 'function') {
+            try { window.TurnManager.setCurrentPlayer(candidate); } catch (e) {}
+          }
+          console.log('🔁 [WinChecker] Skipped finished player ' + justFinishedId + ' → P' + candidate);
+          return;
+        }
+      }
+    } catch (e) {
+      console.warn('[WinChecker] advancePastFinishedPlayer failed:', e);
+    }
   }
 
   /**

@@ -621,12 +621,31 @@
     html += '  </div>';
     html += '</div>';
 
-    // Per latest spec: charge column is an input — students must recall
-    // each ligand/metal charge themselves before summing.
+    // Per latest spec: charge column is a chip group — students pick the
+    // value themselves. No validation; this is working-out only.
     if (!level2State.q1ChargeInputs) level2State.q1ChargeInputs = {};
     var q1Inputs = level2State.q1ChargeInputs;
-    var inputBase = 'w-20 text-center px-2 py-1 rounded-md border-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#4187a0]/40';
-    var inputCls = done ? (inputBase + ' border-gray-200 bg-gray-50 text-gray-500') : (inputBase + ' border-gray-300 bg-white text-gray-800');
+    var ligandChargeOpts = ['−2', '−1', '0', '+1', '+2'];
+    var metalChargeOpts  = ['+1', '+2', '+3', '+4'];
+    function chargeChips(key, opts) {
+      var sel = q1Inputs[key] != null ? q1Inputs[key] : '';
+      var chipBase = 'q1-charge-chip text-xs font-semibold px-2 py-1 rounded-md border-2 transition select-none ';
+      var out = '<div class="flex flex-wrap justify-center gap-1">';
+      opts.forEach(function (o) {
+        var picked = sel === o;
+        var cls = chipBase;
+        if (done) {
+          cls += picked ? 'border-[#4187a0] bg-[#4187a0]/10 text-[#4187a0] cursor-default '
+                        : 'border-gray-200 text-gray-300 cursor-default ';
+        } else {
+          cls += picked ? 'border-[#4187a0] bg-[#4187a0]/10 text-[#4187a0] '
+                        : 'border-gray-300 bg-white text-gray-600 hover:border-[#4187a0] cursor-pointer ';
+        }
+        out += '<button type="button" class="' + cls + '" data-key="' + key + '" data-val="' + o + '"' + (done ? ' disabled' : '') + '>' + o + '</button>';
+      });
+      out += '</div>';
+      return out;
+    }
 
     html += '<div class="overflow-x-auto mb-3 rounded-lg border border-gray-200">';
     html += '<table class="w-full text-sm">';
@@ -637,17 +656,14 @@
     charge.rows.forEach(function (r, i) {
       var label = r.count > 1 ? (r.name + ' &times; ' + r.count) : r.name;
       var key = 'lig_' + i;
-      var val = q1Inputs[key] != null ? q1Inputs[key] : '';
       html += '<tr class="border-t border-gray-100">';
       html += '<td class="px-3 py-2 font-medium text-gray-800">' + label + '</td>';
-      html += '<td class="text-center px-3 py-2"><input type="text" class="' + inputCls + ' q1-charge-input" data-key="' + key + '" placeholder="?" value="' + val + '"' + (done ? ' disabled' : '') + '/></td>';
+      html += '<td class="text-center px-3 py-2">' + chargeChips(key, ligandChargeOpts) + '</td>';
       html += '</tr>';
     });
-    // Metal row
-    var metalVal = q1Inputs.metal != null ? q1Inputs.metal : '';
     html += '<tr class="border-t border-gray-100 bg-blue-50">';
     html += '<td class="px-3 py-2 font-medium text-gray-800">Metal: ' + (level2State.selectedMetal ? level2State.selectedMetal.name : "—") + '</td>';
-    html += '<td class="text-center px-3 py-2"><input type="text" class="' + inputCls + ' q1-charge-input" data-key="metal" placeholder="?" value="' + metalVal + '"' + (done ? ' disabled' : '') + '/></td>';
+    html += '<td class="text-center px-3 py-2">' + chargeChips('metal', metalChargeOpts) + '</td>';
     html += '</tr>';
     html += '</tbody></table></div>';
 
@@ -701,9 +717,11 @@
       });
     });
 
-    document.querySelectorAll(".q1-charge-input").forEach(function (inp) {
-      inp.addEventListener("input", function () {
-        level2State.q1ChargeInputs[this.getAttribute("data-key")] = this.value;
+    document.querySelectorAll(".q1-charge-chip").forEach(function (chip) {
+      chip.addEventListener("click", function () {
+        if (done) return;
+        level2State.q1ChargeInputs[this.getAttribute("data-key")] = this.getAttribute("data-val");
+        renderStep2_Q1_type();
       });
     });
 
@@ -840,14 +858,32 @@
     html += '  </div>';
     html += '</div>';
 
-    // Per latest spec: Type of denticity + Denticity (d) are inputs —
-    // students recall and fill themselves before summing to a CN.
+    // Per latest spec: Type of denticity + Denticity (d) are chip groups
+    // — students pick the value themselves. No validation; working-out only.
     if (!level2State.q2TypeInputs) level2State.q2TypeInputs = {};
     if (!level2State.q2DenticityInputs) level2State.q2DenticityInputs = {};
     var q2Type = level2State.q2TypeInputs;
     var q2Dent = level2State.q2DenticityInputs;
-    var q2Base = 'text-center px-2 py-1 rounded-md border-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#4187a0]/40';
-    var q2Cls = done ? (q2Base + ' border-gray-200 bg-gray-50 text-gray-500') : (q2Base + ' border-gray-300 bg-white text-gray-800');
+    var typeOpts = ['Monodentate', 'Bidentate'];
+    var dentOpts = ['1', '2'];
+    function q2Chips(cls, key, opts, sel) {
+      var chipBase = cls + ' text-xs font-semibold px-2 py-1 rounded-md border-2 transition select-none ';
+      var out = '<div class="flex flex-wrap justify-center gap-1">';
+      opts.forEach(function (o) {
+        var picked = sel === o;
+        var c = chipBase;
+        if (done) {
+          c += picked ? 'border-[#4187a0] bg-[#4187a0]/10 text-[#4187a0] cursor-default '
+                      : 'border-gray-200 text-gray-300 cursor-default ';
+        } else {
+          c += picked ? 'border-[#4187a0] bg-[#4187a0]/10 text-[#4187a0] '
+                      : 'border-gray-300 bg-white text-gray-600 hover:border-[#4187a0] cursor-pointer ';
+        }
+        out += '<button type="button" class="' + c + '" data-key="' + key + '" data-val="' + o + '"' + (done ? ' disabled' : '') + '>' + o + '</button>';
+      });
+      out += '</div>';
+      return out;
+    }
 
     html += '<div class="overflow-x-auto mb-3 rounded-lg border border-gray-200">';
     html += '<table class="w-full text-sm">';
@@ -859,12 +895,10 @@
     html += '</tr></thead><tbody>';
     rows.forEach(function (r, i) {
       var key = 'r_' + i;
-      var typeVal = q2Type[key] != null ? q2Type[key] : '';
-      var dentVal = q2Dent[key] != null ? q2Dent[key] : '';
       html += '<tr class="border-t border-gray-100">';
       html += '<td class="px-3 py-2 font-medium text-gray-800">' + r.name + '</td>';
-      html += '<td class="text-center px-3 py-2"><input type="text" class="' + q2Cls + ' q2-type-input w-32" data-key="' + key + '" placeholder="?" value="' + typeVal + '"' + (done ? ' disabled' : '') + '/></td>';
-      html += '<td class="text-center px-3 py-2"><input type="text" class="' + q2Cls + ' q2-dent-input w-16" data-key="' + key + '" placeholder="?" value="' + dentVal + '"' + (done ? ' disabled' : '') + '/></td>';
+      html += '<td class="text-center px-3 py-2">' + q2Chips('q2-type-chip', key, typeOpts, q2Type[key]) + '</td>';
+      html += '<td class="text-center px-3 py-2">' + q2Chips('q2-dent-chip', key, dentOpts, q2Dent[key]) + '</td>';
       html += '<td class="text-center px-3 py-2">' + r.count + '</td>';
       html += '</tr>';
     });
@@ -913,14 +947,18 @@
       });
     });
 
-    document.querySelectorAll(".q2-type-input").forEach(function (inp) {
-      inp.addEventListener("input", function () {
-        level2State.q2TypeInputs[this.getAttribute("data-key")] = this.value;
+    document.querySelectorAll(".q2-type-chip").forEach(function (chip) {
+      chip.addEventListener("click", function () {
+        if (done) return;
+        level2State.q2TypeInputs[this.getAttribute("data-key")] = this.getAttribute("data-val");
+        renderStep3_Q2_cn();
       });
     });
-    document.querySelectorAll(".q2-dent-input").forEach(function (inp) {
-      inp.addEventListener("input", function () {
-        level2State.q2DenticityInputs[this.getAttribute("data-key")] = this.value;
+    document.querySelectorAll(".q2-dent-chip").forEach(function (chip) {
+      chip.addEventListener("click", function () {
+        if (done) return;
+        level2State.q2DenticityInputs[this.getAttribute("data-key")] = this.getAttribute("data-val");
+        renderStep3_Q2_cn();
       });
     });
 

@@ -877,12 +877,14 @@ function showLigandModal(ligand, title, subtitle) {
 }
 
 /**
- * Show a "Did you know?" quick-notes popup for the current question.
- * Reuses a single overlay element, re-creating on each call if the
- * player dismissed the previous one.
+ * Show a "Did you know?" popup for the current question. The popup now
+ * displays the LEFT half of the question's source card image
+ * (cropped from public/assets/question-cards/<n>.png into
+ * public/assets/question-cards/left/<n>.png) so the visual the
+ * student sees matches the question on screen.
  */
-function openQuestionHintPopup(title, body) {
-  if (!body) return;
+function openQuestionHintPopup(imageFile) {
+  if (!imageFile) return;
 
   let overlay = document.getElementById("question-hint-overlay");
   if (overlay) overlay.remove();
@@ -890,24 +892,26 @@ function openQuestionHintPopup(title, body) {
   overlay = document.createElement("div");
   overlay.id = "question-hint-overlay";
   overlay.className = "fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4";
+
+  var imgSrc = "/assets/question-cards/left/" + imageFile;
   overlay.innerHTML = `
-    <div class="bg-amber-50 border-4 border-amber-400 rounded-2xl shadow-2xl max-w-md w-full p-5 relative">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full relative overflow-hidden">
       <button
         id="question-hint-close"
         aria-label="Close hint"
-        class="absolute top-2 right-3 text-amber-800 hover:text-amber-900 text-2xl leading-none font-black"
+        class="absolute top-2 right-2 z-10 w-8 h-8 rounded-full bg-white/90 hover:bg-white text-gray-700 hover:text-gray-900 text-xl leading-none font-black flex items-center justify-center shadow"
       >&times;</button>
-      <div class="flex items-center gap-2 mb-2">
-        <svg class="w-5 h-5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5a6 6 0 0 0-12 0c0 1.3.5 2.6 1.5 3.5.8.8 1.3 1.5 1.5 2.5"/>
-          <path d="M9 18h6"/>
-          <path d="M10 22h4"/>
-        </svg>
-        <h3 class="font-black text-amber-900 uppercase tracking-wide text-sm">Did you know?</h3>
-      </div>
-      ${title ? `<p class="font-bold text-amber-900 mb-2">${title}</p>` : ''}
-      <p class="text-sm text-gray-800 leading-relaxed">${body}</p>
-      <div class="mt-4 text-right">
+      <img
+        src="${imgSrc}"
+        alt="Did you know"
+        class="block w-full h-auto select-none"
+        draggable="false"
+        onerror="this.parentNode.querySelector('#question-hint-fallback').style.display='block'; this.style.display='none';"
+      />
+      <p id="question-hint-fallback" class="hidden p-6 text-center text-sm text-gray-500">
+        Hint image not available.
+      </p>
+      <div class="px-4 py-3 border-t border-gray-100 text-right">
         <button
           id="question-hint-ok"
           class="px-4 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm"
@@ -1050,12 +1054,13 @@ function showQuestion(playerId, tileColor = null, explicitDifficulty = null) {
     </div>
   `;
 
-  // Wire up the Note button — opens a quick-notes popup with the
-  // "Did you know?" fact. Free to view, no point deduction.
+  // Wire up the Note button — opens the cropped left-half of the
+  // question's source card so the "Did you know" visual matches the
+  // question on screen. Free to view, no point deduction.
   const hintBtn = document.getElementById("question-hint-btn");
   if (hintBtn) {
     hintBtn.addEventListener("click", () => {
-      openQuestionHintPopup(question.hintTitle, question.hint);
+      openQuestionHintPopup(question.imageFile);
     });
   }
 

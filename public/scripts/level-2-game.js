@@ -621,25 +621,33 @@
     html += '  </div>';
     html += '</div>';
 
-    // Per latest spec: charge values are hidden so students must recall
+    // Per latest spec: charge column is an input — students must recall
     // each ligand/metal charge themselves before summing.
+    if (!level2State.q1ChargeInputs) level2State.q1ChargeInputs = {};
+    var q1Inputs = level2State.q1ChargeInputs;
+    var inputBase = 'w-20 text-center px-2 py-1 rounded-md border-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#4187a0]/40';
+    var inputCls = done ? (inputBase + ' border-gray-200 bg-gray-50 text-gray-500') : (inputBase + ' border-gray-300 bg-white text-gray-800');
+
     html += '<div class="overflow-x-auto mb-3 rounded-lg border border-gray-200">';
     html += '<table class="w-full text-sm">';
     html += '<thead class="bg-gray-50 text-gray-700"><tr>';
     html += '<th class="text-left px-3 py-2 font-semibold">Ligand</th>';
     html += '<th class="text-center px-3 py-2 font-semibold">Charge</th>';
     html += '</tr></thead><tbody>';
-    charge.rows.forEach(function (r) {
+    charge.rows.forEach(function (r, i) {
       var label = r.count > 1 ? (r.name + ' &times; ' + r.count) : r.name;
+      var key = 'lig_' + i;
+      var val = q1Inputs[key] != null ? q1Inputs[key] : '';
       html += '<tr class="border-t border-gray-100">';
       html += '<td class="px-3 py-2 font-medium text-gray-800">' + label + '</td>';
-      html += '<td class="text-center px-3 py-2 text-gray-300">&mdash;</td>';
+      html += '<td class="text-center px-3 py-2"><input type="text" class="' + inputCls + ' q1-charge-input" data-key="' + key + '" placeholder="?" value="' + val + '"' + (done ? ' disabled' : '') + '/></td>';
       html += '</tr>';
     });
     // Metal row
+    var metalVal = q1Inputs.metal != null ? q1Inputs.metal : '';
     html += '<tr class="border-t border-gray-100 bg-blue-50">';
     html += '<td class="px-3 py-2 font-medium text-gray-800">Metal: ' + (level2State.selectedMetal ? level2State.selectedMetal.name : "—") + '</td>';
-    html += '<td class="text-center px-3 py-2 text-gray-300">&mdash;</td>';
+    html += '<td class="text-center px-3 py-2"><input type="text" class="' + inputCls + ' q1-charge-input" data-key="metal" placeholder="?" value="' + metalVal + '"' + (done ? ' disabled' : '') + '/></td>';
     html += '</tr>';
     html += '</tbody></table></div>';
 
@@ -690,6 +698,12 @@
         if (done) return;
         level2State.typeAnswer = this.getAttribute("data-val");
         renderStep2_Q1_type();
+      });
+    });
+
+    document.querySelectorAll(".q1-charge-input").forEach(function (inp) {
+      inp.addEventListener("input", function () {
+        level2State.q1ChargeInputs[this.getAttribute("data-key")] = this.value;
       });
     });
 
@@ -826,9 +840,15 @@
     html += '  </div>';
     html += '</div>';
 
-    // Per latest spec: keep Ligand + Type of denticity + Denticity (d)
-    // + No. of ligand(s) (n). The "No. of coordination sites (d × n)"
-    // column is X'd out — students multiply themselves and sum to a CN.
+    // Per latest spec: Type of denticity + Denticity (d) are inputs —
+    // students recall and fill themselves before summing to a CN.
+    if (!level2State.q2TypeInputs) level2State.q2TypeInputs = {};
+    if (!level2State.q2DenticityInputs) level2State.q2DenticityInputs = {};
+    var q2Type = level2State.q2TypeInputs;
+    var q2Dent = level2State.q2DenticityInputs;
+    var q2Base = 'text-center px-2 py-1 rounded-md border-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#4187a0]/40';
+    var q2Cls = done ? (q2Base + ' border-gray-200 bg-gray-50 text-gray-500') : (q2Base + ' border-gray-300 bg-white text-gray-800');
+
     html += '<div class="overflow-x-auto mb-3 rounded-lg border border-gray-200">';
     html += '<table class="w-full text-sm">';
     html += '<thead class="bg-[#4187a0] text-white"><tr>';
@@ -837,11 +857,14 @@
     html += '<th class="text-center px-3 py-2 font-semibold">Denticity, d</th>';
     html += '<th class="text-center px-3 py-2 font-semibold">No. of ligand(s), n</th>';
     html += '</tr></thead><tbody>';
-    rows.forEach(function (r) {
+    rows.forEach(function (r, i) {
+      var key = 'r_' + i;
+      var typeVal = q2Type[key] != null ? q2Type[key] : '';
+      var dentVal = q2Dent[key] != null ? q2Dent[key] : '';
       html += '<tr class="border-t border-gray-100">';
       html += '<td class="px-3 py-2 font-medium text-gray-800">' + r.name + '</td>';
-      html += '<td class="text-center px-3 py-2 text-gray-300">&mdash;</td>';
-      html += '<td class="text-center px-3 py-2 text-gray-300">&mdash;</td>';
+      html += '<td class="text-center px-3 py-2"><input type="text" class="' + q2Cls + ' q2-type-input w-32" data-key="' + key + '" placeholder="?" value="' + typeVal + '"' + (done ? ' disabled' : '') + '/></td>';
+      html += '<td class="text-center px-3 py-2"><input type="text" class="' + q2Cls + ' q2-dent-input w-16" data-key="' + key + '" placeholder="?" value="' + dentVal + '"' + (done ? ' disabled' : '') + '/></td>';
       html += '<td class="text-center px-3 py-2">' + r.count + '</td>';
       html += '</tr>';
     });
@@ -887,6 +910,17 @@
         if (done) return;
         level2State.cnAnswer = parseInt(this.getAttribute("data-val"), 10);
         renderStep3_Q2_cn();
+      });
+    });
+
+    document.querySelectorAll(".q2-type-input").forEach(function (inp) {
+      inp.addEventListener("input", function () {
+        level2State.q2TypeInputs[this.getAttribute("data-key")] = this.value;
+      });
+    });
+    document.querySelectorAll(".q2-dent-input").forEach(function (inp) {
+      inp.addEventListener("input", function () {
+        level2State.q2DenticityInputs[this.getAttribute("data-key")] = this.value;
       });
     });
 

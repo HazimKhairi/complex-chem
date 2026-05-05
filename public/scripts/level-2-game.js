@@ -6,6 +6,21 @@
 (function () {
   "use strict";
 
+  // Chat-bubble tail for Q2 info bubbles. Injected once so the speech-
+  // shape pointer renders without needing a separate stylesheet.
+  if (typeof document !== "undefined" && !document.getElementById("l2-chat-bubble-style")) {
+    var s = document.createElement("style");
+    s.id = "l2-chat-bubble-style";
+    s.textContent = ''
+      + '.q2-chat-bubble{position:relative;}'
+      + '.q2-chat-bubble::after{content:"";position:absolute;bottom:-10px;left:28px;width:0;height:0;'
+      + '  border-left:10px solid transparent;border-right:10px solid transparent;border-top:12px solid #3b56a0;'
+      + '  filter:drop-shadow(0 1px 0 rgba(0,0,0,0.05));}'
+      + '.q2-chat-bubble{animation:q2-bubble-in 220ms cubic-bezier(.2,.7,.2,1);}'
+      + '@keyframes q2-bubble-in{from{opacity:0;transform:translateY(-6px) scale(.96);}to{opacity:1;transform:translateY(0) scale(1);}}';
+    document.head.appendChild(s);
+  }
+
   // ── Chemistry Data ───────────────────────────────────────
 
   // bond  = donor atom shown on the 3D sphere ("Shape sphere bond")
@@ -907,17 +922,23 @@
     level2State.cnDone = false;
   }
 
-  // Info bubble content keyed by topic. Clicking the "i" pill opens
-  // an overlay with the matching text (spec: three coloured speech
-  // bubbles from the mock).
+  // Info bubble content keyed by topic. Bubbles are non-blocking chat
+  // shapes — students can keep answering questions while one or more
+  // bubbles are open.
   var INFO_BUBBLES = {
-    cn: {
-      title: "Coordination Number",
-      body: "The number of ligand donor atoms surrounding the central metal.",
+    denticity_type: {
+      title: "Type of denticity",
+      body: "Type of denticity refers to the classification of ligands based on their denticity.<br><br>" +
+            "<strong>Monodentate (1)</strong> &rarr; 1 donor atom<br>" +
+            "<strong>Bidentate (2)</strong> &rarr; 2 donor atoms",
     },
     denticity: {
       title: "Denticity",
-      body: "The number of donor atoms in a ligand that can bind to the central metal ion.<br><br><strong>Monodentate (1)</strong> → 1 donor atom<br><strong>Bidentate (2)</strong> → 2 donor atoms",
+      body: "Denticity is the number of donor atoms in a ligand that can bind to the central metal ion.",
+    },
+    cn: {
+      title: "Coordination Number",
+      body: "Coordination Number is the number of ligand donor atoms surrounding the central metal.",
     },
     sites: {
       title: "No. of coordination sites",
@@ -983,22 +1004,46 @@
 
     var html = '<h2 class="text-xl font-bold text-gray-800 mb-3">2. Predict the coordination number <span class="text-sm font-normal text-gray-400">(3, 4, 5 or 6)</span></h2>';
 
-    // Always-visible speech bubbles per spec image — left bubble
-    // explains "Type of denticity", right bubble explains "Denticity".
-    html += '<div class="grid sm:grid-cols-2 gap-3 mb-4">';
-    html += '  <div class="relative px-4 py-3 rounded-2xl bg-sky-50 border-2 border-sky-200 text-sky-900 text-xs leading-relaxed shadow-sm">';
-    html += '    <p class="font-semibold mb-1">Type of denticity</p>';
-    html += '    <p class="mb-1">Refers to the classification of ligands based on their denticity.</p>';
-    html += '    <ul class="list-disc list-inside space-y-0.5">';
-    html += '      <li><strong>Monodentate (1)</strong> &rarr; 1 donor atom</li>';
-    html += '      <li><strong>Bidentate (2)</strong> &rarr; 2 donor atoms</li>';
-    html += '    </ul>';
-    html += '  </div>';
-    html += '  <div class="relative px-4 py-3 rounded-2xl bg-sky-50 border-2 border-sky-200 text-sky-900 text-xs leading-relaxed shadow-sm">';
-    html += '    <p class="font-semibold mb-1">Denticity</p>';
-    html += '    <p>The number of donor atoms in a ligand that can bind to the central metal ion.</p>';
-    html += '  </div>';
+    // Three toggle buttons that open chat-bubble explainers. Bubbles
+    // appear inline below — they don't block the rest of the question
+    // so students can keep answering while one or more are open.
+    if (!Array.isArray(level2State.q2OpenBubbles)) level2State.q2OpenBubbles = [];
+    var openBubbles = level2State.q2OpenBubbles;
+    var bubbleTriggers = [
+      { key: 'denticity_type', label: 'Type of denticity' },
+      { key: 'denticity',      label: 'Denticity' },
+      { key: 'cn',             label: 'Coordination Number' },
+    ];
+    html += '<div class="flex flex-wrap gap-2 mb-3">';
+    bubbleTriggers.forEach(function (t) {
+      var open = openBubbles.indexOf(t.key) !== -1;
+      var pillCls = 'q2-bubble-trigger inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border-2 transition select-none ' +
+        (open
+          ? 'bg-[#3b56a0] border-[#3b56a0] text-white shadow-md '
+          : 'bg-white border-[#3b56a0] text-[#3b56a0] hover:bg-[#3b56a0]/5 cursor-pointer ');
+      html += '<button type="button" class="' + pillCls + '" data-bubble="' + t.key + '">' +
+              '<span class="w-4 h-4 inline-flex items-center justify-center rounded-full ' +
+                (open ? 'bg-white text-[#3b56a0]' : 'bg-[#3b56a0] text-white') +
+                ' text-[10px] font-black">i</span>' +
+              t.label +
+              (open ? ' <span class="text-[10px] opacity-80">×</span>' : '') +
+              '</button>';
+    });
     html += '</div>';
+
+    if (openBubbles.length > 0) {
+      html += '<div class="flex flex-wrap gap-3 mb-4">';
+      openBubbles.forEach(function (key) {
+        var info = INFO_BUBBLES[key];
+        if (!info) return;
+        html += '<div class="q2-chat-bubble relative bg-[#3b56a0] text-white rounded-3xl shadow-md px-4 py-3 max-w-sm flex-1 min-w-[220px]" data-bubble="' + key + '">' +
+                '  <button type="button" class="q2-bubble-close absolute -top-2 -right-2 w-6 h-6 rounded-full bg-white text-[#3b56a0] border-2 border-[#3b56a0] text-sm font-bold flex items-center justify-center hover:bg-[#3b56a0] hover:text-white transition shadow" data-bubble="' + key + '" aria-label="Close">&times;</button>' +
+                '  <p class="font-bold text-sm mb-1">' + info.title + '</p>' +
+                '  <p class="text-xs leading-relaxed">' + info.body + '</p>' +
+                '</div>';
+      });
+      html += '</div>';
+    }
 
     // Per latest spec: Type of denticity + Denticity (d) are chip groups
     // — students pick the value themselves. No validation; working-out only.
@@ -1104,6 +1149,25 @@
         level2State.q2DenticityInputs[this.getAttribute("data-key")] = this.getAttribute("data-val");
         saveLevel2State();
         renderStep3_Q2_cn();
+      });
+    });
+
+    // Toggle bubble open/close — clicking the trigger again or the
+    // bubble's × button removes it from the open list.
+    function toggleBubble(key) {
+      var idx = level2State.q2OpenBubbles.indexOf(key);
+      if (idx === -1) level2State.q2OpenBubbles.push(key);
+      else level2State.q2OpenBubbles.splice(idx, 1);
+      saveLevel2State();
+      renderStep3_Q2_cn();
+    }
+    document.querySelectorAll(".q2-bubble-trigger").forEach(function (btn) {
+      btn.addEventListener("click", function () { toggleBubble(this.getAttribute("data-bubble")); });
+    });
+    document.querySelectorAll(".q2-bubble-close").forEach(function (btn) {
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        toggleBubble(this.getAttribute("data-bubble"));
       });
     });
 

@@ -752,27 +752,13 @@
     html += '<td class="text-center px-3 py-2">' + pickerChips('contrib', 'metal', metalChargeOpts, q1Contribs.metal) + '</td>';
     html += '</tr>';
 
-    // "Charge of Complex" summary row — sums the student's contribution picks.
-    function parseChip(s) {
-      if (s == null || s === '') return null;
-      return parseInt(String(s).replace('−', '-').replace('+', ''), 10);
-    }
-    function fmtSigned(n) {
-      return n >= 0 ? '+' + n : String(n).replace('-', '−');
-    }
-    var contribTotalPicked = true;
-    var contribTotal = 0;
-    charge.rows.forEach(function (r, i) {
-      var v = parseChip(level2State.q1ContribInputs['lig_' + i]);
-      if (v == null) contribTotalPicked = false; else contribTotal += v;
-    });
-    var metalContribV = parseChip(level2State.q1ContribInputs.metal);
-    if (metalContribV == null) contribTotalPicked = false; else contribTotal += metalContribV;
+    // "Charge of Complex" label row — student calculates the total in their
+    // head. No auto-sum — they own the math, then pick Neutral/Anion/Cation.
     html += '<tr class="border-t border-gray-200 bg-amber-50">';
     html += '<td class="px-3 py-2"></td>';
     html += '<td class="px-3 py-2"></td>';
     html += '<td class="text-right px-3 py-2 font-semibold text-amber-900">Charge of Complex</td>';
-    html += '<td class="text-center px-3 py-2 font-bold text-base ' + (contribTotalPicked ? 'text-[#4187a0]' : 'text-gray-400') + '">' + (contribTotalPicked ? fmtSigned(contribTotal) : '?') + '</td>';
+    html += '<td class="text-center px-3 py-2 font-bold text-base text-gray-400">?</td>';
     html += '</tr>';
     html += '</tbody></table></div>';
 

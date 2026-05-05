@@ -776,44 +776,6 @@
     html += '</tr>';
     html += '</tbody></table></div>';
 
-    // Live equation builder — chips feed a running sum so students see
-    // the math behind their picks. Total drives their cation/anion/
-    // neutral choice; the label is NOT shown so they still pick.
-    var allPicked = true;
-    var liveTotal = 0;
-    var eqRows = '';
-    charge.rows.forEach(function (r, i) {
-      var raw = level2State.q1ChargeInputs['lig_' + i];
-      var v = parseChip(raw);
-      if (v == null) allPicked = false; else liveTotal += v * r.count;
-      var chipTxt = raw || '?';
-      var prod = v != null ? fmtSigned(v * r.count) : '?';
-      eqRows +=
-        '<div class="flex items-center justify-between gap-2 py-0.5">' +
-          '<span class="text-gray-600">' + r.name + (r.count > 1 ? ' × ' + r.count : '') + '</span>' +
-          '<span class="text-gray-800">(' + chipTxt + ')' + (r.count > 1 ? ' × ' + r.count : '') + '</span>' +
-          '<span class="font-semibold text-gray-900 w-12 text-right">' + prod + '</span>' +
-        '</div>';
-    });
-    var metalRaw = level2State.q1ChargeInputs.metal;
-    var metalV = parseChip(metalRaw);
-    if (metalV == null) allPicked = false; else liveTotal += metalV;
-    eqRows +=
-      '<div class="flex items-center justify-between gap-2 py-0.5">' +
-        '<span class="text-gray-600">Metal</span>' +
-        '<span class="text-gray-800">' + (metalRaw || '?') + '</span>' +
-        '<span class="font-semibold text-gray-900 w-12 text-right">' + (metalV != null ? fmtSigned(metalV) : '?') + '</span>' +
-      '</div>';
-
-    html += '<div class="mb-4 px-4 py-3 rounded-lg bg-amber-50 border-2 border-amber-200 font-mono text-xs">';
-    html += '<div class="font-sans font-semibold text-amber-900 text-[11px] uppercase tracking-wide mb-1">Working</div>';
-    html += eqRows;
-    html += '<div class="border-t border-amber-300 mt-2 pt-2 flex items-center justify-between gap-2">';
-    html += '<span class="font-sans font-bold text-amber-900">Total</span>';
-    html += '<span class="font-bold text-lg ' + (allPicked ? 'text-[#4187a0]' : 'text-gray-400') + '">' + (allPicked ? fmtSigned(liveTotal) : '?') + '</span>';
-    html += '</div>';
-    html += '</div>';
-
     // 3-option answer
     var options = [
       { id: "neutral", label: "Neutral", hint: "Total = 0" },

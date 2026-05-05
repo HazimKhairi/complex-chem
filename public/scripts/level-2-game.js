@@ -679,15 +679,22 @@
     html += '  </div>';
     html += '</div>';
 
-    // Per latest spec: charge column is a chip group — students pick the
-    // value themselves. No validation; this is working-out only.
+    // Per latest spec: every fill-in column is a chip group — students pick
+    // the value themselves. No validation; this is working-out only.
     if (!level2State.q1ChargeInputs) level2State.q1ChargeInputs = {};
-    var q1Inputs = level2State.q1ChargeInputs;
+    if (!level2State.q1CountInputs) level2State.q1CountInputs = {};
+    if (!level2State.q1ContribInputs) level2State.q1ContribInputs = {};
+    var q1Charges  = level2State.q1ChargeInputs;
+    var q1Counts   = level2State.q1CountInputs;
+    var q1Contribs = level2State.q1ContribInputs;
     var ligandChargeOpts = ['−2', '−1', '0', '+1', '+2'];
     var metalChargeOpts  = ['+1', '+2', '+3', '+4'];
-    function chargeChips(key, opts) {
-      var sel = q1Inputs[key] != null ? q1Inputs[key] : '';
-      var chipBase = 'q1-charge-chip text-xs font-semibold px-2 py-1 rounded-md border-2 transition select-none ';
+    var countOpts        = ['1', '2', '3', '4', '5', '6'];
+    var contribOpts      = ['−6', '−4', '−3', '−2', '−1', '0', '+1', '+2', '+3', '+4', '+6'];
+
+    function pickerChips(field, key, opts, currentValue) {
+      var sel = currentValue != null ? currentValue : '';
+      var chipBase = 'q1-' + field + '-chip text-xs font-semibold px-2 py-1 rounded-md border-2 transition select-none ';
       var out = '<div class="flex flex-wrap justify-center gap-1">';
       opts.forEach(function (o) {
         var picked = sel === o;
@@ -699,7 +706,7 @@
           cls += picked ? 'border-[#4187a0] bg-[#4187a0]/10 text-[#4187a0] '
                         : 'border-gray-300 bg-white text-gray-600 hover:border-[#4187a0] cursor-pointer ';
         }
-        out += '<button type="button" class="' + cls + '" data-key="' + key + '" data-val="' + o + '"' + (done ? ' disabled' : '') + '>' + o + '</button>';
+        out += '<button type="button" class="' + cls + '" data-field="' + field + '" data-key="' + key + '" data-val="' + o + '"' + (done ? ' disabled' : '') + '>' + o + '</button>';
       });
       out += '</div>';
       return out;
@@ -710,24 +717,27 @@
     html += '<thead class="bg-gray-50 text-gray-700"><tr>';
     html += '<th class="text-left px-3 py-2 font-semibold">Ligand</th>';
     html += '<th class="text-center px-3 py-2 font-semibold">Charge</th>';
+    html += '<th class="text-center px-3 py-2 font-semibold">No. of ligand(s), n</th>';
+    html += '<th class="text-center px-3 py-2 font-semibold">Charge Contribution<span class="block text-[10px] font-normal text-gray-500">(Charge × n)</span></th>';
     html += '</tr></thead><tbody>';
     charge.rows.forEach(function (r, i) {
       var label = r.count > 1 ? (r.name + ' &times; ' + r.count) : r.name;
       var key = 'lig_' + i;
       html += '<tr class="border-t border-gray-100">';
       html += '<td class="px-3 py-2 font-medium text-gray-800">' + label + '</td>';
-      html += '<td class="text-center px-3 py-2">' + chargeChips(key, ligandChargeOpts) + '</td>';
+      html += '<td class="text-center px-3 py-2">' + pickerChips('charge',  key, ligandChargeOpts, q1Charges[key])  + '</td>';
+      html += '<td class="text-center px-3 py-2">' + pickerChips('count',   key, countOpts,        q1Counts[key])   + '</td>';
+      html += '<td class="text-center px-3 py-2">' + pickerChips('contrib', key, contribOpts,      q1Contribs[key]) + '</td>';
       html += '</tr>';
     });
     html += '<tr class="border-t border-gray-100 bg-blue-50">';
     html += '<td class="px-3 py-2 font-medium text-gray-800">Metal: ' + (level2State.selectedMetal ? level2State.selectedMetal.name : "—") + '</td>';
-    html += '<td class="text-center px-3 py-2">' + chargeChips('metal', metalChargeOpts) + '</td>';
+    html += '<td class="text-center px-3 py-2">' + pickerChips('charge',  'metal', metalChargeOpts, q1Charges.metal)  + '</td>';
+    html += '<td class="text-center px-3 py-2 text-gray-300">—</td>';
+    html += '<td class="text-center px-3 py-2">' + pickerChips('contrib', 'metal', metalChargeOpts, q1Contribs.metal) + '</td>';
     html += '</tr>';
-    html += '</tbody></table></div>';
 
-    // Live equation builder — chips feed a running sum so students see
-    // the math behind their picks. Total drives their cation/anion/
-    // neutral choice; the label is NOT shown so they still pick.
+    // "Charge of Complex" summary row — sums the student's contribution picks.
     function parseChip(s) {
       if (s == null || s === '') return null;
       return parseInt(String(s).replace('−', '-').replace('+', ''), 10);
@@ -735,6 +745,25 @@
     function fmtSigned(n) {
       return n >= 0 ? '+' + n : String(n).replace('-', '−');
     }
+    var contribTotalPicked = true;
+    var contribTotal = 0;
+    charge.rows.forEach(function (r, i) {
+      var v = parseChip(level2State.q1ContribInputs['lig_' + i]);
+      if (v == null) contribTotalPicked = false; else contribTotal += v;
+    });
+    var metalContribV = parseChip(level2State.q1ContribInputs.metal);
+    if (metalContribV == null) contribTotalPicked = false; else contribTotal += metalContribV;
+    html += '<tr class="border-t border-gray-200 bg-amber-50">';
+    html += '<td class="px-3 py-2"></td>';
+    html += '<td class="px-3 py-2"></td>';
+    html += '<td class="text-right px-3 py-2 font-semibold text-amber-900">Charge of Complex</td>';
+    html += '<td class="text-center px-3 py-2 font-bold text-base ' + (contribTotalPicked ? 'text-[#4187a0]' : 'text-gray-400') + '">' + (contribTotalPicked ? fmtSigned(contribTotal) : '?') + '</td>';
+    html += '</tr>';
+    html += '</tbody></table></div>';
+
+    // Live equation builder — chips feed a running sum so students see
+    // the math behind their picks. Total drives their cation/anion/
+    // neutral choice; the label is NOT shown so they still pick.
     var allPicked = true;
     var liveTotal = 0;
     var eqRows = '';
@@ -820,10 +849,18 @@
       });
     });
 
-    document.querySelectorAll(".q1-charge-chip").forEach(function (chip) {
+    var q1FieldStores = {
+      charge:  level2State.q1ChargeInputs,
+      count:   level2State.q1CountInputs,
+      contrib: level2State.q1ContribInputs,
+    };
+    document.querySelectorAll(".q1-charge-chip, .q1-count-chip, .q1-contrib-chip").forEach(function (chip) {
       chip.addEventListener("click", function () {
         if (done) return;
-        level2State.q1ChargeInputs[this.getAttribute("data-key")] = this.getAttribute("data-val");
+        var field = this.getAttribute("data-field");
+        var store = q1FieldStores[field];
+        if (!store) return;
+        store[this.getAttribute("data-key")] = this.getAttribute("data-val");
         saveLevel2State();
         renderStep2_Q1_type();
       });

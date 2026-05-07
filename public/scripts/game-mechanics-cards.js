@@ -154,7 +154,7 @@ const QUESTION_CARDS = [
     answers: [
       "[Cu(H₂O)₄]²⁺",
       "[Co(NH₃)₆]³⁺",
-      "[Fe(CN)₆]⁴⁻",
+      "[Fe(CN)₆]³⁻",
       "[PtCl₄]²⁻"
     ]
   },
@@ -376,11 +376,13 @@ function initGameMechanics() {
 
   // Skip = close the modal with no scoring change.
   document.addEventListener("question-skipped", () => {
+    stopQuestionTimer();
     const modal = document.getElementById("question-modal");
     if (!modal) return;
     console.log("⏭️  Question skipped — no points awarded or deducted");
     modal.classList.add("hidden");
     modal.classList.remove("flex");
+    document.dispatchEvent(new CustomEvent("question-continue"));
   });
 
   // Listen for piece movement to save positions
@@ -530,89 +532,41 @@ function updateAllPointsDisplays() {
  * Show feedback after answering a question
  */
 function showQuestionFeedback(isCorrect, points, difficulty) {
+  // Stop the per-question countdown the moment we have a result.
+  stopQuestionTimer();
+
   const feedbackEl = document.getElementById("question-feedback");
   const modal = document.getElementById("question-modal");
-  const cardContainer = document.getElementById("question-card-container");
   if (!feedbackEl || !modal) return;
 
   const correctAnswer = parseInt(modal.dataset.correctAnswer);
   const selectedAnswer = parseInt(modal.dataset.selectedAnswer || 0);
 
-  // Update card to show the actual question (right side of image) with enhanced styling
-  if (cardContainer) {
-    const difficultyConfig = {
-      easy: {
-        color: "#10B981",
-        bgSolid: "bg-green-500",
-        label: "EASY",
-        icon: ""
-      },
-      medium: {
-        color: "#F59E0B",
-        bgSolid: "bg-amber-500",
-        label: "MEDIUM",
-        icon: ""
-      },
-      hard: {
-        color: "#EF4444",
-        bgSolid: "bg-red-500",
-        label: "HARD",
-        icon: ""
-      }
-    };
-
-    const config = difficultyConfig[difficulty] || difficultyConfig.easy;
-    const questionText = modal.dataset.questionText || "";
-    const resultBg = isCorrect ? "bg-green-500" : "bg-red-500";
-    const resultLabel = isCorrect ? "CORRECT" : "WRONG";
-
-    cardContainer.innerHTML = `
-      <div class="question-card w-full rounded-2xl shadow-2xl border-4 bg-white transform transition-all duration-300 ${isCorrect ? 'animate-bounceIn' : 'animate-shakeX'}" style="border-color: ${config.color};">
-        <div class="flex items-center justify-between gap-2 px-4 pt-4">
-          <div class="px-3 py-1.5 rounded-lg text-xs font-bold text-white ${config.bgSolid} flex items-center gap-2">
-            <span>${config.label}</span>
-            <span class="w-px h-4 bg-white/30"></span>
-            <span>${points} PTS</span>
-          </div>
-          <div class="px-3 py-1.5 rounded-lg text-xs font-black text-white ${resultBg} shadow-md tracking-wide">
-            ${resultLabel}
-          </div>
-        </div>
-        <div class="p-4 sm:p-6">
-          <p class="text-base sm:text-lg font-semibold text-gray-900 leading-snug">
-            ${questionText}
-          </p>
-        </div>
-      </div>
-    `;
-  }
-
-  // Highlight correct and wrong answers with beautiful animations
+  // ---- Mark the option grid: correct = green pop, wrong pick = red shake, others fade.
   const optionsContainer = document.getElementById("question-options");
   if (optionsContainer) {
-    const options = optionsContainer.querySelectorAll(".answer-option");
-    options.forEach((option, index) => {
+    const options = optionsContainer.querySelectorAll(".qm-option");
+    options.forEach((option) => {
       const answerNum = parseInt(option.dataset.answer);
-
-      // Disable all options
-      option.style.pointerEvents = 'none';
-      option.style.cursor = 'not-allowed';
-
       if (answerNum === correctAnswer) {
-        // Highlight correct answer with beautiful green design
-        option.className = "answer-option w-full p-5 rounded-2xl text-left border-4 border-green-500 bg-green-50 text-green-900 font-bold shadow-lg transform transition-all duration-300 animate-pulse-once";
-        const checkSvg = '<svg class="inline-block w-5 h-5 text-green-600 mr-2 align-middle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
-        option.innerHTML = option.innerHTML.replace(/^[A-D]\.\s/, match => checkSvg + match);
+        option.dataset.state = "correct";
       } else if (answerNum === selectedAnswer && !isCorrect) {
-        // Highlight wrong selected answer with red design
-        option.className = "answer-option w-full p-5 rounded-2xl text-left border-4 border-red-500 bg-red-50 text-red-900 font-semibold shadow-md";
-        const xSvg = '<svg class="inline-block w-5 h-5 text-red-600 mr-2 align-middle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>';
-        option.innerHTML = option.innerHTML.replace(/^[A-D]\.\s/, match => xSvg + match);
+        option.dataset.state = "wrong";
       } else {
-        // Fade out other options with subtle styling
-        option.className = "answer-option w-full p-4 rounded-xl text-left border-2 border-gray-200 bg-gray-50 text-gray-400 opacity-60";
+        option.dataset.state = "faded";
       }
+      option.style.pointerEvents = 'none';
     });
+  }
+
+  // ---- Bump the on-screen score so the player sees the reward
+  if (isCorrect) {
+    const playerId = parseInt(modal.dataset.playerId);
+    const scoreEl = document.getElementById("qm-score-value");
+    if (scoreEl && !Number.isNaN(playerId)) {
+      const after = (window.gameState?.playerPoints?.[playerId]) || 0;
+      scoreEl.textContent = String(after);
+    }
   }
 
   // Create celebration effect for correct answer
@@ -1013,50 +967,52 @@ function showQuestion(playerId, tileColor = null, explicitDifficulty = null) {
   modal.dataset.hintTitle = question.hintTitle || "";
   modal.dataset.hint = question.hint || "";
 
-  // Render a text-based question card (typed text, not the whole
-  // sprite image). The fact/hint is available via the Hint button.
   const hasHint = !!(question.hint && question.hint.length);
   const questionText = question.question || "See image reference.";
 
-  cardContainer.innerHTML = `
-    <div class="question-card-wrapper animate-slideIn">
-      <div class="question-card w-full rounded-2xl border-4 shadow-xl ${config.borderGlow} bg-white" style="border-color: ${config.color};">
-        <div class="flex items-center justify-between gap-2 px-4 pt-4">
-          <div class="px-3 py-1.5 rounded-lg text-xs font-bold text-white ${config.bgSolid} flex items-center gap-2">
-            <span>${config.label}</span>
-            <span class="w-px h-4 bg-white/30"></span>
-            <span>${question.points} PTS</span>
-          </div>
-          ${hasHint ? `
-            <button
-              id="question-hint-btn"
-              type="button"
-              class="px-3 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 border-2 border-amber-300 text-amber-900 text-xs font-bold flex items-center gap-1.5 shadow-sm transition-colors"
-              aria-label="Show note"
-              title="Reveal a Did-You-Know note"
-            >
-              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5a6 6 0 0 0-12 0c0 1.3.5 2.6 1.5 3.5.8.8 1.3 1.5 1.5 2.5"/>
-                <path d="M9 18h6"/>
-                <path d="M10 22h4"/>
-              </svg>
-              <span>Note</span>
-            </button>
-          ` : ''}
-        </div>
+  // ---- Top-right: difficulty badge + player pill --------------------
+  const diffPill = document.getElementById("qm-difficulty");
+  if (diffPill) {
+    diffPill.dataset.diff = question.difficulty;
+    const lbl = diffPill.querySelector("#qm-difficulty-label");
+    const pts = diffPill.querySelector("#qm-difficulty-points");
+    if (lbl) lbl.textContent = config.label;
+    if (pts) pts.textContent = `${question.points} PTS`;
+  }
+  const playerPill = document.getElementById("qm-player");
+  const playerLabel = document.getElementById("qm-player-label");
+  const playerDot   = document.getElementById("qm-player-dot");
+  if (playerLabel) playerLabel.textContent = `Player ${playerId}`;
+  if (playerDot) {
+    const dotColors = { 1: "#22c55e", 2: "#f59e0b", 3: "#ef4444", 4: "#3b82f6" };
+    playerDot.style.background = dotColors[playerId] || "#22c55e";
+  }
 
-        <div class="p-4 sm:p-6">
-          <p class="text-base sm:text-lg font-semibold text-gray-900 leading-snug">
-            ${questionText}
-          </p>
-        </div>
-      </div>
+  // ---- Bottom: score value (current player) -------------------------
+  const scoreEl = document.getElementById("qm-score-value");
+  if (scoreEl) {
+    const pts = (window.gameState?.playerPoints?.[playerId]) || 0;
+    scoreEl.textContent = String(pts);
+  }
+
+  // ---- Question banner (the full-screen blue card) ------------------
+  cardContainer.innerHTML = `
+    <div class="qm-question-banner">
+      ${hasHint ? `
+        <button id="question-hint-btn" type="button" class="qm-note-btn" aria-label="Show note" title="Reveal a Did-You-Know note">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5a6 6 0 0 0-12 0c0 1.3.5 2.6 1.5 3.5.8.8 1.3 1.5 1.5 2.5"/>
+            <path d="M9 18h6"/>
+            <path d="M10 22h4"/>
+          </svg>
+          <span>Note</span>
+        </button>
+      ` : ''}
+      <p class="qm-question-text">${questionText}</p>
     </div>
   `;
 
-  // Wire up the Note button — opens the cropped left-half of the
-  // question's source card so the "Did you know" visual matches the
-  // question on screen. Free to view, no point deduction.
+  // Wire the Note button (opens cropped left-half of source card)
   const hintBtn = document.getElementById("question-hint-btn");
   if (hintBtn) {
     hintBtn.addEventListener("click", () => {
@@ -1064,33 +1020,84 @@ function showQuestion(playerId, tileColor = null, explicitDifficulty = null) {
     });
   }
 
-  // Render one button per available answer (handles 3 or 4 option cases).
+  // ---- 4 option buttons (Blooket-style, 2x2) ------------------------
   const LETTERS = ["A", "B", "C", "D"];
   optionsContainer.innerHTML = question.answers.map((text, i) => `
-    <button
-      class="answer-option group w-full p-5 bg-gray-50 hover:bg-purple-50 rounded-2xl text-left transition-all duration-300 border-3 border-gray-200 hover:border-purple-400 hover:shadow-lg transform hover:scale-[1.02] active:scale-[0.98]"
-      data-answer="${i + 1}"
-    >
-      <div class="flex items-center gap-3">
-        <div class="flex-shrink-0 w-8 h-8 rounded-lg bg-white shadow-sm group-hover:bg-purple-500 group-hover:text-white flex items-center justify-center font-bold text-gray-700 group-hover:scale-110 transition-all">${LETTERS[i] || (i + 1)}</div>
-        <span class="font-medium text-gray-800 group-hover:text-purple-900 transition-colors">${text}</span>
-      </div>
+    <button class="qm-option answer-option" data-answer="${i + 1}" data-state="idle">
+      <span class="qm-letter">${LETTERS[i] || (i + 1)}</span>
+      <span class="qm-text">${text}</span>
     </button>
   `).join("");
 
-  const options = optionsContainer.querySelectorAll(".answer-option");
+  const options = optionsContainer.querySelectorAll(".qm-option");
   options.forEach(option => {
     option.addEventListener("click", () => {
-      options.forEach(o => o.classList.remove("border-purple-500", "bg-purple-100"));
-      option.classList.add("border-purple-500", "bg-purple-100");
+      options.forEach(o => o.dataset.state = "idle");
+      option.dataset.state = "selected";
       const selectedAnswer = parseInt(option.dataset.answer);
-      modal.dataset.selectedAnswer = selectedAnswer; // Store selected answer
-      window.setSelectedAnswer(selectedAnswer);
+      modal.dataset.selectedAnswer = selectedAnswer;
+      window.setSelectedAnswer?.(selectedAnswer);
     });
   });
 
+  // Reset feedback container so it doesn't carry state from a prior round
+  const fb = document.getElementById("question-feedback");
+  if (fb) {
+    fb.classList.add("hidden");
+    fb.innerHTML = "";
+  }
+
+  // Reset the wrapper's selected-answer cache
+  window.resetSelectedAnswer?.();
+  delete modal.dataset.selectedAnswer;
+
   modal.classList.remove("hidden");
   modal.classList.add("flex");
+
+  // Kick off the per-difficulty countdown
+  startQuestionTimer(question.difficulty);
+}
+
+// =====================================================================
+// Question timer — Hard 45s / Med 30s / Easy 20s.
+// On expiry, dispatches "question-skipped" (same as Skip button), so
+// the existing handlers close the modal and the player just loses the
+// round with no points awarded or deducted.
+// =====================================================================
+let __qmTimerInterval = null;
+const QUESTION_TIMER_DURATIONS = { hard: 45, medium: 30, easy: 20 };
+
+function startQuestionTimer(difficulty) {
+  const duration = QUESTION_TIMER_DURATIONS[difficulty] || 30;
+  let remaining = duration;
+
+  const timerEl = document.getElementById("qm-timer");
+  const textEl  = document.getElementById("qm-timer-text");
+  if (!timerEl || !textEl) return;
+
+  timerEl.classList.remove("qm-timer-low");
+  textEl.textContent = String(remaining);
+
+  if (__qmTimerInterval) clearInterval(__qmTimerInterval);
+
+  __qmTimerInterval = setInterval(() => {
+    remaining -= 1;
+    textEl.textContent = String(Math.max(0, remaining));
+    if (remaining <= 5 && !timerEl.classList.contains("qm-timer-low")) {
+      timerEl.classList.add("qm-timer-low");
+    }
+    if (remaining <= 0) {
+      stopQuestionTimer();
+      document.dispatchEvent(new CustomEvent("question-skipped"));
+    }
+  }, 1000);
+}
+
+function stopQuestionTimer() {
+  if (__qmTimerInterval) {
+    clearInterval(__qmTimerInterval);
+    __qmTimerInterval = null;
+  }
 }
 
 function showFate(playerId) {

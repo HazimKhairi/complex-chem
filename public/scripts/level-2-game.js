@@ -246,6 +246,26 @@
     setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 2600);
   }
 
+  /**
+   * Bouncy "You earned +N points" toast — shown after a correct answer
+   * before the next step renders. Plays the correct chime too.
+   */
+  function showPointsToast(points, label) {
+    if (window.AudioManager) window.AudioManager.play("correct");
+    if (!points || points <= 0) return;
+    var el = document.createElement("div");
+    el.className = "l2-points-toast";
+    el.innerHTML = ''
+      + '<div class="l2-points-toast-inner">'
+      +   '<span class="l2-points-toast-label">' + (label || "You earned") + '</span>'
+      +   '<span class="l2-points-toast-num">+' + points + ' pts</span>'
+      + '</div>';
+    document.body.appendChild(el);
+    // Cleanup after the bounce + fade animation finishes.
+    setTimeout(function () { el.classList.add("l2-points-toast-fade"); }, 1200);
+    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 1800);
+  }
+
   // ── Helpers ─────────────────────────────────────────────
 
   function $(id) { return document.getElementById(id); }
@@ -331,13 +351,13 @@
     var html = Object.keys(byId).map(function (k) {
       var r = byId[k];
       var bg = SPHERE_COLOR_CSS[r.sphere] || '#9ca3af';
-      var typeLabel = r.type === 'Bidentate' ? 'Bi' : 'Mono';
+      // Mono/Bi denticity tag dropped per Hazim spec — pill shows the
+      // donor-atom badge + ligand name + ×count only.
       return ''
         + '<button type="button" class="ligand-strip-pill flex items-center gap-2 px-3 py-1.5 rounded-full border border-gray-200 bg-gray-50 hover:bg-white hover:border-[#4187a0] hover:shadow-sm transition" data-ligand-id="' + k + '" title="' + r.name + ' — click to view card">'
         +   '<span class="inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-[10px] font-black shadow" style="background:' + bg + '">' + r.bond + '</span>'
         +   '<span class="text-sm font-semibold text-gray-800">' + r.name + '</span>'
         +   (r.count > 1 ? '<span class="text-xs font-bold text-gray-500">&times;' + r.count + '</span>' : '')
-        +   '<span class="text-[10px] uppercase tracking-wide text-gray-400">' + typeLabel + '</span>'
         + '</button>';
     }).join('');
 
@@ -539,8 +559,10 @@
       var border = picked
         ? 'bg-[#3DB5C8] text-white border-[#3DB5C8] ring-2 ring-[#3DB5C8]/40'
         : 'bg-white text-gray-800 border-gray-200 hover:border-[#3DB5C8]';
+      // Denticity tag (d=N) dropped per Hazim spec — students should
+      // pick by ligand name, not memorise the number.
       html += '<button class="ligand-pill p-3 rounded-full border-2 font-semibold text-base ' + border + ' transition cursor-pointer" data-ligand-idx="' + idx + '">';
-      html += lig.name + ' <span class="text-xs opacity-70">(d=' + d + ')</span>';
+      html += lig.name;
       html += '</button>';
     });
     html += '</div>';
@@ -623,6 +645,12 @@
         level2State.level2Score += 2;
         level2State.setupAwarded = true;
         updateScoreBar();
+        // Reward chime + bouncy "+2 pts" toast — Hazim spec for Q1.
+        showPointsToast(2, "Nice pick!");
+        // Hold the toast on screen briefly before navigating away so the
+        // player actually sees what they earned.
+        setTimeout(function () { renderStep(2); }, 900);
+        return;
       }
       renderStep(2);
     } });
@@ -993,23 +1021,37 @@
       html += '</div>';
     }
 
-    // Per latest spec: Type of denticity + Denticity (d) are chip groups
-    // — students pick the value themselves. No validation; working-out only.
+    // Per latest spec: Type of denticity + Denticity (d) + No. of ligand
+    // are all chip groups — students pick. After submit, wrong picks get
+    // a red box (Hazim spec: "kalau bantai CN then betul, kotak ada salah,
+    // keluarkan box merah keliling pilihan salah").
     if (!level2State.q2TypeInputs) level2State.q2TypeInputs = {};
     if (!level2State.q2DenticityInputs) level2State.q2DenticityInputs = {};
-    var q2Type = level2State.q2TypeInputs;
-    var q2Dent = level2State.q2DenticityInputs;
-    var typeOpts = ['Monodentate', 'Bidentate'];
-    var dentOpts = ['1', '2'];
-    function q2Chips(cls, key, opts, sel) {
+    if (!level2State.q2CountInputs) level2State.q2CountInputs = {};
+    var q2Type  = level2State.q2TypeInputs;
+    var q2Dent  = level2State.q2DenticityInputs;
+    var q2Count = level2State.q2CountInputs;
+    var typeOpts  = ['Monodentate', 'Bidentate'];
+    var dentOpts  = ['1', '2'];
+    var countOpts = ['1', '2', '3'];
+
+    function q2Chips(cls, key, opts, sel, expectedVal) {
       var chipBase = cls + ' text-xs font-semibold px-2 py-1 rounded-md border-2 transition select-none ';
       var out = '<div class="flex flex-wrap justify-center gap-1">';
       opts.forEach(function (o) {
         var picked = sel === o;
         var c = chipBase;
         if (done) {
-          c += picked ? 'border-[#4187a0] bg-[#4187a0]/10 text-[#4187a0] cursor-default '
-                      : 'border-gray-200 text-gray-300 cursor-default ';
+          // After submit, surface wrong picks in red so the player sees
+          // exactly which working-out steps were off.
+          var isWrongPick = picked && expectedVal !== undefined && String(o) !== String(expectedVal);
+          if (isWrongPick) {
+            c += 'border-red-500 bg-red-50 text-red-700 ring-2 ring-red-300 cursor-default ';
+          } else if (picked) {
+            c += 'border-[#4187a0] bg-[#4187a0]/10 text-[#4187a0] cursor-default ';
+          } else {
+            c += 'border-gray-200 text-gray-300 cursor-default ';
+          }
         } else {
           c += picked ? 'border-[#4187a0] bg-[#4187a0]/10 text-[#4187a0] '
                       : 'border-gray-300 bg-white text-gray-600 hover:border-[#4187a0] cursor-pointer ';
@@ -1030,11 +1072,14 @@
     html += '</tr></thead><tbody>';
     rows.forEach(function (r, i) {
       var key = 'r_' + i;
+      var expectedType  = r.type;             // Monodentate / Bidentate
+      var expectedDent  = String(r.denticity);
+      var expectedCount = String(r.count);
       html += '<tr class="border-t border-gray-100">';
       html += '<td class="px-3 py-2 font-medium text-gray-800">' + r.name + '</td>';
-      html += '<td class="text-center px-3 py-2">' + q2Chips('q2-type-chip', key, typeOpts, q2Type[key]) + '</td>';
-      html += '<td class="text-center px-3 py-2">' + q2Chips('q2-dent-chip', key, dentOpts, q2Dent[key]) + '</td>';
-      html += '<td class="text-center px-3 py-2">' + r.count + '</td>';
+      html += '<td class="text-center px-3 py-2">' + q2Chips('q2-type-chip',  key, typeOpts,  q2Type[key],  expectedType)  + '</td>';
+      html += '<td class="text-center px-3 py-2">' + q2Chips('q2-dent-chip',  key, dentOpts,  q2Dent[key],  expectedDent)  + '</td>';
+      html += '<td class="text-center px-3 py-2">' + q2Chips('q2-count-chip', key, countOpts, q2Count[key], expectedCount) + '</td>';
       html += '</tr>';
     });
     html += '</tbody></table></div>';
@@ -1095,6 +1140,14 @@
       chip.addEventListener("click", function () {
         if (done) return;
         level2State.q2DenticityInputs[this.getAttribute("data-key")] = this.getAttribute("data-val");
+        saveLevel2State();
+        renderStep3_Q2_cn();
+      });
+    });
+    document.querySelectorAll(".q2-count-chip").forEach(function (chip) {
+      chip.addEventListener("click", function () {
+        if (done) return;
+        level2State.q2CountInputs[this.getAttribute("data-key")] = this.getAttribute("data-val");
         saveLevel2State();
         renderStep3_Q2_cn();
       });

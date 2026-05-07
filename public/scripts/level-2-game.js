@@ -705,37 +705,38 @@
 
     var html = '<h2 class="text-xl font-bold text-gray-800 mb-3">1. Predict the type of complex <span class="text-sm font-normal text-gray-400">(2 pts)</span></h2>';
 
-    // Always-visible speech bubbles per spec — left bubble defines a
-    // complex, right bubble defines cation / anion / neutral.
-    html += '<div class="grid sm:grid-cols-2 gap-3 mb-4">';
-    html += '  <div class="px-4 py-3 rounded-2xl bg-sky-50 border-2 border-sky-200 text-sky-900 text-xs leading-relaxed shadow-sm">';
-    html += '    <p class="font-semibold mb-1">What is a complex?</p>';
-    html += '    <p>A complex is a species formed when a central metal ion is bonded to surrounding ligands through coordinate (dative) bonds.</p>';
-    html += '  </div>';
-    html += '  <div class="px-4 py-3 rounded-2xl bg-sky-50 border-2 border-sky-200 text-sky-900 text-xs leading-relaxed shadow-sm">';
-    html += '    <p class="font-semibold mb-1">Type of complex</p>';
-    html += '    <ul class="space-y-0.5">';
-    html += '      <li><strong>Cation</strong> &mdash; complex with an overall <strong>positive</strong> charge.</li>';
-    html += '      <li><strong>Anion</strong> &mdash; complex with an overall <strong>negative</strong> charge.</li>';
-    html += '      <li><strong>Neutral</strong> &mdash; complex with <strong>no</strong> overall charge.</li>';
-    html += '    </ul>';
-    html += '  </div>';
+    // Info pills — non-blocking chat bubbles like Q3. Same INFO_BUBBLES
+    // store + openInfoBubble overlay. Hazim spec: "info what complex &
+    // type complex letak pop up macam Q3".
+    html += '<div class="flex flex-wrap gap-2 mb-3">';
+    html += '  <button type="button" class="q1-info-trigger inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border-2 bg-white border-[#3b56a0] text-[#3b56a0] hover:bg-[#3b56a0]/5 transition" data-bubble="what_complex">';
+    html += '    <span class="w-4 h-4 inline-flex items-center justify-center rounded-full bg-[#3b56a0] text-white text-[10px] font-black">i</span>';
+    html += '    What is a complex?';
+    html += '  </button>';
+    html += '  <button type="button" class="q1-info-trigger inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border-2 bg-white border-[#3b56a0] text-[#3b56a0] hover:bg-[#3b56a0]/5 transition" data-bubble="type_complex">';
+    html += '    <span class="w-4 h-4 inline-flex items-center justify-center rounded-full bg-[#3b56a0] text-white text-[10px] font-black">i</span>';
+    html += '    Type of complex';
+    html += '  </button>';
     html += '</div>';
 
     // Per latest spec: every fill-in column is a chip group — students pick
-    // the value themselves. No validation; this is working-out only.
-    if (!level2State.q1ChargeInputs) level2State.q1ChargeInputs = {};
-    if (!level2State.q1CountInputs) level2State.q1CountInputs = {};
-    if (!level2State.q1ContribInputs) level2State.q1ContribInputs = {};
+    // the value themselves. After submit, wrong picks get a red ring.
+    if (!level2State.q1ChargeInputs)        level2State.q1ChargeInputs = {};
+    if (!level2State.q1CountInputs)         level2State.q1CountInputs = {};
+    if (!level2State.q1ContribInputs)       level2State.q1ContribInputs = {};
+    if (!("q1TotalLigandChargeInput" in level2State)) level2State.q1TotalLigandChargeInput = null;
+    if (!("q1ComplexChargeInput" in level2State))     level2State.q1ComplexChargeInput = null;
+    if (!Array.isArray(level2State.q1EliminatedTypes))  level2State.q1EliminatedTypes = [];
+
     var q1Charges  = level2State.q1ChargeInputs;
     var q1Counts   = level2State.q1CountInputs;
     var q1Contribs = level2State.q1ContribInputs;
     var ligandChargeOpts = ['−2', '−1', '0', '+1', '+2'];
-    var metalChargeOpts  = ['+1', '+2', '+3', '+4'];
+    var metalChargeOpts  = ['+1', '+2', '+3'];
     var countOpts        = ['1', '2', '3', '4', '5', '6'];
     var contribOpts      = ['−6', '−4', '−3', '−2', '−1', '0', '+1', '+2', '+3', '+4', '+6'];
 
-    function pickerChips(field, key, opts, currentValue) {
+    function pickerChips(field, key, opts, currentValue, expectedValue) {
       var sel = currentValue != null ? currentValue : '';
       var chipBase = 'q1-' + field + '-chip text-xs font-semibold px-2 py-1 rounded-md border-2 transition select-none ';
       var out = '<div class="flex flex-wrap justify-center gap-1">';
@@ -743,8 +744,14 @@
         var picked = sel === o;
         var cls = chipBase;
         if (done) {
-          cls += picked ? 'border-[#4187a0] bg-[#4187a0]/10 text-[#4187a0] cursor-default '
-                        : 'border-gray-200 text-gray-300 cursor-default ';
+          var isWrongPick = picked && expectedValue != null && String(o) !== String(expectedValue);
+          if (isWrongPick) {
+            cls += 'border-red-500 bg-red-50 text-red-700 ring-2 ring-red-300 cursor-default ';
+          } else if (picked) {
+            cls += 'border-[#4187a0] bg-[#4187a0]/10 text-[#4187a0] cursor-default ';
+          } else {
+            cls += 'border-gray-200 text-gray-300 cursor-default ';
+          }
         } else {
           cls += picked ? 'border-[#4187a0] bg-[#4187a0]/10 text-[#4187a0] '
                         : 'border-gray-300 bg-white text-gray-600 hover:border-[#4187a0] cursor-pointer ';
@@ -755,6 +762,14 @@
       return out;
     }
 
+    // Helper to format a numeric charge into the same +/- string shape
+    // used by the chip options (so "expectedValue" comparisons work).
+    function fmtSignedCharge(n) {
+      if (n === 0) return '0';
+      if (n > 0) return '+' + n;
+      return '−' + Math.abs(n); // unicode minus to match chip labels
+    }
+
     html += '<div class="overflow-x-auto mb-3 rounded-lg border border-gray-200">';
     html += '<table class="w-full text-sm">';
     html += '<thead class="bg-gray-50 text-gray-700"><tr>';
@@ -763,52 +778,73 @@
     html += '<th class="text-center px-3 py-2 font-semibold">No. of ligand(s), n</th>';
     html += '<th class="text-center px-3 py-2 font-semibold">Charge Contribution<span class="block text-[10px] font-normal text-gray-500">(Charge × n)</span></th>';
     html += '</tr></thead><tbody>';
+
     charge.rows.forEach(function (r, i) {
       var label = r.count > 1 ? (r.name + ' &times; ' + r.count) : r.name;
       var key = 'lig_' + i;
+      var expChargeStr  = fmtSignedCharge(r.charge);
+      var expCountStr   = String(r.count);
+      var expContribStr = fmtSignedCharge(r.charge * r.count);
       html += '<tr class="border-t border-gray-100">';
       html += '<td class="px-3 py-2 font-medium text-gray-800">' + label + '</td>';
-      html += '<td class="text-center px-3 py-2">' + pickerChips('charge',  key, ligandChargeOpts, q1Charges[key])  + '</td>';
-      html += '<td class="text-center px-3 py-2">' + pickerChips('count',   key, countOpts,        q1Counts[key])   + '</td>';
-      html += '<td class="text-center px-3 py-2">' + pickerChips('contrib', key, contribOpts,      q1Contribs[key]) + '</td>';
+      html += '<td class="text-center px-3 py-2">' + pickerChips('charge',  key, ligandChargeOpts, q1Charges[key],  expChargeStr)  + '</td>';
+      html += '<td class="text-center px-3 py-2">' + pickerChips('count',   key, countOpts,        q1Counts[key],   expCountStr)   + '</td>';
+      html += '<td class="text-center px-3 py-2">' + pickerChips('contrib', key, contribOpts,      q1Contribs[key], expContribStr) + '</td>';
       html += '</tr>';
     });
-    html += '<tr class="border-t border-gray-100 bg-blue-50">';
-    html += '<td class="px-3 py-2 font-medium text-gray-800">Metal: ' + (level2State.selectedMetal ? level2State.selectedMetal.name : "—") + '</td>';
-    html += '<td class="text-center px-3 py-2">' + pickerChips('charge',  'metal', metalChargeOpts, q1Charges.metal)  + '</td>';
-    html += '<td class="text-center px-3 py-2 text-gray-300">—</td>';
-    html += '<td class="text-center px-3 py-2">' + pickerChips('contrib', 'metal', metalChargeOpts, q1Contribs.metal) + '</td>';
+
+    // Total of ligand charge — sum of contributions (Σ charge×n).
+    var expTotalLigand = charge.ligandTotal;
+    var expTotalLigandStr = fmtSignedCharge(expTotalLigand);
+    html += '<tr class="border-t border-gray-100 bg-emerald-50">';
+    html += '<td class="px-3 py-2 font-semibold text-emerald-900" colspan="3">Total of ligand charge</td>';
+    html += '<td class="text-center px-3 py-2">' + pickerChips('totLigand', 'tot', contribOpts, level2State.q1TotalLigandChargeInput, expTotalLigandStr) + '</td>';
     html += '</tr>';
 
-    // "Charge of Complex" label row — student calculates the total in their
-    // head. No auto-sum — they own the math, then pick Neutral/Anion/Cation.
+    // Metal row — chip pickers reduced to [+1][+2][+3] per Hazim spec.
+    var expMetalCharge = level2State.selectedMetal ? level2State.selectedMetal.charge : 0;
+    var expMetalChargeStr = fmtSignedCharge(expMetalCharge);
+    html += '<tr class="border-t border-gray-100 bg-blue-50">';
+    html += '<td class="px-3 py-2 font-medium text-gray-800">Metal: ' + (level2State.selectedMetal ? level2State.selectedMetal.name : "—") + '</td>';
+    html += '<td class="text-center px-3 py-2">' + pickerChips('charge',  'metal', metalChargeOpts, q1Charges.metal,  expMetalChargeStr)  + '</td>';
+    html += '<td class="text-center px-3 py-2 text-gray-300">—</td>';
+    html += '<td class="text-center px-3 py-2">' + pickerChips('contrib', 'metal', metalChargeOpts, q1Contribs.metal, expMetalChargeStr) + '</td>';
+    html += '</tr>';
+
+    // Charge of complex — sum of metal + total ligand.
+    var expComplexCharge = charge.total;
+    var expComplexChargeStr = fmtSignedCharge(expComplexCharge);
     html += '<tr class="border-t border-gray-200 bg-amber-50">';
-    html += '<td class="px-3 py-2"></td>';
-    html += '<td class="px-3 py-2"></td>';
-    html += '<td class="text-right px-3 py-2 font-semibold text-amber-900">Charge of Complex</td>';
-    html += '<td class="text-center px-3 py-2 font-bold text-base text-gray-400">?</td>';
+    html += '<td class="px-3 py-2 font-semibold text-amber-900" colspan="3">Charge of Complex</td>';
+    html += '<td class="text-center px-3 py-2">' + pickerChips('complex', 'cmp', contribOpts, level2State.q1ComplexChargeInput, expComplexChargeStr) + '</td>';
     html += '</tr>';
     html += '</tbody></table></div>';
 
-    // 3-option answer
+    // 3-option answer with eliminate-on-2nd-wrong logic per Hazim spec.
     var options = [
       { id: "neutral", label: "Neutral", hint: "Total = 0" },
       { id: "anion",   label: "Anion",   hint: "Total < 0" },
       { id: "cation",  label: "Cation",  hint: "Total > 0" },
     ];
+    var eliminated = level2State.q1EliminatedTypes || [];
     html += '<div class="grid grid-cols-3 gap-3 mb-3">';
     options.forEach(function (opt) {
+      var isEliminated = eliminated.indexOf(opt.id) !== -1;
       var cls = 'p-3 rounded-lg font-semibold text-sm border-2 transition text-center ';
+      var disabled = done || isEliminated;
       if (done) {
         if (opt.id === correct) cls += 'border-green-500 bg-green-50 text-green-700 ';
         else if (opt.id === chosen) cls += 'border-red-500 bg-red-50 text-red-700 ';
         else cls += 'border-gray-200 text-gray-400 ';
         cls += 'cursor-default ';
+      } else if (isEliminated) {
+        // Wrong on a prior attempt — visibly knocked out.
+        cls += 'border-red-300 bg-red-50 text-red-400 line-through cursor-not-allowed ';
       } else {
         if (opt.id === chosen) cls += 'border-[#4187a0] bg-[#4187a0]/10 text-[#4187a0] ';
         else cls += 'border-gray-200 hover:border-[#4187a0] cursor-pointer ';
       }
-      html += '<button class="type-opt ' + cls + '" data-val="' + opt.id + '"' + (done ? ' disabled' : '') + '>';
+      html += '<button class="type-opt ' + cls + '" data-val="' + opt.id + '"' + (disabled ? ' disabled' : '') + '>';
       html += '<div>' + opt.label + '</div>';
       html += '<div class="text-[11px] font-normal opacity-70 mt-1">' + opt.hint + '</div>';
       html += '</button>';
@@ -825,7 +861,7 @@
         html += '<div class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm text-center mb-3">You are wrong. The correct answer was <strong>' + correct + '</strong>.</div>';
       }
     } else if (level2State.typeAttempts > 0) {
-      html += '<div class="p-3 bg-orange-50 border border-orange-200 rounded-lg text-orange-700 text-sm text-center mb-3">Try again. Attempt ' + level2State.typeAttempts + '/2</div>';
+      html += '<div class="p-3 bg-orange-50 border border-orange-200 rounded-lg text-orange-700 text-sm text-center mb-3">Try again. Attempt ' + level2State.typeAttempts + '/3 — wrong picks have been eliminated.</div>';
     }
 
     html += navButtons({ back: true, next: true, nextDisabled: !done && !chosen, nextLabel: done ? "Next: Geometry" : "Submit" });
@@ -857,31 +893,69 @@
       });
     });
 
+    // Working-out totals — single chip per row.
+    document.querySelectorAll(".q1-totLigand-chip").forEach(function (chip) {
+      chip.addEventListener("click", function () {
+        if (done) return;
+        level2State.q1TotalLigandChargeInput = chip.getAttribute("data-val");
+        saveLevel2State();
+        renderStep2_Q1_type();
+      });
+    });
+    document.querySelectorAll(".q1-complex-chip").forEach(function (chip) {
+      chip.addEventListener("click", function () {
+        if (done) return;
+        level2State.q1ComplexChargeInput = chip.getAttribute("data-val");
+        saveLevel2State();
+        renderStep2_Q1_type();
+      });
+    });
+
+    // Info pills — open the shared overlay popup (same as Q3 bubbles).
+    document.querySelectorAll(".q1-info-trigger").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var key = this.getAttribute("data-bubble");
+        if (key) openInfoBubble(key);
+      });
+    });
+
     bindNav({
       onBack: function () { renderStep(1); },
       onNext: function () {
         if (done) { renderStep(3); return; }
         if (!level2State.typeAnswer) return;
+        // Don't double-count an already-eliminated option (defensive).
+        if ((level2State.q1EliminatedTypes || []).indexOf(level2State.typeAnswer) !== -1) return;
 
         level2State.typeAttempts++;
         var isRight = level2State.typeAnswer === correct;
+
         if (isRight) {
-          level2State.typeScore = level2State.typeAttempts === 1 ? 2 : 1;
+          // Spec scoring: 1st-try = 2 pts, 2nd-try = 1 pt, 3rd-try = 0.
+          level2State.typeScore = level2State.typeAttempts === 1 ? 2 :
+                                  level2State.typeAttempts === 2 ? 1 : 0;
           level2State.typeDone = true;
           level2State.level2Score += level2State.typeScore;
           updateScoreBar();
-          if (window.AudioManager) window.AudioManager.play("correct");
-          renderStep2_Q1_type();
-        } else if (level2State.typeAttempts >= 2) {
+          if (level2State.typeScore > 0) showPointsToast(level2State.typeScore, "You earned");
+          else if (window.AudioManager) window.AudioManager.play("correct");
+        } else if (level2State.typeAttempts >= 3) {
+          // Out of attempts.
           level2State.typeScore = 0;
           level2State.typeDone = true;
           updateScoreBar();
           if (window.AudioManager) window.AudioManager.play("wrong");
-          renderStep2_Q1_type();
         } else {
+          // Wrong, but attempts left — eliminate the option they just
+          // picked and clear typeAnswer so they pick again.
+          if (level2State.q1EliminatedTypes.indexOf(level2State.typeAnswer) === -1) {
+            level2State.q1EliminatedTypes.push(level2State.typeAnswer);
+          }
+          level2State.typeAnswer = null;
           if (window.AudioManager) window.AudioManager.play("wrong");
-          renderStep2_Q1_type();
         }
+        saveLevel2State();
+        renderStep2_Q1_type();
       },
     });
   }
@@ -902,6 +976,18 @@
   // shapes — students can keep answering questions while one or more
   // bubbles are open.
   var INFO_BUBBLES = {
+    what_complex: {
+      title: "What is a complex?",
+      body: "A complex is a species formed when a central metal ion is bonded to surrounding ligands through coordinate (dative) bonds.",
+    },
+    type_complex: {
+      title: "Type of complex",
+      body: "<ul class='space-y-1'>" +
+            "<li><strong>Cation</strong> &mdash; complex with an overall <strong>positive</strong> charge.</li>" +
+            "<li><strong>Anion</strong> &mdash; complex with an overall <strong>negative</strong> charge.</li>" +
+            "<li><strong>Neutral</strong> &mdash; complex with <strong>no</strong> overall charge.</li>" +
+            "</ul>",
+    },
     denticity_type: {
       title: "Type of denticity",
       body: "Type of denticity refers to the classification of ligands based on their denticity.<br><br>" +

@@ -22,38 +22,106 @@
       />
     </div>
 
-    <!-- Step 2: objective -->
-    <div id="l2-step-2" class="flex-1 overflow-y-auto p-6 sm:p-8 space-y-4 hidden">
-      <div>
-        <h2 class="text-2xl font-bold text-ludon-blue">Your Level 2 Objective</h2>
-        <p class="text-sm text-gray-500 mt-1">Four steps. Ten points up for grabs.</p>
-      </div>
+    <!-- Step 2: objective — Trivia-Quiz-style poster, in Complex-Chem
+         brand. Mint backdrop with faded ligand silhouettes, gradient
+         title, numbered cards, three "Rules" starbursts. -->
+    <div id="l2-step-2" class="l2-objective relative flex-1 overflow-y-auto hidden">
+      <!-- Decorative backdrop -->
+      <div class="l2-obj-backdrop absolute inset-0"></div>
 
-      <ol class="list-decimal list-inside text-gray-800 space-y-2.5 text-sm sm:text-base">
-        <li><strong>Pick a metal centre</strong> — choose the metal ion for your complex.</li>
-        <li><strong>Select ligands</strong> from your collected pool.</li>
-        <li><strong>Build in 3D</strong> — drag ligands onto the correct geometry. First-try gets max points.</li>
-        <li><strong>Answer Q1–Q4</strong> on coordination number, geometry, isomers, and properties.</li>
-      </ol>
+      <!-- Content -->
+      <div class="relative z-10 p-6 sm:p-8 space-y-5">
+        <!-- Title cluster -->
+        <div class="text-center pt-2 pb-1">
+          <p class="text-white/80 font-bold tracking-[0.35em] text-xs sm:text-sm uppercase">Welcome to</p>
+          <h2 class="l2-obj-title">Level 2!</h2>
+          <p class="text-white/90 mt-2 text-sm sm:text-base font-semibold">
+            Build your complex. Master coordination chemistry.
+          </p>
+        </div>
 
-      <div class="bg-amber-50 border-l-4 border-amber-400 rounded-lg p-3 text-sm text-amber-900">
-        Tip: your Level 1 score carries over. Grand total = L1 + L2.
+        <!-- Numbered objectives card -->
+        <div class="bg-white rounded-2xl shadow-xl p-5 sm:p-6">
+          <h3 class="text-blue-900 text-lg sm:text-xl font-black mb-4" style="font-family:'Fredoka',system-ui,sans-serif;">
+            Objectives
+          </h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <div class="flex gap-3">
+              <span class="l2-obj-num">01</span>
+              <p class="text-slate-700 text-sm leading-snug pt-0.5">
+                <strong class="text-blue-900">Pick a metal centre</strong> — choose the ion for your complex.
+              </p>
+            </div>
+            <div class="flex gap-3">
+              <span class="l2-obj-num">02</span>
+              <p class="text-slate-700 text-sm leading-snug pt-0.5">
+                <strong class="text-blue-900">Select ligands</strong> from the pool you collected in Level 1.
+              </p>
+            </div>
+            <div class="flex gap-3">
+              <span class="l2-obj-num">03</span>
+              <p class="text-slate-700 text-sm leading-snug pt-0.5">
+                <strong class="text-blue-900">Answer Q1–Q4</strong> on charge, coordination number, and geometry.
+              </p>
+            </div>
+            <div class="flex gap-3">
+              <span class="l2-obj-num">04</span>
+              <p class="text-slate-700 text-sm leading-snug pt-0.5">
+                <strong class="text-blue-900">Build in 3D</strong> — drop ligands on the metal. First-try wins big.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rules of the game — 3 starburst cards -->
+        <div class="text-center">
+          <h3 class="l2-obj-subtitle">Rules of the Quest</h3>
+        </div>
+        <div class="grid grid-cols-3 gap-2 sm:gap-3">
+          <div class="l2-obj-rule">
+            <div class="l2-obj-burst l2-obj-burst-pink">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 text-pink-700">
+                <circle cx="12" cy="12" r="9"/>
+                <path d="M12 6v6l3 3"/>
+              </svg>
+            </div>
+            <p class="text-[11px] sm:text-xs font-bold text-blue-900 leading-tight mt-2">3 attempts<br/>per question</p>
+          </div>
+          <div class="l2-obj-rule">
+            <div class="l2-obj-burst l2-obj-burst-amber">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 text-amber-800">
+                <path d="M12 2v4"/><path d="M12 18v4"/><path d="m4.93 4.93 2.83 2.83"/><path d="m16.24 16.24 2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="m4.93 19.07 2.83-2.83"/><path d="m16.24 7.76 2.83-2.83"/>
+              </svg>
+            </div>
+            <p class="text-[11px] sm:text-xs font-bold text-blue-900 leading-tight mt-2">First try<br/>maxes points</p>
+          </div>
+          <div class="l2-obj-rule">
+            <div class="l2-obj-burst l2-obj-burst-purple">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" class="w-7 h-7 text-indigo-800">
+                <path d="m9 12 2 2 4-4"/>
+                <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9c2.39 0 4.68.94 6.36 2.64"/>
+              </svg>
+            </div>
+            <p class="text-[11px] sm:text-xs font-bold text-blue-900 leading-tight mt-2">L1 score<br/>carries over</p>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Footer -->
-    <div class="px-6 py-4 border-t border-gray-100 flex justify-between gap-2 bg-gray-50">
+    <div class="px-6 py-4 border-t border-gray-100 flex justify-between items-center gap-2 bg-white">
       <button
         id="l2-back-btn"
-        class="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold hidden"
+        class="px-4 py-2 rounded-2xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold hidden"
         type="button"
+        style="font-family:'Fredoka',system-ui,sans-serif;"
       >
-        Back
+        ← Back
       </button>
       <span></span>
       <button
         id="l2-next-btn"
-        class="px-6 py-2 rounded-lg bg-ludon-blue hover:bg-blue-700 text-white font-semibold shadow"
+        class="l2-cta-btn"
         type="button"
       >
         Continue
@@ -112,3 +180,122 @@
     }, 0);
   }
 </script>
+
+<style>
+  /* ================================================================
+     Level 2 — Objective screen (Trivia-Quiz vibe in Complex-Chem skin).
+     Mint backdrop + faded ligand silhouettes, gradient title, numbered
+     cards, starburst rules.
+     ================================================================ */
+  .l2-objective {
+    min-height: 480px;
+  }
+  .l2-obj-backdrop {
+    background:
+      radial-gradient(circle at 20% 20%, #a7f3d0 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, #5eead4 0%, transparent 50%),
+      linear-gradient(135deg, #6ee7b7 0%, #34d399 50%, #10b981 100%);
+  }
+  .l2-obj-backdrop::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='600' viewBox='0 0 600 600'><g fill='%23ffffff' fill-opacity='0.10' font-family='Fredoka, system-ui, sans-serif' font-weight='700'><text x='40' y='80' font-size='32' transform='rotate(-12 40 80)'>NH%E2%82%83</text><text x='180' y='150' font-size='26' transform='rotate(8 180 150)'>H%E2%82%82O</text><text x='350' y='90' font-size='38' transform='rotate(-5 350 90)'>Cl%E2%81%BB</text><text x='480' y='180' font-size='28' transform='rotate(15 480 180)'>en</text><text x='60' y='280' font-size='30' transform='rotate(20 60 280)'>CN%E2%81%BB</text><text x='220' y='320' font-size='36' transform='rotate(-10 220 320)'>ox</text><text x='420' y='300' font-size='28' transform='rotate(6 420 300)'>py</text><text x='550' y='380' font-size='32' transform='rotate(-18 550 380)'>NH%E2%82%83</text><text x='100' y='450' font-size='28' transform='rotate(10 100 450)'>PPh%E2%82%83</text><text x='280' y='480' font-size='40' transform='rotate(-8 280 480)'>H%E2%82%82O</text></g></svg>");
+    background-repeat: repeat;
+    background-size: 600px 600px;
+    opacity: 0.85;
+    pointer-events: none;
+  }
+
+  .l2-obj-title {
+    font-family: 'Fredoka', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    line-height: 1;
+    margin: 0;
+    background: linear-gradient(135deg, #fde68a 0%, #f59e0b 50%, #f97316 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.18));
+  }
+
+  .l2-obj-subtitle {
+    font-family: 'Fredoka', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: clamp(1.1rem, 2.5vw, 1.6rem);
+    color: #fff;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    margin: 0;
+  }
+
+  .l2-obj-num {
+    flex: 0 0 auto;
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(135deg,#1d4ed8,#1e3a8a);
+    color: #fbbf24;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fredoka', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.18);
+  }
+
+  .l2-obj-rule {
+    background: rgba(255,255,255,0.95);
+    border-radius: 18px;
+    padding: 14px 8px 10px;
+    text-align: center;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.18), inset 0 -3px 0 rgba(0,0,0,0.06);
+  }
+
+  .l2-obj-burst {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    /* Starburst silhouette via clip-path — 16-pointed soft burst */
+    clip-path: polygon(
+      50% 0%, 56% 12%, 70% 8%, 68% 22%, 82% 22%, 74% 33%,
+      90% 38%, 78% 48%, 90% 58%, 74% 63%, 82% 74%, 68% 74%,
+      70% 88%, 56% 84%, 50% 96%, 44% 84%, 30% 88%, 32% 74%,
+      18% 74%, 26% 63%, 10% 58%, 22% 48%, 10% 38%, 26% 33%,
+      18% 22%, 32% 22%, 30% 8%, 44% 12%
+    );
+  }
+  .l2-obj-burst-pink   { background: linear-gradient(135deg,#fbcfe8,#f9a8d4); }
+  .l2-obj-burst-amber  { background: linear-gradient(135deg,#fde68a,#fcd34d); }
+  .l2-obj-burst-purple { background: linear-gradient(135deg,#c7d2fe,#a5b4fc); }
+
+  /* Big Blooket-style call-to-action (Continue / Start Level 2) */
+  .l2-cta-btn {
+    background: linear-gradient(135deg,#2563eb,#1d4ed8);
+    color: #fff;
+    padding: 12px 28px;
+    border-radius: 18px;
+    font-family: 'Fredoka', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    box-shadow: 0 6px 0 #1e3a8a, 0 10px 18px rgba(0,0,0,0.18);
+    transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+    border: none;
+    cursor: pointer;
+  }
+  .l2-cta-btn:hover  { transform: translateY(2px); box-shadow: 0 4px 0 #1e3a8a, 0 8px 14px rgba(0,0,0,0.18); background: linear-gradient(135deg,#3b82f6,#2563eb); }
+  .l2-cta-btn:active { transform: translateY(5px); box-shadow: 0 1px 0 #1e3a8a, 0 3px 6px rgba(0,0,0,0.18); }
+</style>
+
+<!-- Game-feel typeface — same family used on the L2 page so the
+     gradient title and CTA button render correctly. -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" />

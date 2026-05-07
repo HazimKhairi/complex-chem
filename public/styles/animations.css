@@ -671,6 +671,25 @@
    BOARD MIDDLE PATH RESPONSIVE ALIGNMENT
    ============================================ */
 
+/* Path tables themselves must sit flush — no border-spacing, no margin,
+   top-aligned. Default <table> has 2px user-agent border-spacing and a
+   baseline gap that show up as a horizontal seam between board rows. */
+.path {
+  margin: 0;
+  border-spacing: 0;
+  vertical-align: top;
+}
+
+/* Force the ludo-board flex rows to top-align children and not wrap so a
+   2-px height mismatch between the home corner and the adjacent path
+   never opens a vertical gap below the row. */
+#top-game-row,
+#middle-game-row,
+#bottom-game-row {
+  align-items: flex-start;
+  flex-wrap: nowrap;
+}
+
 /* Ensure ALL path cells are square and consistent */
 .path td {
   aspect-ratio: 1 / 1;

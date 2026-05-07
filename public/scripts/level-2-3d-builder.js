@@ -171,7 +171,7 @@
     renderer.render(scene, camera);
   }
 
-  function buildBone(geometryName, metalColor) {
+  function buildBone(geometryName, metalColor, metalName) {
     clearBone();
     currentGeometry = geometryName;
     var config = GEOMETRY_CONFIG[geometryName];
@@ -181,6 +181,18 @@
     var metalMat = new THREE.MeshPhongMaterial({ color: metalColor || METAL_COLOR, shininess: 80 });
     metalMesh = new THREE.Mesh(metalGeo, metalMat);
     scene.add(metalMesh);
+
+    // Element label at the centre — Hazim spec: "tgh ni letak metal dia,
+    // contoh (Cr)". Strip charge symbols so the label reads cleanly on
+    // the sphere (e.g. "Cr³⁺" → "Cr").
+    if (metalName) {
+      var labelText = String(metalName).replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻]/g, "").trim() || String(metalName);
+      var metalLabel = makeLabelSprite(labelText, metalColor || METAL_COLOR);
+      metalLabel.position.set(0, 0, 0);
+      metalLabel.scale.set(0.85, 0.85, 1);
+      scene.add(metalLabel);
+      metalMesh.userData.labelMesh = metalLabel;
+    }
 
     config.positions.forEach(function (pos, i) {
       var dir = new THREE.Vector3(pos.x, pos.y, pos.z);
@@ -229,7 +241,13 @@
   }
 
   function clearBone() {
-    if (metalMesh) { scene.remove(metalMesh); metalMesh = null; }
+    if (metalMesh) {
+      if (metalMesh.userData && metalMesh.userData.labelMesh) {
+        scene.remove(metalMesh.userData.labelMesh);
+      }
+      scene.remove(metalMesh);
+      metalMesh = null;
+    }
     slotMeshes.forEach(function (slot) {
       if (slot.ghostMesh) scene.remove(slot.ghostMesh);
       if (slot.stickMesh) scene.remove(slot.stickMesh);

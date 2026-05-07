@@ -695,6 +695,56 @@
     return "cation";
   }
 
+  // ── Chemistry-notation helpers (used by Q5 builder HUD) ─────────────
+  function numToSubscript(n) {
+    var subs = ["₀","₁","₂","₃","₄","₅","₆","₇","₈","₉"];
+    return String(n).split("").map(function (d) { return subs[parseInt(d, 10)] || d; }).join("");
+  }
+  function numToSuperscript(n) {
+    var sups = ["⁰","¹","²","³","⁴","⁵","⁶","⁷","⁸","⁹"];
+    return String(n).split("").map(function (d) { return sups[parseInt(d, 10)] || d; }).join("");
+  }
+  function formatComplexFormula() {
+    if (!level2State.selectedMetal) return "";
+    var metalRaw = level2State.selectedMetal.name || "";
+    // Strip charge symbols off the element label so the formula reads
+    // "[Cr(NH₃)₃...]³⁺" — the charge belongs at the end of the bracket,
+    // not next to the element symbol.
+    var metalSym = metalRaw.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻]/g, "").trim() || metalRaw;
+
+    var rows = summariseSelectedLigands();
+    var lParts = rows.map(function (r) {
+      if (r.count <= 1) return "(" + r.name + ")";
+      return "(" + r.name + ")" + numToSubscript(r.count);
+    });
+
+    var charge = computeTotalCharge().total;
+    var chargeStr = "";
+    if (charge !== 0) {
+      var abs = Math.abs(charge);
+      var num = abs > 1 ? numToSuperscript(abs) : "";
+      chargeStr = num + (charge > 0 ? "⁺" : "⁻");
+    }
+    return "[" + metalSym + lParts.join("") + "]" + chargeStr;
+  }
+  function updateBuilderHud() {
+    var formula = $("builder-formula");
+    var pill = $("builder-charge-pill");
+    if (formula) {
+      formula.textContent = formatComplexFormula();
+    }
+    if (pill) {
+      var charge = computeTotalCharge().total;
+      if (charge === 0) {
+        pill.textContent = "Neutral";
+      } else {
+        var sign = charge > 0 ? "+" : "−";
+        pill.textContent = "Charge " + sign + Math.abs(charge);
+      }
+      pill.classList.remove("hidden");
+    }
+  }
+
   function renderStep2_Q1_type() {
     saveLevel2State();
     var c = $("step-container");
@@ -1529,7 +1579,12 @@
       window._boneBuilderInitialized = true;
     }
 
-    window.BoneBuilder.buildBone(level2State.selectedGeometry);
+    var metalName = level2State.selectedMetal ? level2State.selectedMetal.name : null;
+    window.BoneBuilder.buildBone(level2State.selectedGeometry, undefined, metalName);
+
+    // Populate the HUD overlay above the 3D canvas: chemistry notation
+    // on the left, charge-of-complex pill on the right.
+    updateBuilderHud();
 
     // Step 3 inventory = only ligands selected in Step 1 (if any), else all
     var sourceLigands = getSelectedLigands();

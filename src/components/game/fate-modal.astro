@@ -22,36 +22,53 @@
   const modal = document.getElementById("fate-modal");
   const continueBtn = document.getElementById("continue-fate-btn");
 
+  // Effects that open a follow-up modal and need the player to choose
+  // something — they fire "fate-continue" themselves once the user is
+  // done, so we MUST NOT fire it on Accept (it would advance the turn
+  // before the player even sees the second modal).
+  const INTERACTIVE_EFFECTS = ["swap-card"];
+
   continueBtn?.addEventListener("click", () => {
-    if (modal) {
-      // Apply fate card effect before closing modal
-      const playerId = parseInt(modal.dataset.playerId || "0");
-      const fateEffect = modal.dataset.fateEffect;
-      const fateValue = parseInt(modal.dataset.fateValue || "0");
-      const fateTitle = modal.dataset.fateTitle;
-
-      console.log(`🔺 [FATE] Applying fate: ${fateTitle} to Player ${playerId}`);
-
-      // Points are ONLY awarded for effects that actually mean "points".
-      // Other effects use `value` for a different purpose (spaces to move,
-      // ligands to gain/give, etc.) and must NOT be treated as points.
-      const POINTS_EFFECTS = ["point-booster", "minus"];
-      if (POINTS_EFFECTS.includes(fateEffect) && fateValue !== 0 && window.GameMechanics) {
-        window.GameMechanics.awardPoints(playerId, fateValue, 'fate');
-        console.log(`💰 [FATE] Player ${playerId} ${fateValue > 0 ? 'gained' : 'lost'} ${Math.abs(fateValue)} points`);
-      }
-
-      // Apply the card's actual behaviour (gain ligand, move forward, swap, etc.)
-      if (fateEffect && window.FateEffectHandler) {
-        window.FateEffectHandler.applyEffect(playerId, fateEffect, fateValue);
-      } else if (!window.FateEffectHandler) {
-        console.warn('⚠️ FateEffectHandler not available, effects will not run');
-      }
-
-      modal.classList.add("hidden");
-      modal.classList.remove("flex");
+    if (!modal) {
+      document.dispatchEvent(new Event("fate-continue"));
+      return;
     }
-    document.dispatchEvent(new Event("fate-continue"));
+
+    // Apply fate card effect before closing modal
+    const playerId = parseInt(modal.dataset.playerId || "0");
+    const fateEffect = modal.dataset.fateEffect;
+    const fateValue = parseInt(modal.dataset.fateValue || "0");
+    const fateTitle = modal.dataset.fateTitle;
+
+    console.log(`🔺 [FATE] Applying fate: ${fateTitle} to Player ${playerId}`);
+
+    // Points are ONLY awarded for effects that actually mean "points".
+    // Other effects use `value` for a different purpose (spaces to move,
+    // ligands to gain/give, etc.) and must NOT be treated as points.
+    const POINTS_EFFECTS = ["point-booster", "minus"];
+    if (POINTS_EFFECTS.includes(fateEffect) && fateValue !== 0 && window.GameMechanics) {
+      window.GameMechanics.awardPoints(playerId, fateValue, 'fate');
+      console.log(`💰 [FATE] Player ${playerId} ${fateValue > 0 ? 'gained' : 'lost'} ${Math.abs(fateValue)} points`);
+    }
+
+    // Apply the card's actual behaviour (gain ligand, move forward, swap, etc.)
+    if (fateEffect && window.FateEffectHandler) {
+      window.FateEffectHandler.applyEffect(playerId, fateEffect, fateValue);
+    } else if (!window.FateEffectHandler) {
+      console.warn('⚠️ FateEffectHandler not available, effects will not run');
+    }
+
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+
+    // For interactive effects (swap-card), the follow-up modal will fire
+    // fate-continue via swap-complete / swap-cancelled when the user is
+    // done. Firing it now would double-advance the turn.
+    if (!INTERACTIVE_EFFECTS.includes(fateEffect)) {
+      document.dispatchEvent(new Event("fate-continue"));
+    } else {
+      console.log(`⏸️  [FATE] ${fateEffect} is interactive — deferring fate-continue until swap-complete/cancelled`);
+    }
   });
 
   // Listen for swap completion

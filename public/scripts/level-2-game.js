@@ -1170,9 +1170,16 @@
     html += '  <strong>Your CN that you calculated before is ' + cnReminder + '</strong> &mdash; choose the correct geometry for that CN.';
     html += '</div>';
 
+    // Randomise the option order so students don't memorise the layout.
+    // Persist the shuffled order on level2State so wrong-attempt re-renders
+    // don't reshuffle the cards under the player's feet.
+    if (!Array.isArray(level2State.geometryOrder) || level2State.geometryOrder.length !== ALL_GEOMETRIES.length) {
+      level2State.geometryOrder = ALL_GEOMETRIES.slice().sort(function () { return Math.random() - 0.5; });
+    }
+
     var done = level2State.geometryDone;
     html += '<div class="grid grid-cols-2 sm:grid-cols-3 gap-3">';
-    ALL_GEOMETRIES.forEach(function (geo) {
+    level2State.geometryOrder.forEach(function (geo) {
       var isCorrect = correctList.indexOf(geo) >= 0;
       var cls = 'geo-btn relative rounded-xl border-2 transition-all bg-white text-center flex items-center justify-center px-3 py-5 sm:py-6 min-h-[72px]';
       if (done) {
@@ -1529,8 +1536,7 @@
       c.innerHTML = '<div class="text-center py-8">'
         + checkIcon
         + '<h2 class="text-xl font-bold text-green-700 mb-2">Complex Built Successfully!</h2>'
-        + '<p class="text-gray-600 mb-2">+' + pts + ' points (attempt ' + level2State.buildAttempts + '/3)</p>'
-        + '<p class="text-sm text-gray-500 mb-6">Your complex: [' + level2State.selectedMetal.name + '] with ' + placed.length + ' ligands</p>'
+        + '<p class="text-gray-600 mb-6">+' + pts + ' points (attempt ' + level2State.buildAttempts + '/3)</p>'
         + navButtons({ back: false, next: true, nextLabel: "See Results" })
         + '</div>';
       bindNav({ onNext: function () { renderResults(); } });

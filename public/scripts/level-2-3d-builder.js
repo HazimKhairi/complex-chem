@@ -344,6 +344,9 @@
       tryPairBidentate(slotIndex, ligand, sphereColorHex);
     }
 
+    // Play a soft chime when a ligand actually lands on the central metal.
+    if (window.AudioManager) window.AudioManager.play('ligand');
+
     return true;
   }
 

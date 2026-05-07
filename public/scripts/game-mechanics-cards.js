@@ -995,9 +995,9 @@ function showQuestion(playerId, tileColor = null, explicitDifficulty = null) {
     scoreEl.textContent = String(pts);
   }
 
-  // ---- Question banner (the full-screen blue card) ------------------
+  // ---- Question banner — gradient follows difficulty (red/yellow/green)
   cardContainer.innerHTML = `
-    <div class="qm-question-banner">
+    <div class="qm-question-banner" data-diff="${question.difficulty}">
       ${hasHint ? `
         <button id="question-hint-btn" type="button" class="qm-note-btn" aria-label="Show note" title="Reveal a Did-You-Know note">
           <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">

@@ -463,18 +463,29 @@
   }
 
   function navButtons(opts) {
-    var html = '<div class="flex justify-between mt-8">';
+    var html = '<div class="l2-nav-row">';
     if (opts.back) {
-      html += '<button id="btn-back" class="px-6 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition font-semibold">Back</button>';
+      html += '<button id="btn-back" class="l2-nav-btn l2-nav-btn--secondary">&larr; Back</button>';
     } else { html += '<div></div>'; }
     if (opts.next) {
       var dis = opts.nextDisabled ? ' disabled' : '';
-      var cls = opts.nextDisabled
-        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-        : 'bg-[#4187a0] text-white hover:bg-[#357a91]';
       var label = opts.nextLabel || 'Next';
-      html += '<button id="btn-next" class="px-6 py-2 rounded-lg font-semibold transition ' + cls + '"' + dis + '>' + label + '</button>';
+      html += '<button id="btn-next" class="l2-nav-btn l2-nav-btn--primary"' + dis + '>' + label + '</button>';
     }
+    html += '</div>';
+    return html;
+  }
+
+  /**
+   * Kahoot-style step heading. Wraps the title + subtitle in a big
+   * blue gradient banner with a points pill on the right.
+   */
+  function headingBanner(title, subtitle, ptsLabel) {
+    var html = '<div class="l2-step-banner">';
+    html += '  <h2>' + title;
+    if (ptsLabel) html += '<span class="l2-step-pts">' + ptsLabel + '</span>';
+    html += '  </h2>';
+    if (subtitle) html += '  <p>' + subtitle + '</p>';
     html += '</div>';
     return html;
   }
@@ -567,8 +578,11 @@
     var validCN = selCN >= 3 && selCN <= 6;
     var canAdvance = !!level2State.selectedMetal && selectedIdxs.length > 0 && validCN;
 
-    var html = '<h2 class="text-xl font-bold text-gray-800 mb-1">Step 1: Build Your Complex</h2>';
-    html += '<p class="text-gray-500 text-sm mb-4">Pick one central metal, then choose ligands so the total coordination number (CN) is 3, 4, 5, or 6.</p>';
+    var html = headingBanner(
+      "Step 1 — Build Your Complex",
+      "Pick one central metal, then choose ligands so the total coordination number (CN) is 3, 4, 5, or 6.",
+      "2 PTS"
+    );
 
     // Metal picker
     html += '<h3 class="text-sm font-bold text-gray-700 mb-2">Choose one central metal</h3>';
@@ -786,7 +800,7 @@
     var done = level2State.typeDone;
     var chosen = level2State.typeAnswer;
 
-    var html = '<h2 class="text-xl font-bold text-gray-800 mb-3">1. Predict the type of complex <span class="text-sm font-normal text-gray-400">(2 pts)</span></h2>';
+    var html = headingBanner("Q1 — Predict the type of complex", "Calculate the charges and decide whether the complex is cation, anion, or neutral.", "2 PTS");
 
     // Info pills — non-blocking chat bubbles like Q3. Same INFO_BUBBLES
     // store + openInfoBubble overlay. Hazim spec: "info what complex &
@@ -903,33 +917,32 @@
     html += '</tr>';
     html += '</tbody></table></div>';
 
-    // 3-option answer with eliminate-on-2nd-wrong logic per Hazim spec.
+    // 3-option answer with eliminate-on-2nd-wrong logic. Kahoot-style
+    // depth buttons; one colour per option so the grid reads bright.
     var options = [
-      { id: "neutral", label: "Neutral", hint: "Total = 0" },
-      { id: "anion",   label: "Anion",   hint: "Total < 0" },
-      { id: "cation",  label: "Cation",  hint: "Total > 0" },
+      { id: "neutral", label: "Neutral", hint: "Total = 0", color: "yellow" },
+      { id: "anion",   label: "Anion",   hint: "Total < 0", color: "red"    },
+      { id: "cation",  label: "Cation",  hint: "Total > 0", color: "green"  },
     ];
     var eliminated = level2State.q1EliminatedTypes || [];
     html += '<div class="grid grid-cols-3 gap-3 mb-3">';
     options.forEach(function (opt) {
       var isEliminated = eliminated.indexOf(opt.id) !== -1;
-      var cls = 'p-3 rounded-lg font-semibold text-sm border-2 transition text-center ';
       var disabled = done || isEliminated;
+      var state = "idle";
       if (done) {
-        if (opt.id === correct) cls += 'border-green-500 bg-green-50 text-green-700 ';
-        else if (opt.id === chosen) cls += 'border-red-500 bg-red-50 text-red-700 ';
-        else cls += 'border-gray-200 text-gray-400 ';
-        cls += 'cursor-default ';
+        if (opt.id === correct) state = "correct";
+        else if (opt.id === chosen) state = "wrong";
+        else state = "faded";
       } else if (isEliminated) {
-        // Wrong on a prior attempt — visibly knocked out.
-        cls += 'border-red-300 bg-red-50 text-red-400 line-through cursor-not-allowed ';
-      } else {
-        if (opt.id === chosen) cls += 'border-[#4187a0] bg-[#4187a0]/10 text-[#4187a0] ';
-        else cls += 'border-gray-200 hover:border-[#4187a0] cursor-pointer ';
+        state = "eliminated";
+      } else if (opt.id === chosen) {
+        state = "selected";
       }
-      html += '<button class="type-opt ' + cls + '" data-val="' + opt.id + '"' + (disabled ? ' disabled' : '') + '>';
-      html += '<div>' + opt.label + '</div>';
-      html += '<div class="text-[11px] font-normal opacity-70 mt-1">' + opt.hint + '</div>';
+      var cls = "type-opt l2-kahoot-btn l2-kahoot-btn--" + opt.color;
+      html += '<button class="' + cls + '" data-state="' + state + '" data-val="' + opt.id + '"' + (disabled ? ' disabled' : '') + '>';
+      html += '<span>' + opt.label + '</span>';
+      html += '<span class="l2-btn-sub">' + opt.hint + '</span>';
       html += '</button>';
     });
     html += '</div>';
@@ -1147,7 +1160,7 @@
     var done = level2State.cnDone;
     var chosen = level2State.cnAnswer;
 
-    var html = '<h2 class="text-xl font-bold text-gray-800 mb-3">2. Predict the coordination number <span class="text-sm font-normal text-gray-400">(3, 4, 5 or 6)</span></h2>';
+    var html = headingBanner("Q2 — Predict the coordination number", "Sum the donor atoms across all ligands. CN can be 3, 4, 5, or 6.", "1 PT");
 
     // Three toggle buttons that open chat-bubble explainers. Bubbles
     // appear inline below — they don't block the rest of the question
@@ -1381,8 +1394,7 @@
     var displayLigands = getSelectedLigands();
     if (displayLigands.length === 0) displayLigands = playerLigands;
 
-    var html = '<h2 class="text-xl font-bold text-gray-800 mb-1">3. State the possible complex geometry <span class="text-sm font-normal text-gray-400">(2 pts)</span></h2>';
-    html += '<p class="text-gray-500 text-sm mb-3">Choose the correct geometry for your coordination number.</p>';
+    var html = headingBanner("Q3 — State the possible complex geometry", "Choose the correct geometry for your coordination number.", "1 PT");
 
     // Reminder: surface the CN they computed in Q2 so they don't have
     // to flip back, but no longer reveal which geometries map to which
@@ -1400,20 +1412,20 @@
     }
 
     var done = level2State.geometryDone;
+    // Cycle through 6 Kahoot colours so the grid reads bright.
+    var geoColors = ["red", "yellow", "green", "purple", "teal", "pink"];
     html += '<div class="grid grid-cols-2 sm:grid-cols-3 gap-3">';
-    level2State.geometryOrder.forEach(function (geo) {
+    level2State.geometryOrder.forEach(function (geo, idx) {
       var isCorrect = correctList.indexOf(geo) >= 0;
-      var cls = 'geo-btn relative rounded-xl border-2 transition-all bg-white text-center flex items-center justify-center px-3 py-5 sm:py-6 min-h-[72px]';
+      var state = "idle";
       if (done) {
-        if (isCorrect) cls += ' border-green-500 ring-2 ring-green-200 shadow-md text-green-800';
-        else if (geo === level2State.selectedGeometry && !isCorrect) cls += ' border-red-500 bg-red-50 text-red-700';
-        else cls += ' border-gray-200 opacity-60 text-gray-400';
-        cls += ' cursor-default';
-      } else {
-        cls += ' border-gray-200 text-gray-800 hover:border-[#4187a0] hover:bg-[#4187a0]/5 hover:shadow-md hover:-translate-y-0.5 cursor-pointer';
+        if (isCorrect) state = "correct";
+        else if (geo === level2State.selectedGeometry && !isCorrect) state = "wrong";
+        else state = "faded";
       }
-      html += '<button class="' + cls + '" data-val="' + geo + '"' + (done ? ' disabled' : '') + '>';
-      html +=   '<span class="text-sm sm:text-base font-semibold leading-tight">' + geo + '</span>';
+      var cls = "geo-btn l2-kahoot-btn l2-kahoot-btn--" + geoColors[idx % geoColors.length];
+      html += '<button class="' + cls + '" data-state="' + state + '" data-val="' + geo + '"' + (done ? ' disabled' : '') + '>';
+      html +=   '<span>' + geo + '</span>';
       html += '</button>';
     });
     html += '</div>';
@@ -1500,9 +1512,11 @@
     var done = level2State.pictureDone;
     var chosen = level2State.pictureAnswer;
 
-    var html = '<h2 class="text-xl font-bold text-gray-800 mb-1">4. Drag and drop the appropriate tools to form your complex structure <span class="text-sm font-normal text-gray-400">(3 pts)</span></h2>';
-    html += '<p class="text-gray-500 text-sm mb-2">First, pick the complex picture that matches your coordination number. Your CN = <strong class="text-[#4187a0]">' + cn + '</strong>.</p>';
-    html += '<p class="text-xs text-gray-500 mb-4">Attempt ' + Math.min(level2State.pictureAttempts + (done ? 0 : 1), 3) + ' / 3 &nbsp; | &nbsp; 1st = 3 pts · 2nd = 2 pts · 3rd = 1 pt</p>';
+    var html = headingBanner(
+      "Q4 — Pick the matching geometry",
+      "First, pick the complex name that matches your CN = <strong class=\"text-amber-300\">" + cn + "</strong>. Attempt " + Math.min(level2State.pictureAttempts + (done ? 0 : 1), 3) + " / 3 &middot; 1st = 3 pts &middot; 2nd = 2 pts &middot; 3rd = 1 pt",
+      "3 PTS"
+    );
 
     // Wording-only options per Hazim spec (matches renderStep2). Order
     // is shuffled once per session and persisted on level2State so a
@@ -1511,22 +1525,22 @@
       level2State.pictureOrder = GEOMETRY_PICS.slice().sort(function () { return Math.random() - 0.5; });
     }
 
+    var picColors = ["red", "yellow", "green", "purple", "teal", "pink"];
     html += '<div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">';
-    level2State.pictureOrder.forEach(function (g) {
+    level2State.pictureOrder.forEach(function (g, idx) {
       var isCorrect = g.cn === cn;
-      var cls = 'geo-pic-btn relative rounded-xl border-2 bg-white transition flex items-center justify-center px-3 py-5 sm:py-6 min-h-[72px] ';
+      var state = "idle";
       if (done) {
-        if (g.id === chosen && isCorrect) cls += 'border-green-500 ring-2 ring-green-500/30 text-green-800 ';
-        else if (g.id === chosen && !isCorrect) cls += 'border-red-500 ring-2 ring-red-500/30 text-red-700 ';
-        else if (isCorrect) cls += 'border-green-300 text-green-700 ';
-        else cls += 'border-gray-200 opacity-60 text-gray-400 ';
-        cls += 'cursor-default ';
-      } else {
-        if (g.id === chosen) cls += 'border-[#4187a0] ring-2 ring-[#4187a0]/30 text-[#4187a0] ';
-        else cls += 'border-gray-200 text-gray-800 hover:border-[#4187a0] hover:bg-[#4187a0]/5 hover:shadow-md hover:-translate-y-0.5 cursor-pointer ';
+        if (g.id === chosen && isCorrect) state = "correct";
+        else if (g.id === chosen && !isCorrect) state = "wrong";
+        else if (isCorrect) state = "idle"; // surface the correct one
+        else state = "faded";
+      } else if (g.id === chosen) {
+        state = "selected";
       }
-      html += '<button class="' + cls + '" data-val="' + g.id + '"' + (done ? ' disabled' : '') + '>';
-      html += '<span class="text-sm sm:text-base font-semibold leading-tight">' + g.label + '</span>';
+      var cls = "geo-pic-btn l2-kahoot-btn l2-kahoot-btn--" + picColors[idx % picColors.length];
+      html += '<button class="' + cls + '" data-state="' + state + '" data-val="' + g.id + '"' + (done ? ' disabled' : '') + '>';
+      html += '<span>' + g.label + '</span>';
       html += '</button>';
     });
     html += '</div>';
@@ -1603,9 +1617,11 @@
     }
 
     var c = $("step-container");
-    c.innerHTML = '<h2 class="text-xl font-bold text-gray-800 mb-1">4. Build your complex in 3D <span class="text-sm font-normal text-gray-400">(5 pts — 1 per correctly placed ligand)</span></h2>'
-      + '<p class="text-gray-500 text-sm mb-2">Geometry: <strong class="text-[#4187a0]">' + (level2State.selectedGeometry || "—") + '</strong>. Drag ligands from the inventory onto the empty slots.</p>'
-      + '<p class="text-sm text-gray-600">Attempt: <strong>' + (level2State.buildAttempts + 1) + '</strong> / 3 &nbsp; | &nbsp; Click a placed ball to remove it.</p>';
+    c.innerHTML = headingBanner(
+      "Q5 — Build your complex in 3D",
+      "Geometry: <strong class=\"text-amber-300\">" + (level2State.selectedGeometry || "—") + "</strong>. Drag ligands from the inventory onto the empty slots. Attempt " + (level2State.buildAttempts + 1) + " / 3 &middot; click a placed ball to remove it.",
+      "5 PTS"
+    );
 
     var bc = $("builder-container");
     if (bc) bc.classList.remove("hidden");

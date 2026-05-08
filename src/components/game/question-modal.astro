@@ -194,27 +194,57 @@
     text-shadow: 0 2px 4px rgba(0,0,0,0.25);
     margin: 0;
   }
+  /* Banner with a Note pill — symmetric horizontal padding so the
+     centred question text never tucks behind the absolute-positioned
+     pill on the right. */
+  .qm-question-banner:has(.qm-note-btn) .qm-question-text {
+    padding-left: 96px;
+    padding-right: 96px;
+  }
 
-  /* Note (hint) button — amber pill, top-right of banner */
+  /* Note (hint) button — amber pill, top-right corner of the banner.
+     `top: 50%; transform: translateY(-50%)` keeps it vertically centred
+     against the banner whatever the question wraps to. */
   .qm-note-btn {
     position: absolute;
-    top: 14px;
-    right: 14px;
+    top: 50%;
+    right: 16px;
+    transform: translateY(-50%);
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 6px 12px;
+    padding: 8px 14px;
     background: #fde68a;
     color: #78350f;
     border: 2px solid #f59e0b;
     border-radius: 999px;
     font-weight: 700;
-    font-size: 0.75rem;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    font-size: 0.8rem;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.18);
     cursor: pointer;
-    transition: transform 0.2s;
+    transition: transform 0.2s, background 0.2s;
+    z-index: 2;
   }
-  .qm-note-btn:hover { transform: scale(1.05); background: #fcd34d; }
+  .qm-note-btn:hover  { transform: translateY(-50%) scale(1.05); background: #fcd34d; }
+  .qm-note-btn:active { transform: translateY(-50%) scale(0.95); }
+
+  /* Mobile: stack the Note pill above the banner so it never crowds
+     the question text on narrow screens. */
+  @media (max-width: 640px) {
+    .qm-question-banner:has(.qm-note-btn) .qm-question-text {
+      padding-left: 0;
+      padding-right: 0;
+    }
+    .qm-note-btn {
+      position: static;
+      transform: none;
+      margin: 0 0 12px;
+      align-self: flex-end;
+    }
+    .qm-note-btn:hover  { transform: scale(1.05); }
+    .qm-note-btn:active { transform: scale(0.95); }
+    .qm-question-banner { display: flex; flex-direction: column; align-items: stretch; }
+  }
 
   /* ============================================================
      Option buttons — Blooket style. Big, rounded, 4-corner shadow.

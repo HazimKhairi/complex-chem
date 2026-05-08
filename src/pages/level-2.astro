@@ -13,7 +13,7 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
   <GameSettingsMenu />
   <Level2IntroModal />
   <IndicatorPanel />
-  <main class="l2-main h-dvh px-3 py-2 flex flex-col items-center gap-2 overflow-hidden relative">
+  <main class="h-dvh px-3 py-2 flex flex-col items-center gap-2 overflow-hidden bg-[#fef9e7]">
     <!-- TOP HUD — gradient game bar with brand, step indicator, score chip -->
     <div class="w-full max-w-6xl rounded-2xl shadow-lg overflow-hidden flex-shrink-0 bg-gradient-to-r from-[#1e3a8a] via-[#2563eb] to-[#1e40af]">
       <div class="flex items-center justify-between gap-3 px-4 py-2">
@@ -307,36 +307,6 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
     to   { opacity: 1; transform: translateY(0); }
   }
 
-  /* ============================================================
-     Page backdrop — mint gradient + faded ligand silhouettes
-     (same skin as the question modal so the whole game feels
-     coherent). The HUD and step container float on top.
-     ============================================================ */
-  .l2-main {
-    background:
-      radial-gradient(circle at 18% 18%, #a7f3d0 0%, transparent 55%),
-      radial-gradient(circle at 82% 82%, #5eead4 0%, transparent 55%),
-      linear-gradient(135deg, #6ee7b7 0%, #34d399 50%, #10b981 100%);
-  }
-  .l2-main::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='720' height='720' viewBox='0 0 720 720'><g fill='%23ffffff' fill-opacity='0.08' font-family='Fredoka, system-ui, sans-serif' font-weight='700'><text x='40' y='80' font-size='40' transform='rotate(-12 40 80)'>NH%E2%82%83</text><text x='200' y='160' font-size='34' transform='rotate(8 200 160)'>H%E2%82%82O</text><text x='400' y='90' font-size='46' transform='rotate(-5 400 90)'>Cl%E2%81%BB</text><text x='560' y='200' font-size='36' transform='rotate(15 560 200)'>en</text><text x='80' y='320' font-size='38' transform='rotate(20 80 320)'>CN%E2%81%BB</text><text x='260' y='360' font-size='44' transform='rotate(-10 260 360)'>ox</text><text x='480' y='340' font-size='34' transform='rotate(6 480 340)'>py</text><text x='620' y='430' font-size='40' transform='rotate(-18 620 430)'>NH%E2%82%83</text><text x='120' y='510' font-size='34' transform='rotate(10 120 510)'>PPh%E2%82%83</text><text x='320' y='540' font-size='48' transform='rotate(-8 320 540)'>H%E2%82%82O</text><text x='540' y='600' font-size='38' transform='rotate(14 540 600)'>en</text><text x='40' y='640' font-size='32' transform='rotate(-22 40 640)'>acac</text><text x='400' y='240' font-size='30' transform='rotate(25 400 240)'>bipy</text></g></svg>");
-    background-repeat: repeat;
-    background-size: 720px 720px;
-    opacity: 0.85;
-    pointer-events: none;
-    z-index: 0;
-  }
-  .l2-main > * {
-    position: relative;
-    z-index: 1;
-  }
-
-  /* ============================================================
-     Kahoot-style L2 components — Hazim spec: "kahoot style smuanyaa
-     untuk level 2 sahaja". Apply across step content rendered by
      level-2-game.js.
      ============================================================ */
 

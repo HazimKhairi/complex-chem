@@ -318,7 +318,9 @@
     if (!slot || slot.ligand) return false;
 
     // Bidentate occupies 2 slots — refuse placement if no other empty
-    // slot exists to host the partner sphere.
+    // slot exists to host the partner sphere. Emit a reason event so
+    // the page can surface a friendly toast (silent fail confused
+    // students who didn't know why the chip wouldn't drop).
     if (ligand && ligand.denticity === 2) {
       var hasFreePartner = false;
       for (var k = 0; k < slotMeshes.length; k++) {
@@ -327,7 +329,12 @@
           break;
         }
       }
-      if (!hasFreePartner) return false;
+      if (!hasFreePartner) {
+        document.dispatchEvent(new CustomEvent("ligand-place-rejected", {
+          detail: { reason: "no-bidentate-partner", ligand: ligand },
+        }));
+        return false;
+      }
     }
 
     var ballGeo = new THREE.SphereGeometry(0.45, 32, 32);

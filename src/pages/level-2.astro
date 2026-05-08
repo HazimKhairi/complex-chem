@@ -200,7 +200,11 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" />
 
-<style>
+<style is:global>
+  /* is:global so the dynamic showPointsToast() element + the JS-injected
+     step content can pick up these selectors. Scoped styles get a build-
+     time hash that runtime-created elements never have. */
+
   /* Step indicator inside the dark HUD bar — small, glowing pills */
   .step-dot {
     width: 26px;

@@ -182,6 +182,19 @@
     }
     if (!gameState) { window.location.href = "/pass-and-play"; return; }
 
+    // The 3D builder dispatches this when it refuses a placement (e.g.
+    // bidentate dropped on the only free slot, with no partner left).
+    // Surface a quick red toast instead of a silent ignore.
+    document.addEventListener("ligand-place-rejected", function (e) {
+      var reason = (e.detail && e.detail.reason) || "";
+      var msg = "Cannot place that here.";
+      if (reason === "no-bidentate-partner") {
+        msg = "Bidentate ligand needs 2 free slots — fill another slot first.";
+      }
+      showLevel2Toast(msg, "error");
+      if (window.AudioManager) window.AudioManager.play("wrong");
+    });
+
     gameOption = sessionStorage.getItem("game-option") || "one-vs-one";
 
     var pl = gameState.playerLigands || {};
@@ -244,6 +257,26 @@
     document.body.appendChild(el);
     setTimeout(function () { el.style.opacity = "0"; }, 2000);
     setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 2600);
+  }
+
+  /**
+   * Generic Level 2 toast — used for non-points feedback like
+   * "Bidentate ligand needs 2 free slots". Floats top-centre, fades
+   * after ~2.5 s. kind = "error" | "info" | "success".
+   */
+  function showLevel2Toast(message, kind) {
+    var palette = {
+      error:   "bg-red-500 text-white",
+      info:    "bg-slate-800 text-white",
+      success: "bg-emerald-600 text-white",
+    };
+    var cls = palette[kind] || palette.info;
+    var el = document.createElement("div");
+    el.className = "fixed top-6 left-1/2 -translate-x-1/2 z-[9999] px-4 py-2.5 rounded-xl text-sm font-semibold shadow-2xl transition-opacity " + cls;
+    el.textContent = message;
+    document.body.appendChild(el);
+    setTimeout(function () { el.style.opacity = "0"; }, 2200);
+    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 2800);
   }
 
   /**
@@ -1471,25 +1504,29 @@
     html += '<p class="text-gray-500 text-sm mb-2">First, pick the complex picture that matches your coordination number. Your CN = <strong class="text-[#4187a0]">' + cn + '</strong>.</p>';
     html += '<p class="text-xs text-gray-500 mb-4">Attempt ' + Math.min(level2State.pictureAttempts + (done ? 0 : 1), 3) + ' / 3 &nbsp; | &nbsp; 1st = 3 pts · 2nd = 2 pts · 3rd = 1 pt</p>';
 
-    // Grid of 6 options
+    // Wording-only options per Hazim spec (matches renderStep2). Order
+    // is shuffled once per session and persisted on level2State so a
+    // wrong-attempt re-render keeps the layout stable.
+    if (!Array.isArray(level2State.pictureOrder) || level2State.pictureOrder.length !== GEOMETRY_PICS.length) {
+      level2State.pictureOrder = GEOMETRY_PICS.slice().sort(function () { return Math.random() - 0.5; });
+    }
+
     html += '<div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">';
-    GEOMETRY_PICS.forEach(function (g) {
+    level2State.pictureOrder.forEach(function (g) {
       var isCorrect = g.cn === cn;
-      var cls = 'geo-pic-btn relative p-2 rounded-xl border-2 bg-white transition text-center ';
+      var cls = 'geo-pic-btn relative rounded-xl border-2 bg-white transition flex items-center justify-center px-3 py-5 sm:py-6 min-h-[72px] ';
       if (done) {
-        if (g.id === chosen && isCorrect) cls += 'border-green-500 ring-2 ring-green-500/30 ';
-        else if (g.id === chosen && !isCorrect) cls += 'border-red-500 ring-2 ring-red-500/30 ';
-        else if (isCorrect) cls += 'border-green-300 ';
-        else cls += 'border-gray-200 opacity-60 ';
+        if (g.id === chosen && isCorrect) cls += 'border-green-500 ring-2 ring-green-500/30 text-green-800 ';
+        else if (g.id === chosen && !isCorrect) cls += 'border-red-500 ring-2 ring-red-500/30 text-red-700 ';
+        else if (isCorrect) cls += 'border-green-300 text-green-700 ';
+        else cls += 'border-gray-200 opacity-60 text-gray-400 ';
         cls += 'cursor-default ';
       } else {
-        if (g.id === chosen) cls += 'border-[#4187a0] ring-2 ring-[#4187a0]/30 ';
-        else cls += 'border-gray-200 hover:border-[#4187a0] cursor-pointer hover:scale-105 ';
+        if (g.id === chosen) cls += 'border-[#4187a0] ring-2 ring-[#4187a0]/30 text-[#4187a0] ';
+        else cls += 'border-gray-200 text-gray-800 hover:border-[#4187a0] hover:bg-[#4187a0]/5 hover:shadow-md hover:-translate-y-0.5 cursor-pointer ';
       }
       html += '<button class="' + cls + '" data-val="' + g.id + '"' + (done ? ' disabled' : '') + '>';
-      html += '<img src="' + g.image + '" alt="' + g.label + '" class="w-full h-auto object-contain mb-1" />';
-      html += '<div class="text-xs font-semibold text-gray-800">' + g.label + '</div>';
-      html += '<div class="text-[10px] text-gray-500">CN = ' + g.cn + '</div>';
+      html += '<span class="text-sm sm:text-base font-semibold leading-tight">' + g.label + '</span>';
       html += '</button>';
     });
     html += '</div>';

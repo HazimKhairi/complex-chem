@@ -107,9 +107,13 @@
   </div>
 </div>
 
-<style>
+<style is:global>
   /* ============================================================
      Modal background — mint gradient + scattered ligand silhouettes
+     IMPORTANT: is:global so JS-injected innerHTML (qm-option,
+     qm-question-banner) picks up the same selectors. Scoped style
+     blocks rewrite class names with a build-time hash that dynamic
+     HTML never gets.
      ============================================================ */
   #question-modal .qm-backdrop {
     background:

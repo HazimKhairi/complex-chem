@@ -631,6 +631,84 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
     0%, 100% { opacity: 0.7; transform: scale(1); }
     50%      { opacity: 1;   transform: scale(1.12); }
   }
+  /* Q4 image-only geometry cards. White card, big image, no labels.
+     States mirror the kahoot button so selected/correct/wrong reads
+     consistently across the wizard. */
+  .geo-img-card {
+    position: relative;
+    background: #fff;
+    border: 3px solid #cbd5e1;
+    border-radius: 18px;
+    padding: 12px;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+    box-shadow: 0 5px 0 rgba(0,0,0,0.08), 0 8px 16px rgba(0,0,0,0.06);
+    overflow: hidden;
+  }
+  .geo-img-card img {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+    user-select: none;
+  }
+  .geo-img-card:hover {
+    border-color: #3b82f6;
+    transform: translateY(-2px);
+    box-shadow: 0 7px 0 rgba(0,0,0,0.10), 0 12px 22px rgba(0,0,0,0.10);
+  }
+  .geo-img-card:disabled { cursor: default; }
+  .geo-img-card[data-state="selected"] {
+    outline: 4px solid #fde047;
+    outline-offset: 3px;
+    transform: translateY(-3px) scale(1.04);
+    box-shadow: 0 9px 0 rgba(245, 158, 11, 0.55), 0 0 0 6px rgba(253, 224, 71, 0.35), 0 14px 22px rgba(0,0,0,0.18);
+    border-color: #f59e0b;
+    z-index: 2;
+    animation: l2-kahoot-pulse 1.4s ease-in-out infinite;
+  }
+  .geo-img-card[data-state="selected"]::after {
+    content: "\2713";
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #fde047;
+    color: #78350f;
+    font-weight: 900;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+    border: 2px solid #fff;
+    z-index: 3;
+  }
+  .geo-img-card[data-state="correct"] {
+    border-color: #22c55e;
+    box-shadow: 0 5px 0 #15803d, 0 0 0 4px rgba(34, 197, 94, 0.25);
+    background: #f0fdf4;
+  }
+  .geo-img-card[data-state="wrong"] {
+    border-color: #ef4444;
+    box-shadow: 0 5px 0 #991b1b, 0 0 0 4px rgba(239, 68, 68, 0.22);
+    background: #fef2f2;
+    animation: l2-kahoot-shake 0.4s;
+  }
+  .geo-img-card[data-state="faded"] {
+    opacity: 0.35;
+    pointer-events: none;
+    filter: grayscale(0.6);
+  }
+
   /* Armed inventory ligand — gold ring + check stamp + lift, mirrors
      the kahoot button's selected state so the visual language is
      consistent across questions. */

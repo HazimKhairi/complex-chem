@@ -1582,16 +1582,16 @@
       "3 PTS"
     );
 
-    // Wording-only options per Hazim spec (matches renderStep2). Order
-    // is shuffled once per session and persisted on level2State so a
-    // wrong-attempt re-render keeps the layout stable.
+    // Image-only options per Hazim spec ("Q4 sahaja nak ada gambar
+    // taknak ada wording"). Order is shuffled once per session and
+    // persisted on level2State so wrong-attempt re-renders keep the
+    // layout stable. The image filename = id-with-dashes.png.
     if (!Array.isArray(level2State.pictureOrder) || level2State.pictureOrder.length !== GEOMETRY_PICS.length) {
       level2State.pictureOrder = GEOMETRY_PICS.slice().sort(function () { return Math.random() - 0.5; });
     }
 
-    var picColors = ["red", "yellow", "green", "purple", "teal", "pink"];
     html += '<div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">';
-    level2State.pictureOrder.forEach(function (g, idx) {
+    level2State.pictureOrder.forEach(function (g) {
       var isCorrect = g.cn === cn;
       var state = "idle";
       if (done) {
@@ -1602,9 +1602,8 @@
       } else if (g.id === chosen) {
         state = "selected";
       }
-      var cls = "geo-pic-btn l2-kahoot-btn l2-kahoot-btn--" + picColors[idx % picColors.length];
-      html += '<button class="' + cls + '" data-state="' + state + '" data-val="' + g.id + '"' + (done ? ' disabled' : '') + '>';
-      html += '<span>' + g.label + '</span>';
+      html += '<button class="geo-pic-btn geo-img-card" data-state="' + state + '" data-val="' + g.id + '"' + (done ? ' disabled' : '') + ' aria-label="' + g.label + '">';
+      html += '<img src="' + g.image + '" alt="" loading="lazy" />';
       html += '</button>';
     });
     html += '</div>';

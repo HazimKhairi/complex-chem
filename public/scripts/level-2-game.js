@@ -288,8 +288,16 @@
     if (!points || points <= 0) return;
     var el = document.createElement("div");
     el.className = "l2-points-toast";
+    var starSvg = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">'
+      + '<path d="M12 1l2.6 7.2L22 10l-6 4.6L17.6 22 12 18l-5.6 4 1.6-7.4L2 10l7.4-1.8z"/>'
+      + '</svg>';
     el.innerHTML = ''
       + '<div class="l2-points-toast-inner">'
+      +   '<span class="l2-toast-spark l2-toast-spark--tl">' + starSvg + '</span>'
+      +   '<span class="l2-toast-spark l2-toast-spark--t">'  + starSvg + '</span>'
+      +   '<span class="l2-toast-spark l2-toast-spark--tr">' + starSvg + '</span>'
+      +   '<span class="l2-toast-spark l2-toast-spark--bl">' + starSvg + '</span>'
+      +   '<span class="l2-toast-spark l2-toast-spark--br">' + starSvg + '</span>'
       +   '<span class="l2-points-toast-label">' + (label || "You earned") + '</span>'
       +   '<span class="l2-points-toast-num">+' + points + ' pts</span>'
       + '</div>';
@@ -830,7 +838,8 @@
     var q1Contribs = level2State.q1ContribInputs;
     var ligandChargeOpts = ['−2', '−1', '0', '+1', '+2'];
     var metalChargeOpts  = ['+1', '+2', '+3'];
-    var countOpts        = ['1', '2', '3', '4', '5', '6'];
+    // Hazim spec — count chips capped at [1][2] (Q2 + Q3 alike).
+    var countOpts        = ['1', '2'];
     var contribOpts      = ['−6', '−4', '−3', '−2', '−1', '0', '+1', '+2', '+3', '+4', '+6'];
 
     function pickerChips(field, key, opts, currentValue, expectedValue) {
@@ -898,12 +907,15 @@
     html += '<td class="text-center px-3 py-2">' + pickerChips('totLigand', 'tot', contribOpts, level2State.q1TotalLigandChargeInput, expTotalLigandStr) + '</td>';
     html += '</tr>';
 
-    // Metal row — chip pickers reduced to [+1][+2][+3] per Hazim spec.
+    // Metal row — Hazim spec: drop the Charge column chips for the
+    // metal (no need to pick metal charge twice). Keep only the
+    // Charge Contribution chip — that's the value that matters for
+    // computing Charge of Complex.
     var expMetalCharge = level2State.selectedMetal ? level2State.selectedMetal.charge : 0;
     var expMetalChargeStr = fmtSignedCharge(expMetalCharge);
     html += '<tr class="border-t border-gray-100 bg-blue-50">';
     html += '<td class="px-3 py-2 font-medium text-gray-800">Metal: ' + (level2State.selectedMetal ? level2State.selectedMetal.name : "—") + '</td>';
-    html += '<td class="text-center px-3 py-2">' + pickerChips('charge',  'metal', metalChargeOpts, q1Charges.metal,  expMetalChargeStr)  + '</td>';
+    html += '<td class="text-center px-3 py-2 text-gray-300">—</td>';
     html += '<td class="text-center px-3 py-2 text-gray-300">—</td>';
     html += '<td class="text-center px-3 py-2">' + pickerChips('contrib', 'metal', metalChargeOpts, q1Contribs.metal, expMetalChargeStr) + '</td>';
     html += '</tr>';
@@ -950,11 +962,21 @@
     if (done) {
       var pts = level2State.typeScore;
       var pickedRight = chosen === correct;
+      var workingRight = (
+        String(level2State.q1TotalLigandChargeInput || '') === expTotalLigandStr &&
+        String(level2State.q1ComplexChargeInput || '')     === expComplexChargeStr
+      );
+      var workingMark = workingRight ? 1 : 0;
+      var typeMark = pickedRight ? 1 : 0;
+      var breakdown = ''
+        + '<div class="flex items-center justify-center gap-3 text-xs mt-1">'
+        +   '<span class="px-2 py-0.5 rounded-full ' + (workingRight ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500') + ' font-bold">Working: +' + workingMark + '</span>'
+        +   '<span class="px-2 py-0.5 rounded-full ' + (pickedRight  ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500') + ' font-bold">Answer: +' + typeMark + '</span>'
+        + '</div>';
       if (pickedRight) {
-        var ptsTxt = pts > 0 ? ' +' + pts + ' point' + (pts > 1 ? 's' : '') : '';
-        html += '<div class="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm text-center font-semibold mb-3">You are correct!' + ptsTxt + '</div>';
+        html += '<div class="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm text-center font-semibold mb-3">You are correct! +' + pts + ' point' + (pts === 1 ? '' : 's') + breakdown + '</div>';
       } else {
-        html += '<div class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm text-center mb-3">You are wrong. The correct answer was <strong>' + correct + '</strong>.</div>';
+        html += '<div class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm text-center mb-3">You are wrong. The correct answer was <strong>' + correct + '</strong>.' + breakdown + '</div>';
       }
     } else if (level2State.typeAttempts > 0) {
       html += '<div class="p-3 bg-orange-50 border border-orange-200 rounded-lg text-orange-700 text-sm text-center mb-3">Try again. Attempt ' + level2State.typeAttempts + '/3 — wrong picks have been eliminated.</div>';
@@ -1027,19 +1049,35 @@
         var isRight = level2State.typeAnswer === correct;
 
         if (isRight) {
-          // Spec scoring: 1st-try = 2 pts, 2nd-try = 1 pt, 3rd-try = 0.
-          level2State.typeScore = level2State.typeAttempts === 1 ? 2 :
-                                  level2State.typeAttempts === 2 ? 1 : 0;
+          // Hazim spec — Q2 scoring split:
+          //   1 mark if both working-out totals (Total of ligand
+          //   charge AND Charge of Complex) match the expected.
+          //   1 mark for clicking the right type.
+          // Working-out score is awarded once on the first correct
+          // submission; type score requires getting the right option.
+          var workingMark = (
+            String(level2State.q1TotalLigandChargeInput || '') === expTotalLigandStr &&
+            String(level2State.q1ComplexChargeInput || '')     === expComplexChargeStr
+          ) ? 1 : 0;
+          var typeMark = 1; // they picked correct type — credit it.
+          level2State.typeScore = workingMark + typeMark;
           level2State.typeDone = true;
           level2State.level2Score += level2State.typeScore;
           updateScoreBar();
           if (level2State.typeScore > 0) showPointsToast(level2State.typeScore, "You earned");
           else if (window.AudioManager) window.AudioManager.play("correct");
         } else if (level2State.typeAttempts >= 3) {
-          // Out of attempts.
-          level2State.typeScore = 0;
+          // Out of attempts — type mark zero, but still grant the
+          // working-out mark if those chips were correct.
+          var workingMark2 = (
+            String(level2State.q1TotalLigandChargeInput || '') === expTotalLigandStr &&
+            String(level2State.q1ComplexChargeInput || '')     === expComplexChargeStr
+          ) ? 1 : 0;
+          level2State.typeScore = workingMark2;
           level2State.typeDone = true;
+          level2State.level2Score += level2State.typeScore;
           updateScoreBar();
+          if (level2State.typeScore > 0) showPointsToast(level2State.typeScore, "Working credit");
           if (window.AudioManager) window.AudioManager.play("wrong");
         } else {
           // Wrong, but attempts left — eliminate the option they just
@@ -1215,7 +1253,8 @@
     var q2Count = level2State.q2CountInputs;
     var typeOpts  = ['Monodentate', 'Bidentate'];
     var dentOpts  = ['1', '2'];
-    var countOpts = ['1', '2', '3'];
+    // Hazim spec — n column capped at [1][2] (matches Q2 chips).
+    var countOpts = ['1', '2'];
 
     function q2Chips(cls, key, opts, sel, expectedVal) {
       var chipBase = cls + ' text-xs font-semibold px-2 py-1 rounded-md border-2 transition select-none ';
@@ -1267,21 +1306,24 @@
     html += '</tbody></table></div>';
 
 
-    // 4-option answer
+    // 4-option answer — same kahoot button pattern as Q2 so the
+    // selected/correct/wrong states use the gold-ring + check-badge
+    // styling. Players need to clearly see which option is chosen
+    // before submitting (Hazim spec "tk nampak player tgh pilih mana").
     var opts = [3, 4, 5, 6];
+    var cnColors = ['teal', 'green', 'yellow', 'pink'];
     html += '<div class="grid grid-cols-4 gap-3 mb-3">';
-    opts.forEach(function (n) {
-      var cls = 'p-4 rounded-lg font-bold text-xl border-2 transition text-center ';
+    opts.forEach(function (n, i) {
+      var state = "idle";
       if (done) {
-        if (n === cn) cls += 'border-green-500 bg-green-50 text-green-700 ';
-        else if (n === chosen) cls += 'border-red-500 bg-red-50 text-red-700 ';
-        else cls += 'border-gray-200 text-gray-400 ';
-        cls += 'cursor-default ';
-      } else {
-        if (n === chosen) cls += 'border-[#4187a0] bg-[#4187a0]/10 text-[#4187a0] ';
-        else cls += 'border-gray-200 hover:border-[#4187a0] cursor-pointer ';
+        if (n === cn) state = "correct";
+        else if (n === chosen) state = "wrong";
+        else state = "faded";
+      } else if (n === chosen) {
+        state = "selected";
       }
-      html += '<button class="cn-opt ' + cls + '" data-val="' + n + '"' + (done ? ' disabled' : '') + '>' + n + '</button>';
+      var cls = "cn-opt l2-kahoot-btn l2-kahoot-btn--" + cnColors[i % cnColors.length];
+      html += '<button class="' + cls + '" data-state="' + state + '" data-val="' + n + '"' + (done ? ' disabled' : '') + '>' + n + '</button>';
     });
     html += '</div>';
 
@@ -1368,7 +1410,8 @@
           level2State.cnDone = true;
           level2State.level2Score += level2State.cnScore;
           updateScoreBar();
-          if (window.AudioManager) window.AudioManager.play("correct");
+          if (level2State.cnScore > 0) showPointsToast(level2State.cnScore, "You earned");
+          else if (window.AudioManager) window.AudioManager.play("correct");
           renderStep3_Q2_cn();
         } else if (level2State.cnAttempts >= 2) {
           level2State.cnScore = 0;
@@ -1412,6 +1455,10 @@
     }
 
     var done = level2State.geometryDone;
+    // Pending pick — set on click, committed on Submit. Decoupled so
+    // players can SEE which option they're about to submit (Hazim spec
+    // "tk nampak player tgh pilih yg mana").
+    var pending = level2State.geometryPending || null;
     // Cycle through 6 Kahoot colours so the grid reads bright.
     var geoColors = ["red", "yellow", "green", "purple", "teal", "pink"];
     html += '<div class="grid grid-cols-2 sm:grid-cols-3 gap-3">';
@@ -1422,6 +1469,8 @@
         if (isCorrect) state = "correct";
         else if (geo === level2State.selectedGeometry && !isCorrect) state = "wrong";
         else state = "faded";
+      } else if (geo === pending) {
+        state = "selected";
       }
       var cls = "geo-btn l2-kahoot-btn l2-kahoot-btn--" + geoColors[idx % geoColors.length];
       html += '<button class="' + cls + '" data-state="' + state + '" data-val="' + geo + '"' + (done ? ' disabled' : '') + '>';
@@ -1443,32 +1492,20 @@
       html += '<div class="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg text-orange-700 text-sm text-center">Try again. Attempts: ' + level2State.geometryAttempts + '/3</div>';
     }
 
-    html += navButtons({ back: true, next: true, nextDisabled: !done });
+    html += navButtons({
+      back: true,
+      next: true,
+      nextDisabled: done ? false : !pending,
+      nextLabel: done ? "Next: Build in 3D →" : "Submit",
+    });
     c.innerHTML = html;
 
     if (!done) {
       document.querySelectorAll(".geo-btn").forEach(function (btn) {
         btn.addEventListener("click", function () {
-          var val = this.getAttribute("data-val");
-          level2State.geometryAttempts++;
-          var isCorrect = correctList.indexOf(val) >= 0;
-          if (isCorrect) {
-            level2State.selectedGeometry = val;
-            // Spec: 1 pt max for geometry, only awarded on first attempt
-            var pts = level2State.geometryAttempts === 1 ? 1 : 0;
-            level2State.geometryScore = pts;
-            level2State.level2Score += pts;
-            level2State.geometryDone = true;
-            if (window.AudioManager) window.AudioManager.play("correct");
-          } else if (level2State.geometryAttempts >= 3) {
-            level2State.selectedGeometry = correctList[0];
-            level2State.geometryScore = 0;
-            level2State.geometryDone = true;
-            if (window.AudioManager) window.AudioManager.play("wrong");
-          } else {
-            if (window.AudioManager) window.AudioManager.play("wrong");
-          }
-          updateScoreBar();
+          if (level2State.geometryDone) return;
+          level2State.geometryPending = this.getAttribute("data-val");
+          saveLevel2State();
           renderStep2();
         });
       });
@@ -1476,7 +1513,34 @@
 
     bindNav({
       onBack: function () { renderStep(3); },
-      onNext: function () { renderStep(5); },
+      onNext: function () {
+        if (done) { renderStep(5); return; }
+        if (!level2State.geometryPending) return;
+        var val = level2State.geometryPending;
+        level2State.geometryAttempts++;
+        var isCorrect = correctList.indexOf(val) >= 0;
+        if (isCorrect) {
+          level2State.selectedGeometry = val;
+          var pts = level2State.geometryAttempts === 1 ? 1 : 0;
+          level2State.geometryScore = pts;
+          level2State.level2Score += pts;
+          level2State.geometryDone = true;
+          if (pts > 0) showPointsToast(pts, "You earned");
+          else if (window.AudioManager) window.AudioManager.play("correct");
+        } else if (level2State.geometryAttempts >= 3) {
+          level2State.selectedGeometry = correctList[0];
+          level2State.geometryScore = 0;
+          level2State.geometryDone = true;
+          if (window.AudioManager) window.AudioManager.play("wrong");
+        } else {
+          // Wrong, but attempts left — clear pending so they pick again.
+          level2State.geometryPending = null;
+          if (window.AudioManager) window.AudioManager.play("wrong");
+        }
+        updateScoreBar();
+        saveLevel2State();
+        renderStep2();
+      },
     });
   }
 
@@ -1592,7 +1656,8 @@
           level2State.pictureDone = true;
           level2State.level2Score += level2State.pictureScore;
           updateScoreBar();
-          if (window.AudioManager) window.AudioManager.play("correct");
+          if (level2State.pictureScore > 0) showPointsToast(level2State.pictureScore, "You earned");
+          else if (window.AudioManager) window.AudioManager.play("correct");
           renderStep5_Q4_picture();
         } else if (level2State.pictureAttempts >= 3) {
           level2State.pictureScore = 0;
@@ -1625,6 +1690,11 @@
 
     var bc = $("builder-container");
     if (bc) bc.classList.remove("hidden");
+
+    // Re-entering the build phase — clear any leftover armed state.
+    armedLigandIdx = null;
+    var armedRow = $("builder-armed-row");
+    if (armedRow) armedRow.classList.add("hidden");
 
     if (!window.BoneBuilder) return;
     if (!window._boneBuilderInitialized) {
@@ -1666,6 +1736,8 @@
           break;
         }
       }
+      // Clear the armed indicator — the ligand is now in a slot.
+      setArmedLigand(null);
       renderInventory();
       updateSlotCounter();
     });
@@ -1697,6 +1769,38 @@
     }
   }
 
+  // Tracks the ligand index the player has "armed" by clicking
+  // (versus dragging). Drag start also updates this so the pill above
+  // the inventory always reflects the most-recent intent.
+  var armedLigandIdx = null;
+
+  function setArmedLigand(lig) {
+    var row  = $("builder-armed-row");
+    var dot  = $("builder-armed-dot");
+    var name = $("builder-armed-name");
+    if (!row) return;
+    if (!lig) {
+      armedLigandIdx = null;
+      row.classList.add("hidden");
+      // Reset visual armed state on all cards
+      document.querySelectorAll(".lig-drag-card").forEach(function (el) {
+        el.removeAttribute("data-armed");
+      });
+      return;
+    }
+    armedLigandIdx = lig._idx;
+    var color = SPHERE_COLORS_CSS[lig.sphere] || '#9CA3AF';
+    if (dot)  dot.style.background = color;
+    if (name) name.textContent = lig.name;
+    row.classList.remove("hidden");
+    // Visually mark the armed card with the gold ring + check stamp.
+    document.querySelectorAll(".lig-drag-card").forEach(function (el) {
+      var i = parseInt(el.getAttribute("data-idx"), 10);
+      if (i === lig._idx) el.setAttribute("data-armed", "true");
+      else el.removeAttribute("data-armed");
+    });
+  }
+
   function renderInventory() {
     var inv = $("ligand-inventory");
     if (!inv) return;
@@ -1704,32 +1808,64 @@
     inventoryLigands.forEach(function (lig) {
       if (lig.placed) return;
       var color = SPHERE_COLORS_CSS[lig.sphere] || '#9CA3AF';
-      html += '<div class="lig-drag-card flex flex-col items-center gap-1 p-2 rounded-lg border-2 border-gray-200 bg-white cursor-grab hover:border-[#4187a0] hover:shadow-md transition select-none" draggable="true" data-idx="' + lig._idx + '">';
+      var isArmed = (lig._idx === armedLigandIdx);
+      html += '<div class="lig-drag-card flex flex-col items-center gap-1 p-2 rounded-lg border-2 border-gray-200 bg-white cursor-grab hover:border-[#4187a0] hover:shadow-md transition select-none" draggable="true" data-idx="' + lig._idx + '"' + (isArmed ? ' data-armed="true"' : '') + '>';
       html += '<div class="w-8 h-8 rounded-full shadow-inner" style="background-color:' + color + '"></div>';
       html += '<span class="text-xs font-bold text-gray-700">' + lig.name + '</span>';
       html += '</div>';
     });
-    if (html === '') html = '<p class="text-gray-400 text-sm">All ligands placed!</p>';
+    if (html === '') {
+      html = '<p class="text-gray-400 text-sm">All ligands placed!</p>';
+      // Also clear the armed pill — nothing to pick up.
+      setArmedLigand(null);
+    }
     inv.innerHTML = html;
 
     document.querySelectorAll(".lig-drag-card").forEach(function (card) {
+      card.addEventListener("click", function () {
+        var idx = parseInt(this.getAttribute("data-idx"), 10);
+        var lig = inventoryLigands.find(function (l) { return l._idx === idx; });
+        if (!lig) return;
+        // Toggle: clicking the armed card again disarms it.
+        if (armedLigandIdx === idx) {
+          setArmedLigand(null);
+          window.BoneBuilder.clearDraggedLigand();
+        } else {
+          setArmedLigand(lig);
+          window.BoneBuilder.setDraggedLigand(lig);
+        }
+      });
       card.addEventListener("dragstart", function (e) {
         var idx = parseInt(this.getAttribute("data-idx"), 10);
         var lig = inventoryLigands.find(function (l) { return l._idx === idx; });
-        if (lig) window.BoneBuilder.setDraggedLigand(lig);
+        if (lig) {
+          window.BoneBuilder.setDraggedLigand(lig);
+          setArmedLigand(lig);
+        }
         e.dataTransfer.setData("text/plain", idx);
         this.style.opacity = "0.4";
       });
       card.addEventListener("dragend", function () {
         this.style.opacity = "1";
-        window.BoneBuilder.clearDraggedLigand();
+        // Don't clearDraggedLigand here — placement may still fire.
       });
       card.addEventListener("touchstart", function (e) {
         var idx = parseInt(this.getAttribute("data-idx"), 10);
         var lig = inventoryLigands.find(function (l) { return l._idx === idx; });
-        if (lig) window.BoneBuilder.setDraggedLigand(lig);
+        if (lig) {
+          window.BoneBuilder.setDraggedLigand(lig);
+          setArmedLigand(lig);
+        }
       });
     });
+
+    // After the cards are re-injected, sync the armed visual.
+    if (armedLigandIdx !== null) {
+      var stillThere = inventoryLigands.find(function (l) {
+        return l._idx === armedLigandIdx && !l.placed;
+      });
+      if (!stillThere) setArmedLigand(null);
+    }
   }
 
   function updateSlotCounter() {
@@ -1775,8 +1911,12 @@
       level2State.buildDone = true;
       updateScoreBar();
 
-      // Play "complex built" SFX
+      // Play "complex built" SFX + show the gold sparkly toast so
+      // the build success uses the same celebratory feedback as the
+      // earlier questions (Hazim spec: "untuk point setiap soalan
+      // buat je macam Q1 keluar box you earned").
       if (window.AudioManager) window.AudioManager.play('complex-built');
+      showPointsToast(pts, "You earned");
 
       var checkIcon = '<svg class="w-14 h-14 mx-auto mb-3 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>';
       var c = $("step-container");

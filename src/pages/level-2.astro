@@ -121,21 +121,33 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
            never gets pushed below the viewport. -->
       <div id="builder-container" class="hidden min-h-0 max-h-full flex flex-col">
         <div class="bg-white rounded-2xl shadow-md overflow-hidden flex-1 flex flex-col min-h-0 max-h-full relative">
-          <!-- HUD overlay over the 3D canvas: chemistry notation
-               [M(L)n…]ᶜʰᵃʳᵍᵉ on the left, "Charge: 2+" pill on the
-               right. Populated by renderStep3 in level-2-game.js. -->
-          <div id="builder-hud" class="absolute top-2 left-2 right-2 z-10 flex items-start justify-between gap-2 pointer-events-none">
-            <div id="builder-formula" class="px-3 py-1.5 rounded-xl bg-white/90 backdrop-blur shadow-md border-2 border-blue-200 text-blue-900 font-bold text-sm tabular-nums"
+          <!-- Outer-complex header bar — sits OUTSIDE the 3D scene
+               (Hazim spec: "kotak luar complex"). Shows the chemistry
+               formula on the left and the charge pill on the right
+               in a clear bordered box so the player can read what
+               they're building without it overlapping the spheres. -->
+          <div id="builder-outer-box" class="px-3 py-2 border-b-2 border-blue-200 bg-gradient-to-r from-sky-50 to-blue-50 flex items-center justify-between gap-3 flex-shrink-0">
+            <div id="builder-formula" class="flex-1 min-w-0 px-3 py-2 rounded-xl bg-white shadow-sm border-2 border-blue-300 text-blue-900 font-bold text-base sm:text-lg tabular-nums truncate"
                  style="font-family:'Fredoka',system-ui,sans-serif;">
-              <!-- e.g. [Cr(NH₃)₃(H₂O)₃] -->
+              <span class="text-gray-400">[ build your complex ]</span>
             </div>
-            <div id="builder-charge-pill" class="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 shadow-md text-blue-900 text-xs font-black uppercase tracking-wider hidden">
+            <div id="builder-charge-pill" class="px-3 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 shadow-md text-blue-900 text-xs sm:text-sm font-black uppercase tracking-wider whitespace-nowrap hidden">
               <!-- e.g. CHARGE 2+ -->
             </div>
           </div>
           <canvas id="three-canvas" class="w-full flex-1 min-h-0" style="touch-action:none;"></canvas>
+          <!-- Currently-armed ligand pill — gives visual feedback for
+               which ligand the player is about to place (Hazim spec:
+               "tk nampak player pilih mana"). -->
+          <div id="builder-armed-row" class="px-3 py-1.5 border-t border-gray-100 flex items-center gap-2 flex-shrink-0 hidden">
+            <span class="text-[10px] uppercase tracking-wide text-gray-500 font-semibold">Picked up:</span>
+            <span id="builder-armed-pill" class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 border-2 border-amber-400 shadow-sm">
+              <span id="builder-armed-dot" class="w-4 h-4 rounded-full" style="background:#9ca3af;"></span>
+              <span id="builder-armed-name" class="text-xs font-bold text-amber-900">—</span>
+            </span>
+          </div>
           <div class="px-3 py-1.5 border-t border-gray-100 flex-shrink-0">
-            <p class="text-[10px] text-gray-500 uppercase tracking-wide mb-1">Your Ligands — drag onto empty slots</p>
+            <p class="text-[10px] text-gray-500 uppercase tracking-wide mb-1">Your Ligands — tap to pick up, drag onto empty slots</p>
             <div id="ligand-inventory" class="flex flex-wrap gap-1.5 justify-center min-h-[36px]"></div>
           </div>
           <div class="px-3 py-1.5 border-t border-gray-100 flex justify-between items-center flex-shrink-0">
@@ -307,9 +319,6 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
     to   { opacity: 1; transform: translateY(0); }
   }
 
-     level-2-game.js.
-     ============================================================ */
-
   /* Step heading banner — big rounded blue gradient with Fredoka title. */
   .l2-step-banner {
     background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #1e40af 100%);
@@ -323,28 +332,41 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
   }
   .l2-step-banner h2 {
     font-family: 'Fredoka', system-ui, sans-serif;
-    font-weight: 700;
-    font-size: clamp(1.1rem, 1.8vw, 1.4rem);
+    font-weight: 800;
+    font-size: clamp(1.2rem, 2vw, 1.55rem);
     line-height: 1.2;
-    margin: 0 0 4px;
+    margin: 0 0 8px;
     color: #fff;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.18);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.32);
+    letter-spacing: 0.01em;
   }
+  /* Subtitle — wrapped in a dark inset strip so the white text reads
+     even when the banner gradient is partially clipped. */
   .l2-step-banner p {
-    color: rgba(255,255,255,0.92);
-    font-size: 0.85rem;
-    margin: 0;
-    line-height: 1.4;
-  }
-  .l2-step-banner .l2-step-pts {
+    color: #fff;
+    font-size: clamp(0.95rem, 1.3vw, 1.05rem);
     font-weight: 600;
-    color: #fde68a;
-    background: rgba(0,0,0,0.18);
-    padding: 2px 10px;
+    margin: 0;
+    line-height: 1.45;
+    background: rgba(0,0,0,0.28);
+    padding: 8px 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.18);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.35);
+    display: block;
+  }
+  .l2-step-banner p strong { color: #fde68a; }
+  .l2-step-banner .l2-step-pts {
+    font-weight: 800;
+    color: #1f2937;
+    background: linear-gradient(135deg, #fde68a, #f59e0b);
+    padding: 4px 12px;
     border-radius: 999px;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     margin-left: 8px;
     display: inline-block;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+    text-shadow: none;
   }
 
   /* Kahoot 2-2 vibrant button with bouncy depth shadow. */
@@ -382,20 +404,74 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
   .l2-kahoot-btn--teal   { --bg: #14b8a6; --bgd: #0f766e; }
   .l2-kahoot-btn--pink   { --bg: #ec4899; --bgd: #9d174d; }
 
+  /* Selected — keep the button's own colour but ring it in gold and
+     scale up so it reads "I picked this one" loud and clear. The
+     ::after badge stamps a check-mark overlay at the top-right. */
   .l2-kahoot-btn[data-state="selected"] {
-    --bg: #f59e0b; --bgd: #b45309;
-    transform: translateY(2px) scale(1.01);
+    outline: 4px solid #fde047;
+    outline-offset: 3px;
+    transform: translateY(-3px) scale(1.04);
+    box-shadow: 0 9px 0 var(--bgd), 0 14px 22px rgba(0,0,0,0.30), 0 0 0 6px rgba(253, 224, 71, 0.35);
+    position: relative;
+    z-index: 2;
+    animation: l2-kahoot-pulse 1.4s ease-in-out infinite;
+  }
+  .l2-kahoot-btn[data-state="selected"]::after {
+    content: "\2713";
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #fde047;
+    color: #78350f;
+    font-weight: 900;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+    border: 2px solid #fff;
+  }
+  @keyframes l2-kahoot-pulse {
+    0%, 100% { box-shadow: 0 9px 0 var(--bgd), 0 14px 22px rgba(0,0,0,0.30), 0 0 0 6px rgba(253, 224, 71, 0.35); }
+    50%      { box-shadow: 0 9px 0 var(--bgd), 0 14px 22px rgba(0,0,0,0.30), 0 0 0 12px rgba(253, 224, 71, 0.18); }
   }
   .l2-kahoot-btn[data-state="correct"] { --bg: #22c55e; --bgd: #15803d; }
   .l2-kahoot-btn[data-state="wrong"]   { --bg: #ef4444; --bgd: #991b1b; animation: l2-kahoot-shake 0.4s; }
   .l2-kahoot-btn[data-state="faded"]   { opacity: 0.4; pointer-events: none; }
+  /* Eliminated — gray, struck-through, big red X stamp on top-right
+     so the player can see at a glance which choices are gone. */
   .l2-kahoot-btn[data-state="eliminated"] {
-    --bg: #cbd5e1; --bgd: #94a3b8;
-    color: #475569;
+    --bg: #e2e8f0; --bgd: #94a3b8;
+    color: #64748b;
     text-decoration: line-through;
+    text-decoration-thickness: 3px;
+    text-decoration-color: #ef4444;
     cursor: not-allowed;
     pointer-events: none;
     box-shadow: 0 3px 0 var(--bgd);
+    position: relative;
+    opacity: 0.85;
+  }
+  .l2-kahoot-btn[data-state="eliminated"]::after {
+    content: "\2715";
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #ef4444;
+    color: #fff;
+    font-weight: 900;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.25);
+    border: 2px solid #fff;
   }
 
   .l2-kahoot-btn .l2-btn-sub {
@@ -478,44 +554,120 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
      ============================================================ */
   .l2-points-toast {
     position: fixed;
-    top: 20%;
+    top: 18%;
     left: 50%;
     transform: translateX(-50%);
     z-index: 9999;
-    animation: l2-toast-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: l2-toast-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
     pointer-events: none;
   }
   .l2-points-toast-inner {
-    background: linear-gradient(135deg, #fde68a 0%, #f59e0b 100%);
+    background: linear-gradient(135deg, #fde68a 0%, #f59e0b 70%, #d97706 100%);
     color: #78350f;
-    padding: 18px 28px;
-    border-radius: 22px;
-    box-shadow: 0 12px 32px rgba(0,0,0,0.25), inset 0 -4px 0 rgba(0,0,0,0.12);
+    padding: 26px 44px;
+    border-radius: 28px;
+    box-shadow: 0 18px 44px rgba(0,0,0,0.32), inset 0 -6px 0 rgba(0,0,0,0.14);
     text-align: center;
-    border: 4px solid #fff;
+    border: 5px solid #fff;
+    position: relative;
+  }
+  /* Big radiant glow halo behind the toast. */
+  .l2-points-toast-inner::before {
+    content: "";
+    position: absolute;
+    inset: -32px;
+    background: radial-gradient(circle, rgba(253, 224, 71, 0.55) 0%, rgba(253, 224, 71, 0) 70%);
+    border-radius: 50%;
+    z-index: -1;
+    animation: l2-toast-glow 1.6s ease-in-out infinite;
   }
   .l2-points-toast-label {
     display: block;
     font-family: 'Fredoka', system-ui, sans-serif;
-    font-weight: 600;
-    font-size: 0.9rem;
+    font-weight: 700;
+    font-size: 1.15rem;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    opacity: 0.85;
+    letter-spacing: 0.14em;
+    opacity: 0.95;
   }
   .l2-points-toast-num {
     display: block;
     font-family: 'Fredoka', system-ui, sans-serif;
-    font-weight: 700;
-    font-size: 2.5rem;
-    line-height: 1.1;
-    margin-top: 4px;
+    font-weight: 800;
+    font-size: 3.6rem;
+    line-height: 1.05;
+    margin-top: 8px;
+    text-shadow: 0 3px 0 rgba(255,255,255,0.5), 0 5px 12px rgba(120, 53, 15, 0.35);
   }
+  /* Sparkle stars positioned around the toast. SVG inside is sized
+     by the wrapper width, drop-shadow gives the gold halo. */
+  .l2-toast-spark {
+    position: absolute;
+    width: 42px;
+    height: 42px;
+    color: #fde047;
+    filter: drop-shadow(0 0 10px rgba(253, 224, 71, 0.95)) drop-shadow(0 0 18px rgba(245, 158, 11, 0.7));
+    animation: l2-toast-sparkle 1.2s ease-in-out infinite;
+  }
+  .l2-toast-spark svg { width: 100%; height: 100%; display: block; }
+  .l2-toast-spark--tl { top: -26px; left: -26px; width: 42px; height: 42px; animation-delay: 0s; }
+  .l2-toast-spark--tr { top: -32px; right: -22px; width: 32px; height: 32px; animation-delay: 0.2s; }
+  .l2-toast-spark--bl { bottom: -24px; left: -20px; width: 36px; height: 36px; animation-delay: 0.4s; }
+  .l2-toast-spark--br { bottom: -30px; right: -28px; width: 48px; height: 48px; animation-delay: 0.6s; }
+  .l2-toast-spark--t  { top: -42px; left: 50%; transform: translateX(-50%); width: 30px; height: 30px; animation-delay: 0.3s; }
+  @keyframes l2-toast-sparkle {
+    0%, 100% { transform: scale(0.8) rotate(0deg); opacity: 0.4; }
+    50%      { transform: scale(1.4) rotate(180deg); opacity: 1; }
+  }
+  .l2-toast-spark--t { /* override transform to keep horizontal centring */ }
+  .l2-toast-spark--t {
+    animation-name: l2-toast-sparkle-center;
+  }
+  @keyframes l2-toast-sparkle-center {
+    0%, 100% { transform: translateX(-50%) scale(0.8) rotate(0deg); opacity: 0.4; }
+    50%      { transform: translateX(-50%) scale(1.4) rotate(180deg); opacity: 1; }
+  }
+  @keyframes l2-toast-glow {
+    0%, 100% { opacity: 0.7; transform: scale(1); }
+    50%      { opacity: 1;   transform: scale(1.12); }
+  }
+  /* Armed inventory ligand — gold ring + check stamp + lift, mirrors
+     the kahoot button's selected state so the visual language is
+     consistent across questions. */
+  .lig-drag-card[data-armed="true"] {
+    outline: 4px solid #fde047;
+    outline-offset: 3px;
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 18px rgba(0,0,0,0.18), 0 0 0 5px rgba(253, 224, 71, 0.4);
+    position: relative;
+    z-index: 2;
+    border-color: #fde047 !important;
+  }
+  .lig-drag-card[data-armed="true"]::after {
+    content: "\2713";
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #fde047;
+    color: #78350f;
+    font-weight: 900;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.25);
+    border: 2px solid #fff;
+  }
+
   .l2-points-toast-fade { animation: l2-toast-out 0.6s ease-in forwards; }
   @keyframes l2-toast-pop {
-    0%   { opacity: 0; transform: translateX(-50%) scale(0.5); }
-    60%  { opacity: 1; transform: translateX(-50%) scale(1.08); }
-    100% { opacity: 1; transform: translateX(-50%) scale(1); }
+    0%   { opacity: 0; transform: translateX(-50%) scale(0.4) rotate(-8deg); }
+    55%  { opacity: 1; transform: translateX(-50%) scale(1.12) rotate(2deg); }
+    80%  { transform: translateX(-50%) scale(0.96) rotate(-1deg); }
+    100% { opacity: 1; transform: translateX(-50%) scale(1) rotate(0deg); }
   }
   @keyframes l2-toast-out {
     from { opacity: 1; transform: translateX(-50%) scale(1); }

@@ -103,7 +103,12 @@ import InfoModal from "../components/game/info-modal.astro";
     pointer-events: none;
     z-index: 0;
   }
-  .gb-main > * {
+  /* Lift only the game board above the silhouette pseudo. Direct
+     descendants like the fixed-position modals MUST NOT get
+     position:relative — that override pulls them out of viewport-fixed
+     mode and bounds them to .gb-main, which is what broke the user
+     manual after the first cut of this rule. */
+  .gb-main #game-container {
     position: relative;
     z-index: 1;
   }

@@ -1583,12 +1583,10 @@
     );
 
     // Image-only options per Hazim spec ("Q4 sahaja nak ada gambar
-    // taknak ada wording"). Order is shuffled once per session and
-    // persisted on level2State so wrong-attempt re-renders keep the
-    // layout stable. The image filename = id-with-dashes.png.
-    if (!Array.isArray(level2State.pictureOrder) || level2State.pictureOrder.length !== GEOMETRY_PICS.length) {
-      level2State.pictureOrder = GEOMETRY_PICS.slice().sort(function () { return Math.random() - 0.5; });
-    }
+    // taknak ada wording"). Order is reshuffled on every render so
+    // the layout is genuinely random each time the question shows
+    // ("gambar tu random sequence tauu" — Hazim 2026-05-08).
+    level2State.pictureOrder = GEOMETRY_PICS.slice().sort(function () { return Math.random() - 0.5; });
 
     html += '<div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">';
     level2State.pictureOrder.forEach(function (g) {

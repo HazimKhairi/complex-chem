@@ -39,11 +39,39 @@ window.AudioManager = (function () {
 
   function play(name) {
     if (muted) return;
+    // Synthesised "sad" descending arpeggio (G4 → F4 → D4 → B3) — used
+    // when the player skips a question or runs the timer out. Built
+    // with Web Audio so no extra asset file is needed.
+    if (name === 'sad') return playSadTone();
     var src = sounds[name];
     if (!src) return;
     var audio = new Audio(src);
     audio.volume = volume;
     audio.play().catch(function () {});
+  }
+
+  function playSadTone() {
+    try {
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      var ctx = new Ctx();
+      var notes = [392.00, 349.23, 293.66, 246.94]; // G4, F4, D4, B3
+      var dur = 0.18;
+      notes.forEach(function (freq, i) {
+        var osc = ctx.createOscillator();
+        var gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        osc.connect(gain).connect(ctx.destination);
+        var t0 = ctx.currentTime + i * dur;
+        gain.gain.setValueAtTime(0, t0);
+        gain.gain.linearRampToValueAtTime(volume * 0.25, t0 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+        osc.start(t0);
+        osc.stop(t0 + dur + 0.02);
+      });
+      setTimeout(function () { ctx.close(); }, notes.length * dur * 1000 + 200);
+    } catch (e) { /* swallow — audio is non-critical */ }
   }
 
   function startBGM() {

@@ -374,12 +374,17 @@ function initGameMechanics() {
   // Listen for question answered events
   document.addEventListener("question-answered", handleQuestionAnswered);
 
-  // Skip = close the modal with no scoring change.
+  // Skip = close the modal with no scoring change. Also covers the
+  // timer-expiry path because startQuestionTimer dispatches the same
+  // "question-skipped" event when the countdown reaches zero. Either
+  // way, play the synthesised sad arpeggio so the lost-attempt is
+  // emotionally distinct from a wrong-answer buzz.
   document.addEventListener("question-skipped", () => {
     stopQuestionTimer();
     const modal = document.getElementById("question-modal");
     if (!modal) return;
     console.log("⏭️  Question skipped — no points awarded or deducted");
+    if (window.AudioManager) window.AudioManager.play('sad');
     modal.classList.add("hidden");
     modal.classList.remove("flex");
     document.dispatchEvent(new CustomEvent("question-continue"));

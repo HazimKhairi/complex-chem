@@ -745,14 +745,9 @@ function collectLigand(playerId, landedCell = null) {
 
     if (ligand) {
       console.log(`   ✅ Found matching ligand: ${ligand.name} (${ligand.id})`);
-
-      // Per-player check — collectedLigandIds is global and would block
-      // Player 2 from picking up a ligand Player 1 already grabbed.
-      const playerHas = (gameState.playerLigands[playerId] || []).some(l => l.id === ligand.id);
-      if (playerHas) {
-        console.log(`   Player ${playerId} already has ligand "${ligand.id}" — skipping`);
-        return;
-      }
+      // Duplicates allowed per Hazim spec — players can stack the same
+      // ligand multiple times. The duplicate check that used to live
+      // here was deliberately removed.
     } else {
       console.warn(`   ⚠️ No matching ligand found for "${ligandName}"`);
       console.log(`   Available ligands:`, LIGANDS_DATA.map(l => l.name));
@@ -781,7 +776,12 @@ function collectLigand(playerId, landedCell = null) {
   console.log(`✅ [LIGAND] Collecting ligand: ${ligand.name} (${ligand.id})`);
 
   gameState.playerLigands[playerId].push(ligand);
-  gameState.collectedLigandIds.push(ligand.id);
+  // collectedLigandIds is the GLOBAL "discovered" set used by Eureka
+  // Moment etc — keep it idempotent even though playerLigands now
+  // accepts duplicates.
+  if (!gameState.collectedLigandIds.includes(ligand.id)) {
+    gameState.collectedLigandIds.push(ligand.id);
+  }
 
   updateLigandDisplay(playerId);
   showLigandModal(ligand, "Ligand Collected!", "Click card to see details");
@@ -809,12 +809,12 @@ function showLigandModal(ligand, title, subtitle) {
     container.innerHTML = `
       <div class="ligand-flip-card-container w-full aspect-[3/4] cursor-pointer">
         <div class="ligand-flip-card w-full h-full">
-          <div class="ligand-flip-card-face ligand-flip-card-front absolute inset-0 rounded-lg border-4 overflow-hidden" style="border-color: ${ligand.color};">
-            <div class="w-full h-full bg-no-repeat" style="background-image: url('/assets/ligand-cards/${ligand.imageFile}'); background-position: 0% center; background-size: 215%;"></div>
+          <div class="ligand-flip-card-face ligand-flip-card-front absolute inset-0 rounded-lg border-4 overflow-hidden bg-white" style="border-color: ${ligand.color};">
+            <div class="w-full h-full bg-no-repeat" style="background-image: url('/assets/ligand-cards/${ligand.imageFile}'); background-position: 6% center; background-size: 220%;"></div>
             <div class="absolute bottom-2 right-2 px-3 py-1 bg-black/70 text-white text-xs rounded">Click to flip</div>
           </div>
-          <div class="ligand-flip-card-face ligand-flip-card-back absolute inset-0 rounded-lg border-4 overflow-hidden" style="border-color: ${ligand.color};">
-            <div class="w-full h-full bg-no-repeat" style="background-image: url('/assets/ligand-cards/${ligand.imageFile}'); background-position: 100% center; background-size: 215%;"></div>
+          <div class="ligand-flip-card-face ligand-flip-card-back absolute inset-0 rounded-lg border-4 overflow-hidden bg-white" style="border-color: ${ligand.color};">
+            <div class="w-full h-full bg-no-repeat" style="background-image: url('/assets/ligand-cards/${ligand.imageFile}'); background-position: 94% center; background-size: 220%;"></div>
             <div class="absolute bottom-2 right-2 px-3 py-1 bg-black/70 text-white text-xs rounded">Click to flip back</div>
           </div>
         </div>
@@ -974,6 +974,12 @@ function showQuestion(playerId, tileColor = null, explicitDifficulty = null) {
 
   const hasHint = !!(question.hint && question.hint.length);
   const questionText = question.question || "See image reference.";
+
+  // ---- Tag the modal + backdrop with the difficulty so the whole
+  // background tints to match the question's tile colour (Hazim spec).
+  modal.dataset.diff = question.difficulty;
+  const backdropEl = modal.querySelector('.qm-backdrop');
+  if (backdropEl) backdropEl.dataset.diff = question.difficulty;
 
   // ---- Top-right: difficulty badge + player pill --------------------
   const diffPill = document.getElementById("qm-difficulty");
@@ -1204,7 +1210,7 @@ function updateLigandDisplay(playerId) {
            data-ligand-id="${l.id}"
            data-player-id="${playerId}"
            data-index="${index}">
-        <div class="w-full h-full bg-cover bg-center" style="background-image: url('/assets/ligand-cards/${l.imageFile}'); background-position: 0% center; background-size: 215%;"></div>
+        <div class="w-full h-full bg-cover bg-center" style="background-image: url('/assets/ligand-cards/${l.imageFile}'); background-position: 6% center; background-size: 220%;"></div>
       </div>
     `)
     .join("");

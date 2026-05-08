@@ -94,48 +94,14 @@ window.FateEffectHandler = {
     }
   },
 
-  // Placeholder methods (to be implemented in subsequent tasks)
   applySwapCard(playerId) {
     console.log(`🔄 [FATE] Swap Card - Player ${playerId}`);
 
-    // Check if current player has ligands
-    const currentPlayerLigands = gameState.playerLigands[playerId] || [];
-
-    if (currentPlayerLigands.length === 0) {
-      console.warn('⚠️ [FATE] Player has no ligands to swap');
-      console.log('▶ [FATE] You have no ligands to swap!');
-
-      // Show notification (for toast if available)
-      this.showNotification("You have no ligands to swap!", 'info');
-
-      // Show visible modal to ensure user sees the message
-      if (window.InfoModal) {
-        window.InfoModal.showWarning(
-          'Cannot Swap Ligands',
-          'You don\'t have any ligands to swap!\n\nCollect ligands by landing on ligand tiles first.',
-          () => {
-            // On close, emit event to continue game
-            console.log('📢 [FATE] User dismissed no-ligands warning, continuing game');
-            document.dispatchEvent(new CustomEvent('swap-cancelled', {
-              detail: { playerId, reason: 'no-ligands' }
-            }));
-          }
-        );
-      } else {
-        // Fallback: browser alert
-        console.warn('⚠️ [FATE] InfoModal not available, using alert fallback');
-        alert('Cannot Swap Ligands\n\nYou don\'t have any ligands to swap!\n\nCollect ligands by landing on ligand tiles first.');
-
-        // Continue game after alert dismissal
-        document.dispatchEvent(new CustomEvent('swap-cancelled', {
-          detail: { playerId, reason: 'no-ligands' }
-        }));
-      }
-
-      return;
-    }
-
-    // Get other players with their ligand counts
+    // Always open the swap modal so the player at least gets a screen
+    // they can interact with — Hazim spec ("dia terus next player"
+    // happened because the early-exit InfoModal flow auto-advanced the
+    // turn). The modal itself surfaces a friendly empty-state if the
+    // player has no ligands or no peer has ligands.
     const otherPlayers = [];
     for (let i = 1; i <= 4; i++) {
       if (i !== playerId) {
@@ -144,50 +110,15 @@ window.FateEffectHandler = {
       }
     }
 
-    // Check if any other player has ligands
-    const hasPlayersWithLigands = otherPlayers.some(p => p.ligandCount > 0);
-
-    if (!hasPlayersWithLigands) {
-      console.warn('⚠️ [FATE] No other players have ligands to swap with');
-      console.log('▶ [FATE] No other players have ligands to swap with!');
-
-      // Show notification (for toast if available)
-      this.showNotification("No players have ligands to swap with!", 'info');
-
-      // Show visible modal to ensure user sees the message
-      if (window.InfoModal) {
-        window.InfoModal.showWarning(
-          'Cannot Swap Ligands',
-          'No other players have ligands to swap with!\n\nYou need to wait for other players to collect ligands first.',
-          () => {
-            // On close, emit event to continue game
-            console.log('📢 [FATE] User dismissed no-other-ligands warning, continuing game');
-            document.dispatchEvent(new CustomEvent('swap-cancelled', {
-              detail: { playerId, reason: 'no-other-ligands' }
-            }));
-          }
-        );
-      } else {
-        // Fallback: browser alert
-        console.warn('⚠️ [FATE] InfoModal not available, using alert fallback');
-        alert('Cannot Swap Ligands\n\nNo other players have ligands to swap with!\n\nYou need to wait for other players to collect ligands first.');
-
-        // Continue game after alert dismissal
-        document.dispatchEvent(new CustomEvent('swap-cancelled', {
-          detail: { playerId, reason: 'no-other-ligands' }
-        }));
-      }
-
-      return;
-    }
-
-    // Show swap modal
     if (window.SwapLigandModal) {
       window.SwapLigandModal.show(playerId);
       window.SwapLigandModal.showPlayerSelection(otherPlayers);
     } else {
       console.error('❌ [FATE] SwapLigandModal not available');
       this.showNotification("Error: Swap modal not available", 'error');
+      document.dispatchEvent(new CustomEvent('swap-cancelled', {
+        detail: { playerId, reason: 'modal-missing' }
+      }));
     }
   },
 

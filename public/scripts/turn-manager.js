@@ -769,11 +769,13 @@
           // Update internal state
           state.currentPlayer = gameScriptPlayer;
 
-          // Update player states
+          // Update player states. Don't ever clobber a FINISHED player
+          // back to WAITING — that re-includes them in the rotation and
+          // is exactly what kept Player 2 stuck on a finished Player 1.
           for (let i = 1; i <= MAX_PLAYERS; i++) {
             if (i === gameScriptPlayer) {
               state.playerStates[i] = PLAYER_STATES.ROLLING;
-            } else if (isActivePlayer(i)) {
+            } else if (isActivePlayer(i) && state.playerStates[i] !== PLAYER_STATES.FINISHED) {
               state.playerStates[i] = PLAYER_STATES.WAITING;
             }
           }

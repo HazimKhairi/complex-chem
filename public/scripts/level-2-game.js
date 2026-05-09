@@ -767,10 +767,29 @@
     // not next to the element symbol.
     var metalSym = metalRaw.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻]/g, "").trim() || metalRaw;
 
+    // Hazim spec — chemistry rule: charges (⁻, ²⁻, +1, etc.) NEVER
+    // appear inside the brackets / parentheses. Only the ligand name.
+    // The complex's overall charge sits at the end of the bracket.
+    // So strip every super/subscripted charge digit + sign from each
+    // ligand label before wrapping in parentheses. Example:
+    //   Cl⁻   → Cl
+    //   Ox²⁻  → Ox
+    //   acac⁻ → acac
+    function stripLigandCharge(name) {
+      // Strip ONLY the trailing charge (optional super-digits + sign).
+      // Chemical subscripts in the middle of a ligand name (like NH₃,
+      // H₂O, CO₃) MUST stay — those are formula subscripts, not the
+      // ligand's overall charge. Both ² (U+00B2) and ³ (U+00B3) live
+      // outside the U+2070-U+2079 super-digit range, so they have to
+      // be listed literally in the char class.
+      return String(name || "").replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]*[⁺⁻]+$/, "").trim();
+    }
     var rows = summariseSelectedLigands();
     var lParts = rows.map(function (r) {
-      if (r.count <= 1) return "(" + r.name + ")";
-      return "(" + r.name + ")" + numToSubscript(r.count);
+      var clean = stripLigandCharge(r.name);
+      if (r.count <= 1) return "(" + clean + ")";
+      // Repeated ligand → wrap once + subscript count, e.g. (bipy)₂.
+      return "(" + clean + ")" + numToSubscript(r.count);
     });
 
     var charge = computeTotalCharge().total;

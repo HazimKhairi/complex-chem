@@ -346,25 +346,51 @@
   // Submit / skip wiring — same event names so handlers in
   // game-mechanics-cards.js, auto-play.js, orchestrator stay intact.
   let selectedAnswer: number | null = null;
+  let answerLocked = false; // single-shot guard — Hazim 2026-05-10:
+  // multi-click submit was firing question-answered repeatedly,
+  // each call to awardQuestionPoints stacked the score (3-7 spam
+  // clicks on a 2-pt EASY question landed 15 pts).
 
-  document.getElementById("submit-answer-btn")?.addEventListener("click", () => {
-    if (selectedAnswer !== null) {
-      document.dispatchEvent(new CustomEvent("question-answered", {
-        detail: { answer: selectedAnswer }
-      }));
-    }
+  const submitBtn = document.getElementById("submit-answer-btn") as HTMLButtonElement | null;
+  const skipBtn   = document.getElementById("skip-question-btn") as HTMLButtonElement | null;
+
+  function lockAnswerControls() {
+    answerLocked = true;
+    if (submitBtn) submitBtn.disabled = true;
+    if (skipBtn)   skipBtn.disabled = true;
+    // Also kill any further clicks that might bypass `disabled`
+    // (e.g. if a CSS rule relaxes pointer-events on disabled).
+    document.querySelectorAll("#question-options .qm-option").forEach((opt) => {
+      (opt as HTMLElement).style.pointerEvents = "none";
+    });
+  }
+
+  submitBtn?.addEventListener("click", () => {
+    if (answerLocked) return;
+    if (selectedAnswer === null) return;
+    lockAnswerControls();
+    document.dispatchEvent(new CustomEvent("question-answered", {
+      detail: { answer: selectedAnswer },
+    }));
   });
 
-  document.getElementById("skip-question-btn")?.addEventListener("click", () => {
+  skipBtn?.addEventListener("click", () => {
+    if (answerLocked) return;
+    lockAnswerControls();
     document.dispatchEvent(new CustomEvent("question-skipped"));
   });
 
   (window as any).setSelectedAnswer = (answer: number) => {
+    if (answerLocked) return;
     selectedAnswer = answer;
   };
 
-  // Reset selection state whenever the modal opens fresh
+  // Reset selection state whenever the modal opens fresh — has to
+  // unlock the controls too so the next question is interactive.
   (window as any).resetSelectedAnswer = () => {
     selectedAnswer = null;
+    answerLocked = false;
+    if (submitBtn) submitBtn.disabled = false;
+    if (skipBtn)   skipBtn.disabled = false;
   };
 </script>

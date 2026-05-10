@@ -278,16 +278,44 @@ window.FateEffectHandler = {
     }
   },
 
+  /**
+   * Restore the fate-player as current. By the time the player clicks
+   * Accept Fate (~2 s later), the game script's `setTimeout(transferDice,
+   * 300)` from the landing move has already fired and rotated `window.x`
+   * to the next player. For effects that need to keep / give-back the
+   * turn (extra-turn, swap-card, etc), we have to revert that.
+   */
+  _restoreFatePlayer(playerId) {
+    if (typeof window.x === 'undefined') return;
+    if (window.x === playerId) return;
+    const prev = window.x;
+    window.x = playerId;
+    if (typeof window.identifyPlayerInfo === 'function') {
+      try { window.identifyPlayerInfo(); } catch (e) {}
+    }
+    try {
+      if (typeof window.jQuery !== 'undefined') {
+        const $ = window.jQuery;
+        $(`#player-${prev}-dice-arrow`).attr('src', '');
+        $(`#player-${playerId}-dice-arrow`).attr('src', 'gifs/arrow1.gif');
+        $(`#player-${playerId}-dice`).attr('src', 'dice/dice-rest.png');
+      }
+    } catch (e) {}
+    if (typeof window.d !== 'undefined') window.d = 0;
+    if (typeof window.y !== 'undefined') window.y = 1;
+    if (typeof window.z !== 'undefined') window.z = 1;
+    console.log(`🔁 [FATE] Restored P${playerId} as current (was P${prev})`);
+  },
+
   applySecondChance(playerId) {
     console.log(`🎲 [FATE] Second Chance - Player ${playerId}`);
 
-    // Unlock dice to allow immediate extra roll
-    if (typeof window.d !== 'undefined') {
-      window.d = 0; // 0 = unlocked
-      console.log('   Dice unlocked (d = 0)');
-    } else {
-      console.warn('⚠️ [FATE] Dice lock variable (d) not found');
-    }
+    // CRITICAL: roll back the turn rotation that fired during the
+    // ~2 s the fate modal was open. Without this, "second chance"
+    // gives the NEXT player the bonus roll, not the player who got
+    // the fate card. Hazim 2026-05-11: "fate grant extra turn tk
+    // function".
+    this._restoreFatePlayer(playerId);
 
     // Update turn indicator to show "Roll Again!"
     if (window.TurnIndicator) {

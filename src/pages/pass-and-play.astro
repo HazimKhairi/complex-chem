@@ -347,6 +347,18 @@ import { CHARACTERS } from "../data/characters";
       sessionStorage.setItem("character-p1", players[0].characterId);
       sessionStorage.setItem("character-p2", players[1].characterId);
       sessionStorage.setItem("character-p3", players[2].characterId);
+      // Slot IDs — read by one-vs-two.js (x = sessionStorage.getItem(
+      // "one-vs-two-player-1") at L56) AND by transferDiceCode/findWinner
+      // for player rotation. The pass-and-play wizard always pairs
+      // P1→slot 1 (green), P2→slot 2 (yellow), P3→slot 3 (red), with
+      // slot 4 (blue) unused — matching the player→colour remap spec.
+      // Hazim 2026-05-11: 1v2 mode broke on production with TypeError
+      // "Cannot read properties of undefined (reading 'click')" at
+      // one-vs-two.js:82 because these keys were missing.
+      sessionStorage.setItem("one-vs-two-player-1", "1");
+      sessionStorage.setItem("one-vs-two-player-2", "2");
+      sessionStorage.setItem("one-vs-two-player-3", "3");
+      sessionStorage.setItem("one-vs-two-not-selected-player", "4");
     } else if (currentMode === "one-vs-three") {
       sessionStorage.setItem("one-vs-three-horse-1", colors[0]);
       sessionStorage.setItem("one-vs-three-horse-2", colors[1]);

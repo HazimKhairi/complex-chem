@@ -120,16 +120,22 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
            the whole card capped to its grid cell so the score bar
            never gets pushed below the viewport. -->
       <div id="builder-container" class="hidden min-h-0 max-h-full flex flex-col">
-        <div class="bg-white rounded-2xl shadow-md overflow-hidden flex-1 flex flex-col min-h-0 max-h-full relative">
-          <!-- Outer-complex header bar — sits OUTSIDE the 3D scene
-               (Hazim spec: "kotak luar complex"). Shows the chemistry
-               formula on the left and the charge pill on the right
-               in a clear bordered box so the player can read what
-               they're building without it overlapping the spheres. -->
-          <div id="builder-outer-box" class="px-4 py-3 border-b-2 border-blue-200 bg-gradient-to-r from-sky-50 to-blue-50 flex items-center justify-between gap-3 flex-shrink-0">
-            <div id="builder-formula" class="flex-1 min-w-0 px-4 py-3 rounded-2xl bg-white shadow-md border-2 border-blue-300 text-blue-900 font-extrabold tabular-nums truncate text-2xl sm:text-3xl md:text-4xl tracking-wide"
-                 style="font-family:'Fredoka',system-ui,sans-serif;">
-              <span class="text-gray-400 text-base">[ build your complex ]</span>
+        <div class="bg-white rounded-2xl shadow-md overflow-hidden flex-1 flex flex-col min-h-0 max-h-full relative ring-4 ring-blue-200">
+          <!-- Outer-complex header bar — sits OUTSIDE the 3D scene.
+               Hazim spec 2026-05-10 "tkde kotak mcm sy minta tu luar
+               complex" — make the outer formula box visually distinct
+               from the canvas with a thicker border, deeper shadow,
+               and explicit "Your Complex" caption.
+               "tk nampak sepenuhnya ligand" — formula no longer
+               truncates: it wraps onto multiple lines and auto-shrinks
+               on long inputs so every (ligand)ₙ stays readable. -->
+          <div id="builder-outer-box" class="px-4 py-3 border-b-4 border-blue-300 bg-gradient-to-r from-sky-50 via-white to-blue-50 flex items-center justify-between gap-3 flex-shrink-0">
+            <div class="flex-1 min-w-0">
+              <span class="block text-[10px] font-black uppercase tracking-widest text-blue-600 mb-1">Your Complex</span>
+              <div id="builder-formula" class="px-4 py-3 rounded-2xl bg-white shadow-md border-2 border-blue-400 text-blue-900 font-extrabold tabular-nums tracking-wide leading-tight break-words"
+                   style="font-family:'Fredoka',system-ui,sans-serif; font-size: clamp(1.05rem, 2vw, 2rem); word-break: break-word; overflow-wrap: anywhere;">
+                <span class="text-gray-400 text-base">[ build your complex ]</span>
+              </div>
             </div>
             <div id="builder-charge-pill" class="px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 shadow-lg text-blue-900 text-base sm:text-xl font-black uppercase tracking-wider whitespace-nowrap hidden ring-2 ring-amber-200">
               <!-- e.g. CHARGE 2+ -->
@@ -564,19 +570,19 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
   .l2-points-toast-inner {
     background: linear-gradient(135deg, #fde68a 0%, #f59e0b 70%, #d97706 100%);
     color: #78350f;
-    padding: 26px 44px;
-    border-radius: 28px;
-    box-shadow: 0 18px 44px rgba(0,0,0,0.32), inset 0 -6px 0 rgba(0,0,0,0.14);
+    padding: 36px 60px;
+    border-radius: 32px;
+    box-shadow: 0 22px 56px rgba(0,0,0,0.36), inset 0 -8px 0 rgba(0,0,0,0.14);
     text-align: center;
-    border: 5px solid #fff;
+    border: 6px solid #fff;
     position: relative;
   }
   /* Big radiant glow halo behind the toast. */
   .l2-points-toast-inner::before {
     content: "";
     position: absolute;
-    inset: -32px;
-    background: radial-gradient(circle, rgba(253, 224, 71, 0.55) 0%, rgba(253, 224, 71, 0) 70%);
+    inset: -56px;
+    background: radial-gradient(circle, rgba(253, 224, 71, 0.65) 0%, rgba(253, 224, 71, 0) 70%);
     border-radius: 50%;
     z-index: -1;
     animation: l2-toast-glow 1.6s ease-in-out infinite;
@@ -585,36 +591,41 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
     display: block;
     font-family: 'Fredoka', system-ui, sans-serif;
     font-weight: 700;
-    font-size: 1.15rem;
+    font-size: 1.4rem;
     text-transform: uppercase;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.16em;
     opacity: 0.95;
   }
   .l2-points-toast-num {
     display: block;
     font-family: 'Fredoka', system-ui, sans-serif;
     font-weight: 800;
-    font-size: 3.6rem;
+    font-size: 4.8rem;
     line-height: 1.05;
-    margin-top: 8px;
+    margin-top: 10px;
     text-shadow: 0 3px 0 rgba(255,255,255,0.5), 0 5px 12px rgba(120, 53, 15, 0.35);
   }
-  /* Sparkle stars positioned around the toast. SVG inside is sized
-     by the wrapper width, drop-shadow gives the gold halo. */
+  .l2-points-toast-num--small {
+    font-size: 3.2rem; /* "Correct!" wraps slimmer than "+N pts" */
+  }
+  /* Sparkle stars positioned around the toast. Bigger + more of them
+     per Hazim 2026-05-10 spec ("sparkling tu nak lagi besar"). The
+     drop-shadow gives a heavy gold halo so each star reads from a
+     distance. */
   .l2-toast-spark {
     position: absolute;
-    width: 42px;
-    height: 42px;
     color: #fde047;
-    filter: drop-shadow(0 0 10px rgba(253, 224, 71, 0.95)) drop-shadow(0 0 18px rgba(245, 158, 11, 0.7));
+    filter: drop-shadow(0 0 14px rgba(253, 224, 71, 1)) drop-shadow(0 0 24px rgba(245, 158, 11, 0.85));
     animation: l2-toast-sparkle 1.2s ease-in-out infinite;
   }
   .l2-toast-spark svg { width: 100%; height: 100%; display: block; }
-  .l2-toast-spark--tl { top: -26px; left: -26px; width: 42px; height: 42px; animation-delay: 0s; }
-  .l2-toast-spark--tr { top: -32px; right: -22px; width: 32px; height: 32px; animation-delay: 0.2s; }
-  .l2-toast-spark--bl { bottom: -24px; left: -20px; width: 36px; height: 36px; animation-delay: 0.4s; }
-  .l2-toast-spark--br { bottom: -30px; right: -28px; width: 48px; height: 48px; animation-delay: 0.6s; }
-  .l2-toast-spark--t  { top: -42px; left: 50%; transform: translateX(-50%); width: 30px; height: 30px; animation-delay: 0.3s; }
+  .l2-toast-spark--tl { top: -48px; left: -48px;  width: 72px; height: 72px; animation-delay: 0s; }
+  .l2-toast-spark--tr { top: -54px; right: -42px; width: 60px; height: 60px; animation-delay: 0.2s; }
+  .l2-toast-spark--bl { bottom: -44px; left: -38px;  width: 64px; height: 64px; animation-delay: 0.4s; }
+  .l2-toast-spark--br { bottom: -54px; right: -50px; width: 80px; height: 80px; animation-delay: 0.6s; }
+  .l2-toast-spark--t  { top: -68px; left: 50%; transform: translateX(-50%); width: 56px; height: 56px; animation-delay: 0.3s; }
+  .l2-toast-spark--l  { top: 40%; left: -56px; width: 50px; height: 50px; animation-delay: 0.15s; }
+  .l2-toast-spark--r  { top: 40%; right: -56px; width: 50px; height: 50px; animation-delay: 0.55s; }
   @keyframes l2-toast-sparkle {
     0%, 100% { transform: scale(0.8) rotate(0deg); opacity: 0.4; }
     50%      { transform: scale(1.4) rotate(180deg); opacity: 1; }

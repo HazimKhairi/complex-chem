@@ -280,17 +280,23 @@
   }
 
   /**
-   * Bouncy "You earned +N points" toast — shown after a correct answer
-   * before the next step renders. Plays the correct chime too.
+   * Bouncy toast — shown after a correct answer before the next step
+   * renders. When points > 0 shows "+N pts"; when points === 0 shows a
+   * "Correct!" celebration toast (Hazim spec: every correct answer gets
+   * the same gold-spark feedback, even if 0 points were awarded).
+   * Pass `points = -1` to suppress entirely (e.g., wrong answer flow).
    */
   function showPointsToast(points, label) {
     if (window.AudioManager) window.AudioManager.play("correct");
-    if (!points || points <= 0) return;
+    if (points === -1) return;
     var el = document.createElement("div");
     el.className = "l2-points-toast";
     var starSvg = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">'
       + '<path d="M12 1l2.6 7.2L22 10l-6 4.6L17.6 22 12 18l-5.6 4 1.6-7.4L2 10l7.4-1.8z"/>'
       + '</svg>';
+    var pointsHtml = points > 0
+      ? '<span class="l2-points-toast-num">+' + points + ' pts</span>'
+      : '<span class="l2-points-toast-num l2-points-toast-num--small">Correct!</span>';
     el.innerHTML = ''
       + '<div class="l2-points-toast-inner">'
       +   '<span class="l2-toast-spark l2-toast-spark--tl">' + starSvg + '</span>'
@@ -298,13 +304,15 @@
       +   '<span class="l2-toast-spark l2-toast-spark--tr">' + starSvg + '</span>'
       +   '<span class="l2-toast-spark l2-toast-spark--bl">' + starSvg + '</span>'
       +   '<span class="l2-toast-spark l2-toast-spark--br">' + starSvg + '</span>'
+      +   '<span class="l2-toast-spark l2-toast-spark--l">'  + starSvg + '</span>'
+      +   '<span class="l2-toast-spark l2-toast-spark--r">'  + starSvg + '</span>'
       +   '<span class="l2-points-toast-label">' + (label || "You earned") + '</span>'
-      +   '<span class="l2-points-toast-num">+' + points + ' pts</span>'
+      +   pointsHtml
       + '</div>';
     document.body.appendChild(el);
     // Cleanup after the bounce + fade animation finishes.
-    setTimeout(function () { el.classList.add("l2-points-toast-fade"); }, 1200);
-    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 1800);
+    setTimeout(function () { el.classList.add("l2-points-toast-fade"); }, 1500);
+    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 2100);
   }
 
   // ── Helpers ─────────────────────────────────────────────
@@ -1429,8 +1437,10 @@
           level2State.cnDone = true;
           level2State.level2Score += level2State.cnScore;
           updateScoreBar();
-          if (level2State.cnScore > 0) showPointsToast(level2State.cnScore, "You earned");
-          else if (window.AudioManager) window.AudioManager.play("correct");
+          // Always celebrate the correct answer with a toast — even on
+          // 2nd-attempt where score is 0, the player still earned the
+          // win and should feel it (Hazim spec: every Q gets the box).
+          showPointsToast(level2State.cnScore, "You earned");
           renderStep3_Q2_cn();
         } else if (level2State.cnAttempts >= 2) {
           level2State.cnScore = 0;
@@ -1544,8 +1554,7 @@
           level2State.geometryScore = pts;
           level2State.level2Score += pts;
           level2State.geometryDone = true;
-          if (pts > 0) showPointsToast(pts, "You earned");
-          else if (window.AudioManager) window.AudioManager.play("correct");
+          showPointsToast(pts, "You earned");
         } else if (level2State.geometryAttempts >= 3) {
           level2State.selectedGeometry = correctList[0];
           level2State.geometryScore = 0;
@@ -1601,11 +1610,15 @@
       "3 PTS"
     );
 
-    // Image-only options per Hazim spec ("Q4 sahaja nak ada gambar
-    // taknak ada wording"). Order is reshuffled on every render so
-    // the layout is genuinely random each time the question shows
-    // ("gambar tu random sequence tauu" — Hazim 2026-05-08).
-    level2State.pictureOrder = GEOMETRY_PICS.slice().sort(function () { return Math.random() - 0.5; });
+    // Image-only options per Hazim spec. Order is randomised once per
+    // session and PERSISTED on level2State so the cards don't jump
+    // around under the player's finger every time they pick — Hazim
+    // spec 2026-05-10: "pilihan jwpn berubah tmpt after tekan" was
+    // making it impossible to see what they selected. Mirrors the
+    // geometryOrder lock used by Q3 (renderStep2).
+    if (!Array.isArray(level2State.pictureOrder) || level2State.pictureOrder.length !== GEOMETRY_PICS.length) {
+      level2State.pictureOrder = GEOMETRY_PICS.slice().sort(function () { return Math.random() - 0.5; });
+    }
 
     html += '<div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">';
     level2State.pictureOrder.forEach(function (g) {
@@ -1672,8 +1685,7 @@
           level2State.pictureDone = true;
           level2State.level2Score += level2State.pictureScore;
           updateScoreBar();
-          if (level2State.pictureScore > 0) showPointsToast(level2State.pictureScore, "You earned");
-          else if (window.AudioManager) window.AudioManager.play("correct");
+          showPointsToast(level2State.pictureScore, "You earned");
           renderStep5_Q4_picture();
         } else if (level2State.pictureAttempts >= 3) {
           level2State.pictureScore = 0;

@@ -974,12 +974,34 @@
       fitFormulaSingleLine(formula);
     }
     // Hazim 2026-05-11: the standalone CHARGE pill was removed —
-    // the formula already renders the charge at the bracket close
-    // (e.g. "[Co(H₂O)(ox)(bipy)]⁺"). The pill DOM element no longer
-    // exists in the page; defensive lookup just no-ops if anything
-    // legacy still tries to read it.
+    // the formula already renders the charge at the bracket close.
     var pill = $("builder-charge-pill");
     if (pill) pill.classList.add("hidden");
+
+    // Hazim 2026-05-11 follow-up: chemistry-notation brackets around
+    // the 3D scene with the charge as a superscript on the top-right
+    // (mimicking [Co(NH₃)₃(H₂O)₃]³⁺ rendered around the model).
+    // Update the superscript text + sign data attribute so the CSS
+    // can colour it red (cation) / blue (anion) / green (neutral).
+    var bracketCharge = $("l2-bracket-charge");
+    if (bracketCharge) {
+      var charge = computeTotalCharge().total;
+      var label;
+      var sign;
+      if (charge === 0) {
+        label = "0";
+        sign = "neutral";
+      } else if (charge > 0) {
+        label = (charge === 1 ? "" : String(charge)) + "+";
+        sign = "positive";
+      } else {
+        label = (charge === -1 ? "" : String(Math.abs(charge))) + "−";
+        sign = "negative";
+      }
+      bracketCharge.textContent = label;
+      bracketCharge.dataset.sign = sign;
+      bracketCharge.classList.remove("hidden");
+    }
   }
 
   function renderStep2_Q1_type() {

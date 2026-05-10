@@ -147,7 +147,17 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
               </div>
             </div>
           </div>
-          <canvas id="three-canvas" class="w-full flex-1 min-h-0" style="touch-action:none;"></canvas>
+          <!-- Hazim 2026-05-11: wrap the 3D scene in BIG chemistry
+               brackets with the complex charge as a superscript at
+               the top-right, mimicking the formula notation
+               "[Co(NH₃)₃(H₂O)₃]³⁺" but rendered around the actual
+               3D model. Brackets drawn via CSS pseudo-elements on
+               #l2-bracket-frame so they overlay the canvas without
+               blocking pointer events. -->
+          <div id="l2-bracket-frame" class="relative flex-1 min-h-0">
+            <canvas id="three-canvas" class="w-full h-full" style="touch-action:none;"></canvas>
+            <span id="l2-bracket-charge" class="hidden"></span>
+          </div>
           <!-- Currently-armed ligand pill — gives visual feedback for
                which ligand the player is about to place (Hazim spec:
                "tk nampak player pilih mana"). -->
@@ -886,6 +896,60 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
     max-width: 100%;
   }
   .l2-formula .nb { white-space: nowrap; }
+
+  /* Hazim 2026-05-11: chemistry-notation brackets around the 3D
+     scene with the complex's overall charge as a superscript on
+     the top-right, mimicking [Co(NH₃)₃(H₂O)₃]³⁺ rendered around
+     the live model. Pure-CSS pseudo-elements; pointer-events stay
+     on the canvas. */
+  #l2-bracket-frame {
+    position: relative;
+    padding: 0 32px;
+  }
+  #l2-bracket-frame::before,
+  #l2-bracket-frame::after {
+    content: "";
+    position: absolute;
+    top: 6%;
+    bottom: 6%;
+    width: 18px;
+    border: 5px solid #0f172a;
+    pointer-events: none;
+    z-index: 4;
+  }
+  #l2-bracket-frame::before {
+    left: 8px;
+    border-right: none;
+    border-radius: 6px 0 0 6px;
+  }
+  #l2-bracket-frame::after {
+    right: 8px;
+    border-left: none;
+    border-radius: 0 6px 6px 0;
+  }
+  #l2-bracket-charge {
+    position: absolute;
+    top: calc(6% - 14px);
+    right: -10px;
+    transform: translateY(-50%);
+    font-family: 'Fredoka', system-ui, sans-serif;
+    font-weight: 800;
+    font-size: clamp(1.3rem, 2.4vw, 2rem);
+    color: #0f172a;
+    background: #fff;
+    padding: 2px 10px;
+    border-radius: 999px;
+    border: 3px solid #0f172a;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+    pointer-events: none;
+    z-index: 5;
+    line-height: 1;
+    letter-spacing: 0.02em;
+  }
+  #l2-bracket-charge.hidden { display: none; }
+  #l2-bracket-charge[data-sign="positive"] { color: #b91c1c; border-color: #b91c1c; }
+  #l2-bracket-charge[data-sign="negative"] { color: #1e40af; border-color: #1e40af; }
+  #l2-bracket-charge[data-sign="neutral"]  { color: #047857; border-color: #047857; }
 
   /* Confetti rain — Hazim 2026-05-11 ("nak macam meriah, ade bunyi
      orang bersorak"). Pure-CSS Kahoot-podium-style colour rain that

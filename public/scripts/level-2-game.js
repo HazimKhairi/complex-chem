@@ -886,17 +886,17 @@
         return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c];
       });
     }
+    // Hazim 2026-05-11 follow-up: "taknak double line, nak inline je".
+    // Concatenate everything into a single non-breaking span — no
+    // <wbr>, no per-group nb wrappers — so the formula stays on ONE
+    // line. The fitFormulaSingleLine ResizeObserver shrinks the font
+    // when the line gets too long for the pill width.
     var rows = summariseSelectedLigands();
-    var pieces = [];
-    // First nb-group covers "[" + metal so the bracket can't separate
-    // from the metal symbol on a wrap.
-    pieces.push('<span class="nb">[' + escapeHtml(metalSym) + '</span>');
+    var text = "[" + metalSym;
     rows.forEach(function (r) {
       var clean = stripLigandCharge(r.name);
-      var label = r.count <= 1 ? "(" + clean + ")" : "(" + clean + ")" + numToSubscript(r.count);
-      pieces.push('<wbr><span class="nb">' + escapeHtml(label) + '</span>');
+      text += r.count <= 1 ? "(" + clean + ")" : "(" + clean + ")" + numToSubscript(r.count);
     });
-    // Final nb-group: closing bracket + total charge.
     var charge = computeTotalCharge().total;
     var chargeStr = "";
     if (charge !== 0) {
@@ -904,8 +904,8 @@
       var num = abs > 1 ? numToSuperscript(abs) : "";
       chargeStr = num + (charge > 0 ? "⁺" : "⁻");
     }
-    pieces.push('<wbr><span class="nb">]' + escapeHtml(chargeStr) + '</span>');
-    return pieces.join("");
+    text += "]" + chargeStr;
+    return escapeHtml(text);
   }
 
   /**
@@ -938,10 +938,40 @@
     __formulaResizeObserver.observe(box);
   }
 
+  /**
+   * Single-line shrink-to-fit. Hazim 2026-05-11 follow-up: "taknak
+   * double line, nak inline je". Reset to the CSS clamp() base, then
+   * step font-size down 0.5 px at a time until the rendered text
+   * fits on a single line (capped at 12 px floor). Short formulas
+   * stay big; long formulas auto-shrink just enough to fit inline.
+   */
+  function fitFormulaSingleLine(el) {
+    if (!el) return;
+    el.style.fontSize = ""; // reset to CSS clamp() base
+    var size = parseFloat(getComputedStyle(el).fontSize);
+    var safety = 80;
+    while (safety-- > 0 && size > 12 && el.scrollWidth > el.clientWidth) {
+      size -= 0.5;
+      el.style.fontSize = size + "px";
+    }
+  }
+  var __formulaResizeObserver2 = null;
+  function ensureFormulaInlineFitObserver() {
+    if (__formulaResizeObserver2) return;
+    var el = document.getElementById("builder-formula");
+    if (!el) return;
+    __formulaResizeObserver2 = new ResizeObserver(function () {
+      fitFormulaSingleLine(el);
+    });
+    __formulaResizeObserver2.observe(el);
+  }
+
   function updateBuilderHud() {
     var formula = $("builder-formula");
     if (formula) {
       formula.innerHTML = formatComplexFormulaHtml();
+      ensureFormulaInlineFitObserver();
+      fitFormulaSingleLine(formula);
     }
     // Hazim 2026-05-11: the standalone CHARGE pill was removed —
     // the formula already renders the charge at the bracket close

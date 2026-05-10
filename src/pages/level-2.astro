@@ -867,26 +867,19 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
   }
   .l2-arm-ghost-name { font-size: 1rem; }
 
-  /* Q5 chemistry formula box — Hazim 2026-05-11 spec: "remove charge
-     pill, buat panjang font size sama, tapi nak panjang dia memang
-     fit". Strategy:
-       - fixed font size (no auto-shrink) — clamp keeps it readable
-         from 1.4rem on small screens up to 2.4rem on desktop
-       - long formulas WRAP to a second line instead of shrinking,
-         using text-wrap: balance + word-break: keep-all so breaks
-         only land between bracket groups (never mid-token)
-       - box itself spans the full width of the outer-box row now
-         that the redundant CHARGE pill is gone, so there's much more
-         horizontal real estate before any wrap is needed */
+  /* Q5 chemistry formula box — Hazim 2026-05-11 follow-up: "taknak
+     double line, nak inline je". Strategy: keep the formula on a
+     SINGLE line at all times. The text starts at a comfortable
+     2.4 rem and a JS ResizeObserver shrinks the font (in 0.5 px
+     steps, floored at 12 px) only when the actual content overflows
+     the pill's width. Short formulas keep the big font; long
+     formulas auto-shrink just enough to fit on one line. */
   .l2-formula {
     font-size: clamp(1.4rem, 2.6vw, 2.4rem);
-    line-height: 1.2;
+    line-height: 1.25;
     text-align: center;
-    text-wrap: balance;
-    word-break: keep-all;
-    overflow-wrap: normal;
-    white-space: normal;
-    hyphens: none;
+    white-space: nowrap;
+    overflow: hidden;
     -webkit-box-decoration-break: clone;
             box-decoration-break: clone;
     width: 100%;

@@ -754,23 +754,18 @@ function collectLigand(playerId, landedCell = null) {
     }
   }
 
-  // Fallback to random if ligand not found or not specified — pick from
-  // ligands THIS player doesn't yet have (per-player, not global).
+  // Fallback to random if ligand not found or not specified. Hazim
+  // spec: duplicates ARE allowed — landing on the same tile twice
+  // should give the same ligand twice. Prefer uncollected so the
+  // player builds variety, but fall through to a fully-random pick
+  // (allowing duplicates) when the player already has every type.
   if (!ligand) {
-    console.warn(`   ⚠️ Could not find ligand "${ligandName}", selecting random uncollected ligand`);
+    console.warn(`   ⚠️ Could not find ligand "${ligandName}", selecting random ligand`);
     const playerHasIds = (gameState.playerLigands[playerId] || []).map(l => l.id);
     const uncollected = LIGANDS_DATA.filter(l => playerHasIds.indexOf(l.id) < 0);
-    if (uncollected.length === 0) {
-      console.error(`   Player ${playerId} already has every ligand!`);
-      showLigandModal(
-        { name: "—", color: "#9CA3AF", imageFile: "" },
-        "No More Ligands",
-        "You've collected every ligand. Keep moving!"
-      );
-      return;
-    }
-    ligand = uncollected[Math.floor(Math.random() * uncollected.length)];
-    console.log(`   Random ligand selected: ${ligand.name}`);
+    const pool = uncollected.length > 0 ? uncollected : LIGANDS_DATA;
+    ligand = pool[Math.floor(Math.random() * pool.length)];
+    console.log(`   Random ligand selected: ${ligand.name} (pool=${pool === uncollected ? 'uncollected' : 'all'})`);
   }
 
   console.log(`✅ [LIGAND] Collecting ligand: ${ligand.name} (${ligand.id})`);

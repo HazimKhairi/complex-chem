@@ -1266,15 +1266,11 @@ function findWinner() {
         xOfFourth = 4;
       }
 
-      //Code for Game complete message
-      setTimeout(function () {
-        $("#winners").removeClass("hidden");
-        //Code for updating player names in final congratulations message
-        $("#winner-1-name").text(firstWinner);
-        $("#winner-2-name").text(secondWinner);
-        $("#winner-3-name").text(thirdWinner);
-        $("#winner-4-name").text(fourthWinner);
-      }, 500);
+      // 2026-05-10 — DON'T open the #winners modal here. WinChecker
+      // owns the modal and only opens it once every active player
+      // has finished. Opening it on the first winner blocked the
+      // remaining players' dice clicks. See one-vs-one.js findWinner
+      // for the full rationale.
     }
   }
 }

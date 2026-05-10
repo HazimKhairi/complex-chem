@@ -1286,12 +1286,14 @@ function findWinner() {
         xOfSecond = 2;
       }
 
-      setTimeout(function () {
-        $("#winners").removeClass("hidden");
-        //Code for updating player names in final congratulations message
-        $(`#winner-1-name`).text(firstWinner);
-        $(`#winner-2-name`).text(secondWinner);
-      }, 500);
+      // 2026-05-10 — DON'T open the #winners modal here. WinChecker
+      // is the single source of truth for the modal: it shows a
+      // non-blocking corner toast for each partial finisher and
+      // only opens the full-screen modal once every active player
+      // has reached pos 57. Opening it here was the actual cause of
+      // the "Player 2 stuck" complaints — the modal covered the
+      // board and blocked P2's dice clicks. WinChecker.updateWinnersModal
+      // already writes the winner names + drives the podium.
     }
   }
 }

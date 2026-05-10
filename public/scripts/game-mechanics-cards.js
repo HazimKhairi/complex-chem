@@ -311,12 +311,11 @@ const FATE_CARDS_DATA = [
     description: "Roll the dice and let fate decide your direction. You might move backward on the board.",
     effect: "destiny-dance",
   },
-  {
-    id: "swap-card",
-    title: "Swap Card",
-    description: "Swap one card with another player of your choice.",
-    effect: "swap-card",
-  },
+  // Swap Card removed from the deck on Hazim's request 2026-05-11
+  // ("remove jelahh swap card tu dari game nii"). The swap modal +
+  // applySwapCard handler stay in the codebase as harmless dead
+  // code; FATE_CARDS_DATA is the single source of truth for what
+  // gets drawn at runtime, so dropping the entry is enough.
   {
     id: "karma-kickback",
     title: "Karma Kickback",

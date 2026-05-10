@@ -49,6 +49,13 @@
     if (POINTS_EFFECTS.includes(fateEffect) && fateValue !== 0 && window.GameMechanics) {
       window.GameMechanics.awardPoints(playerId, fateValue, 'fate');
       console.log(`💰 [FATE] Player ${playerId} ${fateValue > 0 ? 'gained' : 'lost'} ${Math.abs(fateValue)} points`);
+      // Show a toast — Hazim 2026-05-11 reported point/minus fate
+      // mutations were silent (UIAnimations was skipped on this page).
+      if (window.FateEffectHandler && typeof window.FateEffectHandler.showNotification === 'function') {
+        const sign = fateValue > 0 ? '+' : '−';
+        const msg = `${sign}${Math.abs(fateValue)} points for Player ${playerId}`;
+        window.FateEffectHandler.showNotification(msg, fateValue > 0 ? 'success' : 'error');
+      }
     }
 
     // Apply the card's actual behaviour (gain ligand, move forward, swap, etc.)

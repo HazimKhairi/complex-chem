@@ -74,24 +74,76 @@ window.FateEffectHandler = {
   },
 
   /**
-   * Helper: Show notification message
+   * Helper: Show notification message — in-page toast.
+   * Hazim 2026-05-11: previously fell through to silent console.log
+   * because window.UIAnimations was intentionally skipped on the
+   * game-board (game-board.astro:214). Every fate effect's state
+   * mutation ran, but the player saw nothing happen — making it feel
+   * like "most fate card mechanic belum implement". Self-contained
+   * toast (no UIAnimations dependency, no extra CSS file required).
    */
-  showNotification(message, type = 'info') {
-    console.log(`📢 [FATE] ${message}`);
+  showNotification(message, type) {
+    type = type || 'info';
+    console.log('[FATE]', message);
+    var palette = {
+      success: { bg: 'linear-gradient(135deg,#22c55e 0%,#15803d 100%)', shadow: '#15803d', icon: '✓' },
+      error:   { bg: 'linear-gradient(135deg,#ef4444 0%,#991b1b 100%)', shadow: '#991b1b', icon: '⚠' },
+      info:    { bg: 'linear-gradient(135deg,#3b82f6 0%,#1e40af 100%)', shadow: '#1e40af', icon: 'ℹ' },
+    };
+    var p = palette[type] || palette.info;
 
-    // Use existing UI animations if available
-    if (window.UIAnimations) {
-      if (type === 'success') {
-        window.UIAnimations.showSuccess(message, 3000);
-      } else if (type === 'error') {
-        window.UIAnimations.showError(message, 3000);
-      } else {
-        window.UIAnimations.showNotification(message, 3000);
-      }
-    } else {
-      // Fallback: console only
-      console.log(`[NOTIFICATION] ${message}`);
+    // Stack toasts top-center so multiple effects (e.g. swap → swap-complete)
+    // don't clobber each other.
+    var stackId = 'fate-toast-stack';
+    var stack = document.getElementById(stackId);
+    if (!stack) {
+      stack = document.createElement('div');
+      stack.id = stackId;
+      stack.style.cssText = [
+        'position:fixed', 'top:18%', 'left:50%', 'transform:translateX(-50%)',
+        'z-index:9998', 'display:flex', 'flex-direction:column', 'gap:10px',
+        'pointer-events:none', 'align-items:center',
+      ].join(';');
+      document.body.appendChild(stack);
     }
+
+    var el = document.createElement('div');
+    el.style.cssText = [
+      'background:' + p.bg,
+      'color:#ffffff',
+      'padding:18px 28px',
+      'border-radius:18px',
+      'box-shadow:0 14px 32px rgba(0,0,0,0.30), 0 4px 0 ' + p.shadow,
+      'font-family:Fredoka,system-ui,-apple-system,sans-serif',
+      'font-weight:700',
+      'font-size:1.05rem',
+      'letter-spacing:0.01em',
+      'min-width:240px',
+      'max-width:480px',
+      'text-align:center',
+      'border:3px solid rgba(255,255,255,0.55)',
+      'opacity:0',
+      'transform:scale(0.6)',
+      'transition:opacity .3s ease, transform .35s cubic-bezier(.34,1.56,.64,1)',
+      'pointer-events:none',
+    ].join(';');
+    el.innerHTML =
+      '<span style="display:inline-block;margin-right:8px;font-size:1.2em;">' + p.icon + '</span>' +
+      String(message).replace(/[<>&]/g, function (c) {
+        return ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' })[c];
+      });
+    stack.appendChild(el);
+    requestAnimationFrame(function () {
+      el.style.opacity = '1';
+      el.style.transform = 'scale(1)';
+    });
+    setTimeout(function () {
+      el.style.opacity = '0';
+      el.style.transform = 'scale(0.92) translateY(-12px)';
+    }, 2400);
+    setTimeout(function () {
+      if (el.parentNode) el.parentNode.removeChild(el);
+    }, 2900);
   },
 
   applySwapCard(playerId) {

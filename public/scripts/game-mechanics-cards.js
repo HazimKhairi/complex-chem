@@ -854,7 +854,12 @@ function openQuestionHintPopup(imageFile) {
   overlay.id = "question-hint-overlay";
   overlay.className = "fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4";
 
-  var imgSrc = "/assets/question-cards/left/" + imageFile;
+  // Hazim 2026-05-11: the files in /assets/question-cards/N.png are
+  // ALREADY the cropped note cards (red border, "Did you know?", text +
+  // structure on a single panel). The earlier `/left/` subdirectory
+  // was a redundant 49 % slice that bled the right edge of the source.
+  // Use the originals directly.
+  var imgSrc = "/assets/question-cards/" + imageFile;
   overlay.innerHTML = `
     <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full relative overflow-hidden">
       <button

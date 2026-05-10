@@ -145,6 +145,39 @@
   }
 
   // --- Board auto-play (Level 1) -----------------------------------
+  /**
+   * Wait until the game is genuinely ready for the next dice roll —
+   * Hazim 2026-05-11: "watch demo dia spin terus dan terus tanpa
+   * tunggu player". The previous unconditional 2400 ms wait fired
+   * Space again while the dice was still locked or the piece was
+   * mid-animation, which made the dice icon spin without anything
+   * happening. Now we poll three preconditions before pressing
+   * Space again:
+   *   - window.d === 0     (dice is unlocked)
+   *   - !window._moveInProgress (no piece animation running)
+   *   - no blocking modal is open
+   *
+   * Times out after maxMs to avoid getting stuck on edge cases.
+   */
+  async function waitForReadyToRoll(maxMs) {
+    var start = Date.now();
+    var blockingModalIds = [
+      'question-modal', 'fate-modal', 'ligand-modal',
+      'swap-ligand-modal', 'info-modal',
+    ];
+    while (Date.now() - start < maxMs) {
+      var modalOpen = blockingModalIds.some(function (id) {
+        var el = document.getElementById(id);
+        return el && !el.classList.contains('hidden') && visible(el);
+      });
+      var diceLocked = (typeof window.d !== 'undefined' && window.d !== 0);
+      var moving = !!window._moveInProgress;
+      if (!modalOpen && !diceLocked && !moving) return true;
+      await wait(200);
+    }
+    return false;
+  }
+
   async function runBoardSim() {
     // Wait for countdown to finish
     await new Promise(function (res) {
@@ -177,19 +210,20 @@
         continue;
       }
 
-      // Auto-press Space to roll — only when no modal is currently open
-      var anyModalOpen = [
-        'question-modal', 'fate-modal', 'ligand-modal', 'swap-ligand-modal', 'info-modal',
-      ].some(function (id) {
-        var el = document.getElementById(id);
-        return el && !el.classList.contains('hidden') && visible(el);
-      });
-
-      if (!anyModalOpen) {
-        document.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', code: 'Space', bubbles: true }));
+      // Wait for the previous turn to FULLY finish (dice unlocked +
+      // piece settled + no modal). Capped so we don't hang forever.
+      var ready = await waitForReadyToRoll(10000);
+      if (!ready) {
+        console.warn('[auto-play] readiness check timed out — pressing anyway');
       }
 
-      await wait(2400);
+      // Press Space to roll — keyboard-shortcuts.js routes this to
+      // the current player's dice when window.d === 0.
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', code: 'Space', bubbles: true }));
+
+      // Brief settle so the dice click handler can flip d → 1 before
+      // the next iteration's readiness poll starts.
+      await wait(400);
     }
 
     console.warn('[auto-play] hit turn cap, navigating to Level 2 manually');

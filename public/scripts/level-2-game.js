@@ -431,7 +431,9 @@
   function openLigandCardPopup(ligandId) {
     var chem = LIGAND_CHEMISTRY[ligandId];
     if (!chem) return;
-    var imgPath = '/assets/ligand-cards/' + (chem.image || '1.png');
+    var imgFile = chem.image || '1.png';
+    var frontPath = '/assets/ligand-cards/front/' + imgFile;
+    var backPath  = '/assets/ligand-cards/back/'  + imgFile;
     var color = SPHERE_COLOR_CSS[chem.sphere] || '#4187a0';
 
     // Reuse single overlay
@@ -446,11 +448,11 @@
       +   '<button id="ligand-card-close" class="absolute -top-3 -right-3 z-10 w-9 h-9 rounded-full bg-white text-gray-700 shadow-lg text-xl leading-none font-black hover:bg-gray-100" aria-label="Close">&times;</button>'
       +   '<div id="ligand-card-flip" class="relative w-full" style="aspect-ratio:3/4; transform-style:preserve-3d; transition:transform 600ms cubic-bezier(.2,.7,.2,1); cursor:pointer;">'
       +     '<div class="absolute inset-0 rounded-2xl border-4 overflow-hidden bg-white shadow-2xl" style="border-color:' + color + '; backface-visibility:hidden;">'
-      +       '<div class="w-full h-full bg-no-repeat" style="background-image:url(\'' + imgPath + '\'); background-position:6% center; background-size:220%;"></div>'
+      +       '<div class="w-full h-full bg-no-repeat bg-contain bg-center" style="background-image:url(\'' + frontPath + '\');"></div>'
       +       '<div class="absolute bottom-2 right-2 px-3 py-1 bg-black/70 text-white text-xs rounded-full font-semibold pointer-events-none">Click to flip</div>'
       +     '</div>'
       +     '<div class="absolute inset-0 rounded-2xl border-4 overflow-hidden bg-white shadow-2xl" style="border-color:' + color + '; backface-visibility:hidden; transform:rotateY(180deg);">'
-      +       '<div class="w-full h-full bg-no-repeat" style="background-image:url(\'' + imgPath + '\'); background-position:94% center; background-size:220%;"></div>'
+      +       '<div class="w-full h-full bg-no-repeat bg-contain bg-center" style="background-image:url(\'' + backPath + '\');"></div>'
       +       '<div class="absolute bottom-2 right-2 px-3 py-1 bg-black/70 text-white text-xs rounded-full font-semibold pointer-events-none">Click to flip back</div>'
       +     '</div>'
       +   '</div>'

@@ -469,9 +469,9 @@ window.FateEffectHandler = {
         : ligandItem;
 
       return `
-        <img src="/assets/ligand-cards/${ligand?.imageFile || ligandId + '.png'}"
+        <img src="/assets/ligand-cards/front/${ligand?.imageFile || ligandId + '.png'}"
              alt="${ligand?.name || ligandId}"
-             class="w-16 h-16 sm:w-20 sm:h-20 rounded shadow-sm ligand-selectable"
+             class="w-16 h-16 sm:w-20 sm:h-20 rounded shadow-sm ligand-selectable object-contain bg-white"
              data-ligand-id="${ligandId}"
              data-player-id="${currentPlayerId}"
              title="${ligand?.name || ligandId}">
@@ -488,9 +488,9 @@ window.FateEffectHandler = {
           : ligandItem;
 
         return `
-          <img src="/assets/ligand-cards/${ligand?.imageFile || ligandId + '.png'}"
+          <img src="/assets/ligand-cards/front/${ligand?.imageFile || ligandId + '.png'}"
                alt="${ligand?.name || ligandId}"
-               class="w-16 h-16 sm:w-20 sm:h-20 rounded shadow-sm ligand-selectable"
+               class="w-16 h-16 sm:w-20 sm:h-20 rounded shadow-sm ligand-selectable object-contain bg-white"
                data-ligand-id="${ligandId}"
                data-player-id="${targetPlayerId}"
                title="${ligand?.name || ligandId}">
@@ -750,7 +750,7 @@ window.FateEffectHandler = {
              data-ligand-id="${ligandData.id}"
              data-player-id="${playerId}"
              data-index="${index}">
-          <div class="w-full h-full bg-cover bg-center" style="background-image: url('/assets/ligand-cards/${ligandData.imageFile}'); background-position: 0% center; background-size: 200%;"></div>
+          <div class="w-full h-full bg-no-repeat bg-contain bg-center" style="background-image: url('/assets/ligand-cards/front/${ligandData.imageFile}');"></div>
         </div>
       `;
     }).join('');

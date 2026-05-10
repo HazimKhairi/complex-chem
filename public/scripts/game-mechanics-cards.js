@@ -808,11 +808,11 @@ function showLigandModal(ligand, title, subtitle) {
       <div class="ligand-flip-card-container w-full max-w-[260px] mx-auto aspect-[3/4] cursor-pointer">
         <div class="ligand-flip-card w-full h-full">
           <div class="ligand-flip-card-face ligand-flip-card-front absolute inset-0 rounded-lg border-4 overflow-hidden bg-white" style="border-color: ${ligand.color};">
-            <div class="w-full h-full bg-no-repeat" style="background-image: url('/assets/ligand-cards/${ligand.imageFile}'); background-position: 6% center; background-size: 220%;"></div>
+            <div class="w-full h-full bg-no-repeat bg-contain bg-center" style="background-image: url('/assets/ligand-cards/front/${ligand.imageFile}');"></div>
             <div class="absolute bottom-2 right-2 px-3 py-1 bg-black/70 text-white text-xs rounded">Click to flip</div>
           </div>
           <div class="ligand-flip-card-face ligand-flip-card-back absolute inset-0 rounded-lg border-4 overflow-hidden bg-white" style="border-color: ${ligand.color};">
-            <div class="w-full h-full bg-no-repeat" style="background-image: url('/assets/ligand-cards/${ligand.imageFile}'); background-position: 94% center; background-size: 220%;"></div>
+            <div class="w-full h-full bg-no-repeat bg-contain bg-center" style="background-image: url('/assets/ligand-cards/back/${ligand.imageFile}');"></div>
             <div class="absolute bottom-2 right-2 px-3 py-1 bg-black/70 text-white text-xs rounded">Click to flip back</div>
           </div>
         </div>
@@ -1208,7 +1208,7 @@ function updateLigandDisplay(playerId) {
            data-ligand-id="${l.id}"
            data-player-id="${playerId}"
            data-index="${index}">
-        <div class="w-full h-full bg-cover bg-center" style="background-image: url('/assets/ligand-cards/${l.imageFile}'); background-position: 6% center; background-size: 220%;"></div>
+        <div class="w-full h-full bg-no-repeat bg-contain bg-center" style="background-image: url('/assets/ligand-cards/front/${l.imageFile}');"></div>
       </div>
     `)
     .join("");

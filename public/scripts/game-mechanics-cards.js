@@ -800,9 +800,12 @@ function showLigandModal(ligand, title, subtitle) {
     if (modalTitle) modalTitle.textContent = title;
     if (modalSubtitle) modalSubtitle.textContent = subtitle;
 
-    // Render ligand flip card
+    // Render ligand flip card. Constrain width + mx-auto so the card
+    // sits visually centred inside the modal — Hazim spec "centerkan
+    // kad ligand". w-full would stretch to the full modal width and
+    // make the 3:4 card feel left-leaning on wider modals.
     container.innerHTML = `
-      <div class="ligand-flip-card-container w-full aspect-[3/4] cursor-pointer">
+      <div class="ligand-flip-card-container w-full max-w-[260px] mx-auto aspect-[3/4] cursor-pointer">
         <div class="ligand-flip-card w-full h-full">
           <div class="ligand-flip-card-face ligand-flip-card-front absolute inset-0 rounded-lg border-4 overflow-hidden bg-white" style="border-color: ${ligand.color};">
             <div class="w-full h-full bg-no-repeat" style="background-image: url('/assets/ligand-cards/${ligand.imageFile}'); background-position: 6% center; background-size: 220%;"></div>

@@ -312,12 +312,44 @@
           if (window.TurnManager && typeof window.TurnManager.setCurrentPlayer === 'function') {
             try { window.TurnManager.setCurrentPlayer(candidate); } catch (e) {}
           }
+          // CRITICAL: re-sync the game script's GLOBALS (identifyPlayer,
+          // identifyColor, accurateMoveHorseVal). Without this, the next
+          // dice click would still validate against the FINISHED player's
+          // colour and silently fail — exactly the "Player 2 stuck"
+          // symptom Hazim flagged.
+          syncGameScriptGlobals(justFinishedId, candidate);
           console.log('🔁 [WinChecker] Skipped finished player ' + justFinishedId + ' → P' + candidate);
           return;
         }
       }
     } catch (e) {
       console.warn('[WinChecker] advancePastFinishedPlayer failed:', e);
+    }
+  }
+
+  /**
+   * After window.x is forcibly changed (turn rotation skipped a finished
+   * player), the game script's identifier globals are still set to the
+   * old player. Re-run identifyPlayerInfo() and update the dice arrow
+   * so the new current player can actually roll.
+   */
+  function syncGameScriptGlobals(prevId, nextId) {
+    try {
+      if (typeof window.identifyPlayerInfo === 'function') {
+        try { window.identifyPlayerInfo(); } catch (e) {}
+      }
+      if (typeof window.jQuery !== 'undefined') {
+        var $ = window.jQuery;
+        $('#player-' + prevId + '-dice-arrow').attr('src', '');
+        $('#player-' + nextId + '-dice-arrow').attr('src', 'gifs/arrow1.gif');
+        $('#player-' + nextId + '-dice').attr('src', 'dice/dice-rest.png');
+      }
+      // Reset dice / six counters so the new player can roll immediately
+      if (typeof window.d !== 'undefined') window.d = 0;
+      if (typeof window.y !== 'undefined') window.y = 1;
+      if (typeof window.z !== 'undefined') window.z = 1;
+    } catch (e) {
+      console.warn('[WinChecker] syncGameScriptGlobals failed:', e);
     }
   }
 

@@ -757,8 +757,29 @@
           }
           if (scan !== gameScriptPlayer && state.playerStates[scan] !== PLAYER_STATES.FINISHED) {
             console.log(`⏭️ [TurnManager] Skipping finished player ${gameScriptPlayer} → P${scan}`);
+            const prev = gameScriptPlayer;
             window.x = scan;
             gameScriptPlayer = scan;
+            // Re-sync the game script's identifier globals + dice arrow.
+            // window.x changed outside transferDiceCode, so identifyPlayer/
+            // identifyColor are still pointing at the FINISHED player and
+            // every subsequent click handler validation would fail.
+            try {
+              if (typeof window.identifyPlayerInfo === 'function') {
+                window.identifyPlayerInfo();
+              }
+              if (typeof window.jQuery !== 'undefined') {
+                const $ = window.jQuery;
+                $(`#player-${prev}-dice-arrow`).attr('src', '');
+                $(`#player-${scan}-dice-arrow`).attr('src', 'gifs/arrow1.gif');
+                $(`#player-${scan}-dice`).attr('src', 'dice/dice-rest.png');
+              }
+              if (typeof window.d !== 'undefined') window.d = 0;
+              if (typeof window.y !== 'undefined') window.y = 1;
+              if (typeof window.z !== 'undefined') window.z = 1;
+            } catch (e) {
+              console.warn('[TurnManager] global re-sync failed:', e);
+            }
           }
         }
 

@@ -97,29 +97,56 @@ window.FateEffectHandler = {
   applySwapCard(playerId) {
     console.log(`🔄 [FATE] Swap Card - Player ${playerId}`);
 
-    // Always open the swap modal so the player at least gets a screen
-    // they can interact with — Hazim spec ("dia terus next player"
-    // happened because the early-exit InfoModal flow auto-advanced the
-    // turn). The modal itself surfaces a friendly empty-state if the
-    // player has no ligands or no peer has ligands.
+    // Build the list of OTHER ACTIVE players (not just != playerId).
+    // In 1v1 mode P3+P4 don't exist, so listing them adds dead buttons
+    // that lead to broken empty-on-empty swaps.
+    const activeIds = (window.TurnManager && window.TurnManager.getActivePlayers)
+      ? window.TurnManager.getActivePlayers()
+      : [1, 2, 3, 4];
     const otherPlayers = [];
-    for (let i = 1; i <= 4; i++) {
-      if (i !== playerId) {
-        const ligandCount = (gameState.playerLigands[i] || []).length;
-        otherPlayers.push({ id: i, ligandCount });
+    activeIds.forEach((id) => {
+      if (id !== playerId) {
+        const ligandCount = (gameState.playerLigands[id] || []).length;
+        otherPlayers.push({ id, ligandCount });
       }
-    }
+    });
 
-    if (window.SwapLigandModal) {
-      window.SwapLigandModal.show(playerId);
-      window.SwapLigandModal.showPlayerSelection(otherPlayers);
-    } else {
-      console.error('❌ [FATE] SwapLigandModal not available');
-      this.showNotification("Error: Swap modal not available", 'error');
-      document.dispatchEvent(new CustomEvent('swap-cancelled', {
-        detail: { playerId, reason: 'modal-missing' }
-      }));
-    }
+    const openModal = () => {
+      if (window.SwapLigandModal) {
+        window.SwapLigandModal.show(playerId);
+        window.SwapLigandModal.showPlayerSelection(otherPlayers);
+        return true;
+      }
+      return false;
+    };
+
+    if (openModal()) return;
+
+    // SwapLigandModal hasn't registered yet — possible script-order race
+    // on first load. Retry briefly before falling back, otherwise the
+    // swap-cancelled fallback would auto-advance the turn and the player
+    // would see "Swap Card" → instantly next player ("dia terus next
+    // player" complaint).
+    console.warn('⚠️ [FATE] SwapLigandModal not yet registered, retrying...');
+    let tries = 0;
+    const retry = setInterval(() => {
+      tries++;
+      if (openModal()) {
+        clearInterval(retry);
+        console.log(`✅ [FATE] SwapLigandModal opened on retry #${tries}`);
+        return;
+      }
+      if (tries >= 10) { // 10 × 100ms = 1s max
+        clearInterval(retry);
+        console.error('❌ [FATE] SwapLigandModal still missing after 1s');
+        // Truly broken — surface a notification but let the game advance
+        // so the player isn't frozen permanently.
+        this.showNotification('Could not open swap dialog — skipping.', 'error');
+        document.dispatchEvent(new CustomEvent('swap-cancelled', {
+          detail: { playerId, reason: 'modal-missing' },
+        }));
+      }
+    }, 100);
   },
 
   applyEurekaMoment(playerId) {

@@ -304,15 +304,24 @@
       }
     });
 
-    // How to Play
+    // How to Play — Level 1 still uses the joyride tour. Level 2's
+    // joyride was removed (Hazim 2026-05-10 "menyusahkan je") because
+    // the overlay intercepted answer-button + 3D-builder clicks. On
+    // Level 2 we re-open the intro/objective modal instead, which
+    // covers the same rules without blocking interaction.
     howToPlayBtn?.addEventListener('click', () => {
-      const joyride = (window as any).Joyride;
-      if (!joyride) return;
       const isLevel2 = window.location.href.includes('level-2');
-      if (isLevel2 && typeof joyride.startLevel2 === 'function') {
-        joyride.startLevel2();
-      } else if (typeof joyride.startLevel1 === 'function') {
-        joyride.startLevel1();
+      if (isLevel2) {
+        const intro = document.getElementById('level2-intro-modal');
+        if (intro) {
+          intro.classList.remove('hidden');
+          intro.classList.add('flex');
+        }
+      } else {
+        const joyride = (window as any).Joyride;
+        if (joyride && typeof joyride.startLevel1 === 'function') {
+          joyride.startLevel1();
+        }
       }
       closePanel();
     });

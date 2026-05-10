@@ -896,10 +896,8 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
   }
 </style>
 
-<script is:inline>
-  if (!localStorage.getItem('joyride-l2-done')) {
-    setTimeout(function () {
-      if (window.Joyride) window.Joyride.startLevel2();
-    }, 500);
-  }
-</script>
+<!-- Joyride tour removed on Level 2 — Hazim 2026-05-10 ("menyusahkan
+     je"). The full-screen overlay was intercepting pointer events on
+     answer buttons and the 3D builder, blocking interaction during
+     audits. Objective modal + chip pickers are self-explanatory; no
+     guided tour needed. -->

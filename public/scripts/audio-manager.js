@@ -43,11 +43,75 @@ window.AudioManager = (function () {
     // when the player skips a question or runs the timer out. Built
     // with Web Audio so no extra asset file is needed.
     if (name === 'sad') return playSadTone();
+    // Synthesised "cheer" — major arpeggio (C5-E5-G5-C6) layered with a
+    // band-passed noise burst to feel like a crowd "yay". Hazim
+    // 2026-05-11 wants the toast to feel "meriah, ada bunyi orang
+    // bersorak". Built in Web Audio so no asset file is needed.
+    if (name === 'cheer') return playCheerTone();
     var src = sounds[name];
     if (!src) return;
     var audio = new Audio(src);
     audio.volume = volume;
     audio.play().catch(function () {});
+  }
+
+  /**
+   * Synthesise a "yay/cheer" effect — C-major arpeggio (C5/E5/G5/C6)
+   * with a stuttered amplitude envelope to approximate a crowd's
+   * voiced burst, layered with a short band-pass noise rush to give
+   * the "ssh" of clapping. Total ~1.0 s. Pure Web Audio — no asset.
+   */
+  function playCheerTone() {
+    try {
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      var ctx = new Ctx();
+      // Major arpeggio C5 E5 G5 C6 — bright, celebratory.
+      var notes = [523.25, 659.25, 783.99, 1046.50];
+      var dur = 0.16;
+      var startVoiced = ctx.currentTime;
+      notes.forEach(function (freq, i) {
+        var osc = ctx.createOscillator();
+        var gain = ctx.createGain();
+        osc.type = 'triangle'; // softer than square, fuller than sine
+        osc.frequency.value = freq;
+        osc.connect(gain).connect(ctx.destination);
+        var t0 = startVoiced + i * dur * 0.6; // overlap so it chords
+        gain.gain.setValueAtTime(0, t0);
+        gain.gain.linearRampToValueAtTime(volume * 0.22, t0 + 0.03);
+        // small stutter to suggest crowd voice modulation
+        gain.gain.setValueAtTime(volume * 0.22, t0 + 0.18);
+        gain.gain.linearRampToValueAtTime(volume * 0.16, t0 + 0.24);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.55);
+        osc.start(t0);
+        osc.stop(t0 + 0.62);
+      });
+
+      // Band-pass noise burst to suggest applause "ssh".
+      var bufferSize = ctx.sampleRate * 0.7;
+      var noiseBuf = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      var data = noiseBuf.getChannelData(0);
+      for (var n = 0; n < bufferSize; n++) {
+        // Slowly amplitude-modulated white noise — like overlapping claps.
+        var modulation = 0.55 + 0.45 * Math.abs(Math.sin(n * 0.0009));
+        data[n] = (Math.random() * 2 - 1) * modulation;
+      }
+      var noise = ctx.createBufferSource();
+      noise.buffer = noiseBuf;
+      var bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.value = 2400;
+      bp.Q.value = 1.2;
+      var noiseGain = ctx.createGain();
+      noiseGain.gain.setValueAtTime(0, startVoiced);
+      noiseGain.gain.linearRampToValueAtTime(volume * 0.14, startVoiced + 0.1);
+      noiseGain.gain.exponentialRampToValueAtTime(0.0001, startVoiced + 0.85);
+      noise.connect(bp).connect(noiseGain).connect(ctx.destination);
+      noise.start(startVoiced);
+      noise.stop(startVoiced + 0.95);
+
+      setTimeout(function () { ctx.close(); }, 1200);
+    } catch (e) { /* swallow — audio is non-critical */ }
   }
 
   function playSadTone() {

@@ -280,6 +280,48 @@
   }
 
   /**
+   * Confetti rain — spawns 60 colored pieces falling from above the
+   * viewport. Auto-removes after the longest animation finishes.
+   * Hazim 2026-05-11 spec: every correct answer should feel meriah
+   * with confetti + cheer, like a Kahoot podium.
+   */
+  function triggerConfettiRain() {
+    var palette = ["#fde047", "#f97316", "#22c55e", "#3b82f6", "#ec4899", "#a855f7", "#06b6d4", "#ef4444"];
+    var container = document.createElement("div");
+    container.className = "l2-confetti-rain";
+    container.setAttribute("aria-hidden", "true");
+    var pieces = 60;
+    var maxDur = 0;
+    for (var i = 0; i < pieces; i++) {
+      var piece = document.createElement("div");
+      piece.className = "l2-confetti-piece";
+      var color = palette[i % palette.length];
+      var left = Math.random() * 100;            // 0..100 % across viewport
+      var dur = 2.4 + Math.random() * 2.0;       // 2.4–4.4 s
+      var delay = Math.random() * 1.0;           // 0–1 s stagger
+      var sway = 0.7 + Math.random() * 1.0;      // 0.7–1.7 s sway period
+      var w = 7 + Math.floor(Math.random() * 8); // 7–14 px wide
+      var h = 10 + Math.floor(Math.random() * 10); // 10–19 px tall
+      // Mix in a few circles for texture variety.
+      var radius = (i % 5 === 0) ? "50%" : "2px";
+      piece.style.cssText =
+        "left:" + left + "%;" +
+        "background:" + color + ";" +
+        "width:" + w + "px;" +
+        "height:" + h + "px;" +
+        "border-radius:" + radius + ";" +
+        "animation-duration:" + dur + "s, " + sway + "s;" +
+        "animation-delay:" + delay + "s, 0s;";
+      container.appendChild(piece);
+      if (dur + delay > maxDur) maxDur = dur + delay;
+    }
+    document.body.appendChild(container);
+    setTimeout(function () {
+      if (container.parentNode) container.parentNode.removeChild(container);
+    }, (maxDur + 0.4) * 1000);
+  }
+
+  /**
    * Bouncy toast — shown after a correct answer before the next step
    * renders. When points > 0 shows "+N pts"; when points === 0 shows a
    * "Correct!" celebration toast (Hazim spec: every correct answer gets
@@ -287,8 +329,15 @@
    * Pass `points = -1` to suppress entirely (e.g., wrong answer flow).
    */
   function showPointsToast(points, label) {
-    if (window.AudioManager) window.AudioManager.play("correct");
+    if (window.AudioManager) {
+      window.AudioManager.play("correct");
+      // Layer the synthesised crowd cheer on top of the per-question
+      // "correct" chime so the celebration feels meriah (Hazim spec).
+      window.AudioManager.play("cheer");
+    }
     if (points === -1) return;
+    // Confetti rain falls during the toast lifetime (3.4 s).
+    triggerConfettiRain();
     var el = document.createElement("div");
     el.className = "l2-points-toast";
     var starSvg = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">'

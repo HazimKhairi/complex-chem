@@ -146,26 +146,45 @@
 
   // --- Board auto-play (Level 1) -----------------------------------
   /**
+   * Has every active player reached the winning home cell (pos 57)?
+   * Used to stop the demo loop the moment the game is actually over,
+   * even if WinChecker hasn't surfaced the modal yet. Hazim
+   * 2026-05-11: "dah menang tapi tetap spin" — bot kept pressing
+   * Space after reaching home because the auto-loop only watched
+   * the winners modal, not the position state.
+   */
+  function allActivePlayersFinished() {
+    try {
+      var active = (window.TurnManager && window.TurnManager.getActivePlayers)
+        ? window.TurnManager.getActivePlayers()
+        : [1, 2, 3, 4];
+      if (!Array.isArray(active) || active.length === 0) return false;
+      var colorByPlayer = { 1: 'G', 2: 'Y', 3: 'R', 4: 'B' };
+      return active.every(function (id) {
+        var c = colorByPlayer[id];
+        return window['lastPos' + c + 'H1'] === 57;
+      });
+    } catch (e) { return false; }
+  }
+
+  /**
    * Wait until the game is genuinely ready for the next dice roll —
    * Hazim 2026-05-11: "watch demo dia spin terus dan terus tanpa
-   * tunggu player". The previous unconditional 2400 ms wait fired
-   * Space again while the dice was still locked or the piece was
-   * mid-animation, which made the dice icon spin without anything
-   * happening. Now we poll three preconditions before pressing
-   * Space again:
+   * tunggu player". Polls four preconditions:
+   *   - no blocking modal is open (now includes #winners)
    *   - window.d === 0     (dice is unlocked)
    *   - !window._moveInProgress (no piece animation running)
-   *   - no blocking modal is open
-   *
-   * Times out after maxMs to avoid getting stuck on edge cases.
+   *   - the current player hasn't already finished (lastPos < 57)
    */
   async function waitForReadyToRoll(maxMs) {
     var start = Date.now();
     var blockingModalIds = [
       'question-modal', 'fate-modal', 'ligand-modal',
-      'swap-ligand-modal', 'info-modal',
+      'swap-ligand-modal', 'info-modal', 'winners',
     ];
     while (Date.now() - start < maxMs) {
+      // Hard exit: every player is home — game is over, abandon.
+      if (allActivePlayersFinished()) return false;
       var modalOpen = blockingModalIds.some(function (id) {
         var el = document.getElementById(id);
         return el && !el.classList.contains('hidden') && visible(el);
@@ -210,10 +229,28 @@
         continue;
       }
 
+      // Hazim 2026-05-11: "dah menang tapi tetap spin" — if every
+      // active player has already reached pos 57 but WinChecker
+      // hasn't surfaced the modal yet, force the win check and
+      // wait for the modal to appear instead of blindly pressing
+      // Space at an already-finished piece.
+      if (allActivePlayersFinished()) {
+        console.log('[auto-play] all players home — forcing win check');
+        if (window.WinChecker && typeof window.WinChecker.checkWinCondition === 'function') {
+          try { window.WinChecker.checkWinCondition(); } catch (e) {}
+        }
+        await wait(1500);
+        // Loop back so the winners-modal branch above clicks Continue.
+        continue;
+      }
+
       // Wait for the previous turn to FULLY finish (dice unlocked +
       // piece settled + no modal). Capped so we don't hang forever.
       var ready = await waitForReadyToRoll(10000);
       if (!ready) {
+        // Either timed out OR allActivePlayersFinished() flipped
+        // mid-wait. Loop back so the winners check fires next iteration.
+        if (allActivePlayersFinished()) continue;
         console.warn('[auto-play] readiness check timed out — pressing anyway');
       }
 

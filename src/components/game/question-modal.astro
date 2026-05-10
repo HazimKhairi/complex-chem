@@ -79,7 +79,10 @@
         <span id="qm-score-value" class="font-black text-3xl sm:text-5xl text-amber-300 drop-shadow-lg tabular-nums" style="font-family:'Fredoka',system-ui,sans-serif;">0</span>
       </div>
 
-      <!-- Action row: Submit + Skip -->
+      <!-- Action row: Submit only — Skip button removed on Hazim's
+           request 2026-05-11 ("buang skip"). Timer expiry still
+           dispatches the same `question-skipped` event so the modal
+           auto-closes if the player runs out of time. -->
       <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 flex-1 max-w-md">
         <button
           id="submit-answer-btn"
@@ -92,15 +95,6 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
             </svg>
           </span>
-        </button>
-        <button
-          id="skip-question-btn"
-          type="button"
-          class="px-5 py-3 sm:py-4 rounded-2xl bg-white/95 hover:bg-white border-2 border-white text-slate-700 font-bold text-sm sm:text-base shadow-lg hover:shadow-xl transition-all"
-          title="Skip — no points awarded"
-          style="font-family:'Fredoka',system-ui,sans-serif;"
-        >
-          Skip
         </button>
       </div>
     </footer>
@@ -352,12 +346,10 @@
   // clicks on a 2-pt EASY question landed 15 pts).
 
   const submitBtn = document.getElementById("submit-answer-btn") as HTMLButtonElement | null;
-  const skipBtn   = document.getElementById("skip-question-btn") as HTMLButtonElement | null;
 
   function lockAnswerControls() {
     answerLocked = true;
     if (submitBtn) submitBtn.disabled = true;
-    if (skipBtn)   skipBtn.disabled = true;
     // Also kill any further clicks that might bypass `disabled`
     // (e.g. if a CSS rule relaxes pointer-events on disabled).
     document.querySelectorAll("#question-options .qm-option").forEach((opt) => {
@@ -374,11 +366,10 @@
     }));
   });
 
-  skipBtn?.addEventListener("click", () => {
-    if (answerLocked) return;
-    lockAnswerControls();
-    document.dispatchEvent(new CustomEvent("question-skipped"));
-  });
+  // Skip button removed (Hazim 2026-05-11). The `question-skipped`
+  // event is still dispatched by the per-question timer when it
+  // reaches 0 (game-mechanics-cards.js#startQuestionTimer), so the
+  // modal still auto-closes if the player runs out the clock.
 
   (window as any).setSelectedAnswer = (answer: number) => {
     if (answerLocked) return;
@@ -391,6 +382,5 @@
     selectedAnswer = null;
     answerLocked = false;
     if (submitBtn) submitBtn.disabled = false;
-    if (skipBtn)   skipBtn.disabled = false;
   };
 </script>

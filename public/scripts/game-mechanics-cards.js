@@ -386,6 +386,13 @@ function initGameMechanics() {
     if (window.AudioManager) window.AudioManager.play('sad');
     modal.classList.add("hidden");
     modal.classList.remove("flex");
+    // Also tear down any open hint overlay — Hazim 2026-05-11
+    // ("timer habis popup question, tapi note tak hilang"). The
+    // hint overlay was a separate element only dismissed on its
+    // own × / Got it / backdrop click, so a timer expiry left it
+    // orphaned over the now-empty board.
+    const hint = document.getElementById("question-hint-overlay");
+    if (hint && hint.parentNode) hint.parentNode.removeChild(hint);
     document.dispatchEvent(new CustomEvent("question-continue"));
   });
 
@@ -642,6 +649,10 @@ function showQuestionFeedback(isCorrect, points, difficulty) {
     feedbackEl.classList.add("hidden");
     document.getElementById("question-modal")?.classList.add("hidden");
     document.getElementById("question-modal")?.classList.remove("flex");
+    // Tear down the hint overlay if the player left it open while
+    // submitting (same orphan issue as the timer-expiry path).
+    const hint = document.getElementById("question-hint-overlay");
+    if (hint && hint.parentNode) hint.parentNode.removeChild(hint);
 
     // Dispatch event to notify orchestrator that modal is closed
     document.dispatchEvent(new CustomEvent("question-continue"));

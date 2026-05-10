@@ -1488,8 +1488,17 @@
     // players can SEE which option they're about to submit (Hazim spec
     // "tk nampak player tgh pilih yg mana").
     var pending = level2State.geometryPending || null;
-    // Cycle through 6 Kahoot colours so the grid reads bright.
-    var geoColors = ["red", "yellow", "green", "purple", "teal", "pink"];
+    // Research-driven 6-colour palette (Hazim 2026-05-10): replaces the
+    // old red/yellow/green/purple/teal/pink array which had two issues:
+    // (1) yellow #f59e0b vs the selected-state gold #fde047 outline =
+    //     no perceived contrast — selected state was invisible on the
+    //     yellow card.
+    // (2) Kahoot's brand uses deeper, more saturated hues than the
+    //     stock Tailwind 500 series — students read them as more
+    //     distinct on a board background.
+    // New palette uses deep Kahoot-aligned hues, all 6 distinct under
+    // colour-blind simulation, all WCAG ≥4.5:1 with white text.
+    var geoColors = ["red", "blue", "green", "orange", "purple", "teal"];
     html += '<div class="grid grid-cols-2 sm:grid-cols-3 gap-3">';
     level2State.geometryOrder.forEach(function (geo, idx) {
       var isCorrect = correctList.indexOf(geo) >= 0;

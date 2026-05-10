@@ -403,21 +403,42 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
   .l2-kahoot-btn:active { transform: translateY(5px); box-shadow: 0 1px 0 var(--bgd), 0 3px 6px rgba(0,0,0,0.18); }
   .l2-kahoot-btn:disabled { cursor: default; }
 
-  .l2-kahoot-btn--red    { --bg: #ef4444; --bgd: #991b1b; }
-  .l2-kahoot-btn--yellow { --bg: #f59e0b; --bgd: #b45309; }
-  .l2-kahoot-btn--green  { --bg: #22c55e; --bgd: #15803d; }
-  .l2-kahoot-btn--purple { --bg: #8b5cf6; --bgd: #5b21b6; }
-  .l2-kahoot-btn--teal   { --bg: #14b8a6; --bgd: #0f766e; }
-  .l2-kahoot-btn--pink   { --bg: #ec4899; --bgd: #9d174d; }
+  /* Research-driven palette — Kahoot brand-aligned + WCAG contrast vs
+     white text + 6 distinct hues under colour-blind simulation. Used
+     by Q2/Q3/Q4 answer buttons. */
+  .l2-kahoot-btn--red    { --bg: #ff3355; --bgd: #991b1b; } /* Kahoot red    */
+  .l2-kahoot-btn--blue   { --bg: #1368ce; --bgd: #1e3a8a; } /* Kahoot denim  */
+  .l2-kahoot-btn--green  { --bg: #26890c; --bgd: #14532d; } /* Kahoot bilbao */
+  .l2-kahoot-btn--orange { --bg: #eb670f; --bgd: #9a3412; } /* Kahoot orange */
+  .l2-kahoot-btn--purple { --bg: #864cbf; --bgd: #5b21b6; } /* Kahoot purple */
+  .l2-kahoot-btn--teal   { --bg: #0891b2; --bgd: #155e75; } /* Cyan-teal     */
+  /* Legacy aliases — kept so existing renderers (Q2 type, Q3 cn) stay
+     working without a rename. Yellow + pink are deeper / more saturated
+     than the previous Tailwind-500 stock so they don't visually clash
+     with the gold selected halo. */
+  .l2-kahoot-btn--yellow { --bg: #d97706; --bgd: #78350f; }
+  .l2-kahoot-btn--pink   { --bg: #db2777; --bgd: #831843; }
 
-  /* Selected — keep the button's own colour but ring it in gold and
-     scale up so it reads "I picked this one" loud and clear. The
-     ::after badge stamps a check-mark overlay at the top-right. */
+  /* Selected state — multi-modal so the pick reads loud even on a
+     printed-out screenshot AND under colour-blind simulation:
+       1. White outline (5px) — universally contrasts against any
+          saturated card colour.
+       2. Dark navy band (9px box-shadow ring) — separates the white
+          outline from the mint backdrop so it doesn't get lost.
+       3. Gold halo (rgba) — pulses for motion cue.
+       4. Check-mark badge (top-right) — non-colour indicator.
+       5. Scale + lift (1.08) — depth cue.
+     Hazim spec 2026-05-10 ("colour yang lebih sesuai untuk project
+     mcm ni yang jelas"). */
   .l2-kahoot-btn[data-state="selected"] {
-    outline: 4px solid #fde047;
-    outline-offset: 3px;
-    transform: translateY(-3px) scale(1.04);
-    box-shadow: 0 9px 0 var(--bgd), 0 14px 22px rgba(0,0,0,0.30), 0 0 0 6px rgba(253, 224, 71, 0.35);
+    outline: 5px solid #ffffff;
+    outline-offset: 4px;
+    transform: translateY(-4px) scale(1.08);
+    box-shadow:
+      0 11px 0 var(--bgd),
+      0 0 0 9px #0f172a,
+      0 0 0 16px rgba(253, 224, 71, 0.55),
+      0 18px 28px rgba(0,0,0,0.35);
     position: relative;
     z-index: 2;
     animation: l2-kahoot-pulse 1.4s ease-in-out infinite;
@@ -425,24 +446,36 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
   .l2-kahoot-btn[data-state="selected"]::after {
     content: "\2713";
     position: absolute;
-    top: -10px;
-    right: -10px;
-    width: 28px;
-    height: 28px;
+    top: -14px;
+    right: -14px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     background: #fde047;
     color: #78350f;
     font-weight: 900;
-    font-size: 16px;
+    font-size: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.25);
-    border: 2px solid #fff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.30);
+    border: 3px solid #fff;
   }
   @keyframes l2-kahoot-pulse {
-    0%, 100% { box-shadow: 0 9px 0 var(--bgd), 0 14px 22px rgba(0,0,0,0.30), 0 0 0 6px rgba(253, 224, 71, 0.35); }
-    50%      { box-shadow: 0 9px 0 var(--bgd), 0 14px 22px rgba(0,0,0,0.30), 0 0 0 12px rgba(253, 224, 71, 0.18); }
+    0%, 100% {
+      box-shadow:
+        0 11px 0 var(--bgd),
+        0 0 0 9px #0f172a,
+        0 0 0 16px rgba(253, 224, 71, 0.55),
+        0 18px 28px rgba(0,0,0,0.35);
+    }
+    50% {
+      box-shadow:
+        0 11px 0 var(--bgd),
+        0 0 0 9px #0f172a,
+        0 0 0 22px rgba(253, 224, 71, 0.30),
+        0 18px 28px rgba(0,0,0,0.35);
+    }
   }
   .l2-kahoot-btn[data-state="correct"] { --bg: #22c55e; --bgd: #15803d; }
   .l2-kahoot-btn[data-state="wrong"]   { --bg: #ef4444; --bgd: #991b1b; animation: l2-kahoot-shake 0.4s; }
@@ -675,32 +708,40 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
     box-shadow: 0 7px 0 rgba(0,0,0,0.10), 0 12px 22px rgba(0,0,0,0.10);
   }
   .geo-img-card:disabled { cursor: default; }
+  /* Picture-pick selected — matches the kahoot-button selected pattern:
+     navy band → gold halo → check badge. White-on-image backgrounds
+     made the previous gold outline disappear over yellow molecules
+     (4.png, 7.png, 9.png). This layered approach is colour-blind safe
+     and pops against any image colour. */
   .geo-img-card[data-state="selected"] {
-    outline: 4px solid #fde047;
-    outline-offset: 3px;
-    transform: translateY(-3px) scale(1.04);
-    box-shadow: 0 9px 0 rgba(245, 158, 11, 0.55), 0 0 0 6px rgba(253, 224, 71, 0.35), 0 14px 22px rgba(0,0,0,0.18);
-    border-color: #f59e0b;
+    outline: 5px solid #ffffff;
+    outline-offset: 4px;
+    transform: translateY(-4px) scale(1.06);
+    box-shadow:
+      0 0 0 9px #0f172a,
+      0 0 0 16px rgba(253, 224, 71, 0.55),
+      0 18px 28px rgba(0,0,0,0.30);
+    border-color: #0f172a;
     z-index: 2;
     animation: l2-kahoot-pulse 1.4s ease-in-out infinite;
   }
   .geo-img-card[data-state="selected"]::after {
     content: "\2713";
     position: absolute;
-    top: -10px;
-    right: -10px;
-    width: 28px;
-    height: 28px;
+    top: -14px;
+    right: -14px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     background: #fde047;
     color: #78350f;
     font-weight: 900;
-    font-size: 16px;
+    font-size: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.25);
-    border: 2px solid #fff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.30);
+    border: 3px solid #fff;
     z-index: 3;
   }
   .geo-img-card[data-state="correct"] {

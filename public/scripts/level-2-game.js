@@ -310,9 +310,13 @@
       +   pointsHtml
       + '</div>';
     document.body.appendChild(el);
-    // Cleanup after the bounce + fade animation finishes.
-    setTimeout(function () { el.classList.add("l2-points-toast-fade"); }, 1500);
-    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 2100);
+    // Lifetime extended 2.1 s → 3.4 s (Hazim 2026-05-10: he reported
+    // "tkde markh popup" — the audit confirmed the toast WAS firing,
+    // but the previous 2.1 s window was too brief for a classroom
+    // audience to register at projection distance). 3.4 s gives the
+    // teacher's eye time to find it after the answer click.
+    setTimeout(function () { el.classList.add("l2-points-toast-fade"); }, 2700);
+    setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 3400);
   }
 
   // ── Helpers ─────────────────────────────────────────────
@@ -811,11 +815,87 @@
     }
     return "[" + metalSym + lParts.join("") + "]" + chargeStr;
   }
+
+  /**
+   * HTML version of the formula with `<span class="nb">…</span><wbr>`
+   * segments around each ligand group. Each group becomes a non-
+   * breaking unit, and `<wbr>` between groups gives the wrap algorithm
+   * a safe break point. With CSS `word-break: keep-all`, lines now
+   * break ONLY between bracket groups — never mid-token. Hazim
+   * 2026-05-10 spec: long formulas with many ligands must stay
+   * readable.
+   */
+  function formatComplexFormulaHtml() {
+    if (!level2State.selectedMetal) return "";
+    var metalRaw = level2State.selectedMetal.name || "";
+    var metalSym = metalRaw.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻]/g, "").trim() || metalRaw;
+    function stripLigandCharge(name) {
+      return String(name || "").replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]*[⁺⁻]+$/, "").trim();
+    }
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, function (c) {
+        return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c];
+      });
+    }
+    var rows = summariseSelectedLigands();
+    var pieces = [];
+    // First nb-group covers "[" + metal so the bracket can't separate
+    // from the metal symbol on a wrap.
+    pieces.push('<span class="nb">[' + escapeHtml(metalSym) + '</span>');
+    rows.forEach(function (r) {
+      var clean = stripLigandCharge(r.name);
+      var label = r.count <= 1 ? "(" + clean + ")" : "(" + clean + ")" + numToSubscript(r.count);
+      pieces.push('<wbr><span class="nb">' + escapeHtml(label) + '</span>');
+    });
+    // Final nb-group: closing bracket + total charge.
+    var charge = computeTotalCharge().total;
+    var chargeStr = "";
+    if (charge !== 0) {
+      var abs = Math.abs(charge);
+      var num = abs > 1 ? numToSuperscript(abs) : "";
+      chargeStr = num + (charge > 0 ? "⁺" : "⁻");
+    }
+    pieces.push('<wbr><span class="nb">]' + escapeHtml(chargeStr) + '</span>');
+    return pieces.join("");
+  }
+
+  /**
+   * Final-fit shrink — ResizeObserver-driven, fires when the formula
+   * pill or its container is resized. Walks font-size down 0.5 px at
+   * a time until the rendered text fits both inline and block
+   * dimensions. Caps at 12 px so it never disappears.
+   */
+  function fitFormulaToBox(el) {
+    if (!el) return;
+    el.style.fontSize = ""; // reset to CSS clamp() base
+    var box = el.parentElement;
+    if (!box) return;
+    var size = parseFloat(getComputedStyle(el).fontSize);
+    var safety = 60; // cap iterations
+    while (safety-- > 0 && size > 12 &&
+      (el.scrollWidth > box.clientWidth || el.scrollHeight > box.clientHeight)) {
+      size -= 0.5;
+      el.style.fontSize = size + "px";
+    }
+  }
+  var __formulaResizeObserver = null;
+  function ensureFormulaFitObserver() {
+    if (__formulaResizeObserver) return;
+    var box = document.querySelector(".l2-formula-box");
+    if (!box) return;
+    __formulaResizeObserver = new ResizeObserver(function () {
+      fitFormulaToBox(box.querySelector(".l2-formula"));
+    });
+    __formulaResizeObserver.observe(box);
+  }
+
   function updateBuilderHud() {
     var formula = $("builder-formula");
     var pill = $("builder-charge-pill");
     if (formula) {
-      formula.textContent = formatComplexFormula();
+      formula.innerHTML = formatComplexFormulaHtml();
+      ensureFormulaFitObserver();
+      fitFormulaToBox(formula);
     }
     if (pill) {
       var charge = computeTotalCharge().total;
@@ -1813,14 +1893,37 @@
   // the inventory always reflects the most-recent intent.
   var armedLigandIdx = null;
 
+  // Cursor-following ghost preview — research-backed (NN/g, Microsoft
+  // Visual Feedback Guidelines, Smart Interface Design Patterns):
+  // dragging/arming feedback should travel with the cursor into the
+  // 3D scene rather than sit isolated below it. Hazim 2026-05-10:
+  // "tak nampak player pilih mana".
+  function ensureArmGhost() {
+    var ghost = document.getElementById("l2-arm-ghost");
+    if (ghost) return ghost;
+    ghost = document.createElement("div");
+    ghost.id = "l2-arm-ghost";
+    ghost.setAttribute("aria-hidden", "true");
+    document.body.appendChild(ghost);
+    document.addEventListener("pointermove", function (e) {
+      if (ghost.dataset.on !== "1") return;
+      ghost.style.left = e.clientX + "px";
+      ghost.style.top  = e.clientY + "px";
+    });
+    return ghost;
+  }
+
   function setArmedLigand(lig) {
     var row  = $("builder-armed-row");
     var dot  = $("builder-armed-dot");
     var name = $("builder-armed-name");
+    var ghost = ensureArmGhost();
     if (!row) return;
     if (!lig) {
       armedLigandIdx = null;
       row.classList.add("hidden");
+      document.body.classList.remove("l2-arming");
+      ghost.dataset.on = "0";
       // Reset visual armed state on all cards
       document.querySelectorAll(".lig-drag-card").forEach(function (el) {
         el.removeAttribute("data-armed");
@@ -1832,6 +1935,15 @@
     if (dot)  dot.style.background = color;
     if (name) name.textContent = lig.name;
     row.classList.remove("hidden");
+    // Wire the cursor-following ghost preview. Body class flips the
+    // cursor to crosshair globally so the player feels they are
+    // "carrying" the ligand into the 3D scene.
+    document.body.classList.add("l2-arming");
+    ghost.dataset.on = "1";
+    ghost.style.setProperty("--ghost-color", color);
+    ghost.innerHTML =
+      '<span class="l2-arm-ghost-dot" style="background:' + color + '"></span>' +
+      '<span class="l2-arm-ghost-name">' + (lig.name || "") + '</span>';
     // Visually mark the armed card with the gold ring + check stamp.
     document.querySelectorAll(".lig-drag-card").forEach(function (el) {
       var i = parseInt(el.getAttribute("data-idx"), 10);

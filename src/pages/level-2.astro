@@ -130,10 +130,10 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
                truncates: it wraps onto multiple lines and auto-shrinks
                on long inputs so every (ligand)ₙ stays readable. -->
           <div id="builder-outer-box" class="px-4 py-3 border-b-4 border-blue-300 bg-gradient-to-r from-sky-50 via-white to-blue-50 flex items-center justify-between gap-3 flex-shrink-0">
-            <div class="flex-1 min-w-0">
+            <div class="l2-formula-box flex-1 min-w-0">
               <span class="block text-[10px] font-black uppercase tracking-widest text-blue-600 mb-1">Your Complex</span>
-              <div id="builder-formula" class="px-4 py-3 rounded-2xl bg-white shadow-md border-2 border-blue-400 text-blue-900 font-extrabold tabular-nums tracking-wide leading-tight break-words"
-                   style="font-family:'Fredoka',system-ui,sans-serif; font-size: clamp(1.05rem, 2vw, 2rem); word-break: break-word; overflow-wrap: anywhere;">
+              <div id="builder-formula" class="l2-formula px-4 py-3 rounded-2xl bg-white shadow-md border-2 border-blue-400 text-blue-900 font-extrabold tabular-nums tracking-wide leading-tight"
+                   style="font-family:'Fredoka',system-ui,sans-serif;">
                 <span class="text-gray-400 text-base">[ build your complex ]</span>
               </div>
             </div>
@@ -480,37 +480,53 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
   .l2-kahoot-btn[data-state="correct"] { --bg: #22c55e; --bgd: #15803d; }
   .l2-kahoot-btn[data-state="wrong"]   { --bg: #ef4444; --bgd: #991b1b; animation: l2-kahoot-shake 0.4s; }
   .l2-kahoot-btn[data-state="faded"]   { opacity: 0.4; pointer-events: none; }
-  /* Eliminated — gray, struck-through, big red X stamp on top-right
-     so the player can see at a glance which choices are gone. */
+  /* Eliminated — research-driven multi-modal kill state per Hazim
+     2026-05-10 ("dia tk buang jawapan player pilih salah tdi"):
+     shake → desaturate → striped fill → diagonal "WRONG" stamp
+     covering the whole option. NN/g says wrong-state opacity must be
+     ≤ 0.4 with a non-colour cue; the previous 28 px corner ✕ relied
+     on a single glyph that disappeared at projection distance.
+     Sources cited in commit message. */
+  @keyframes l2-elim-shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px) rotate(-0.4deg); }
+    40% { transform: translateX(6px)  rotate(0.4deg); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+  }
   .l2-kahoot-btn[data-state="eliminated"] {
     --bg: #e2e8f0; --bgd: #94a3b8;
-    color: #64748b;
-    text-decoration: line-through;
-    text-decoration-thickness: 3px;
-    text-decoration-color: #ef4444;
+    color: #6b7280;
     cursor: not-allowed;
     pointer-events: none;
-    box-shadow: 0 3px 0 var(--bgd);
     position: relative;
-    opacity: 0.85;
+    overflow: hidden;
+    opacity: 0.32;
+    filter: grayscale(1) blur(0.3px);
+    background: repeating-linear-gradient(
+      45deg, #e5e7eb 0 8px, #d1d5db 8px 16px) !important;
+    text-decoration: line-through 3px #b91c1c;
+    text-decoration-skip-ink: none;
+    -webkit-box-decoration-break: clone;
+            box-decoration-break: clone;
+    box-shadow: 0 3px 0 #94a3b8;
+    transition: opacity 0.4s ease, filter 0.4s ease;
+    animation: l2-elim-shake 0.4s ease-out 1;
   }
   .l2-kahoot-btn[data-state="eliminated"]::after {
-    content: "\2715";
+    content: "WRONG";
     position: absolute;
-    top: -10px;
-    right: -10px;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: #ef4444;
-    color: #fff;
-    font-weight: 900;
-    font-size: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.25);
-    border: 2px solid #fff;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font: 800 1.25rem/1 system-ui, -apple-system, sans-serif;
+    letter-spacing: 0.18em;
+    color: #b91c1c;
+    background: rgba(255, 255, 255, 0.55);
+    border: 3px dashed #b91c1c;
+    transform: rotate(-6deg) scale(1.02);
+    text-shadow: 0 1px 0 #fff, 0 2px 4px rgba(0,0,0,0.15);
+    pointer-events: none;
   }
 
   .l2-kahoot-btn .l2-btn-sub {
@@ -761,36 +777,111 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
     filter: grayscale(0.6);
   }
 
-  /* Armed inventory ligand — gold ring + check stamp + lift, mirrors
-     the kahoot button's selected state so the visual language is
-     consistent across questions. */
+  /* Armed inventory ligand — research-driven (NN/g, Microsoft Visual
+     Feedback, Smart Interface Design Patterns): the previous outline
+     + check sat too quietly on a 54 px tile below the dominant 3D
+     canvas — the player's eye was on the canvas, not the strip.
+     Stronger pulse + animation pulls the eye, AND a cursor-following
+     ghost preview travels into the canvas. Hazim 2026-05-10:
+     "tak nampak player pilih mana". */
   .lig-drag-card[data-armed="true"] {
-    outline: 4px solid #fde047;
+    outline: 4px solid #fbbf24;
     outline-offset: 3px;
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 8px 18px rgba(0,0,0,0.18), 0 0 0 5px rgba(253, 224, 71, 0.4);
+    box-shadow: 0 0 0 8px rgba(251, 191, 36, 0.35), 0 8px 24px rgba(0,0,0,0.25);
     position: relative;
-    z-index: 2;
-    border-color: #fde047 !important;
+    z-index: 5;
+    border-color: #fbbf24 !important;
+    animation: l2-armed-pulse 1.1s ease-in-out infinite;
+  }
+  @keyframes l2-armed-pulse {
+    0%, 100% { transform: translateY(0)    scale(1); }
+    50%      { transform: translateY(-4px) scale(1.06); }
   }
   .lig-drag-card[data-armed="true"]::after {
     content: "\2713";
     position: absolute;
-    top: -8px;
-    right: -8px;
-    width: 22px;
-    height: 22px;
+    top: -10px;
+    right: -10px;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
-    background: #fde047;
+    background: #fbbf24;
     color: #78350f;
     font-weight: 900;
-    font-size: 13px;
+    font-size: 15px;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.25);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.30);
     border: 2px solid #fff;
   }
+
+  /* Body cursor change while a ligand is armed — global "I'm holding
+     something" feedback so the cursor looks intentional inside the
+     3D canvas too. */
+  body.l2-arming, body.l2-arming * { cursor: crosshair !important; }
+
+  /* Cursor-following ghost preview. Shows a yellow-ringed pill with
+     the ligand's sphere-color dot + name attached to the cursor while
+     armed. This is the LOAD-BEARING fix — research finding: the cue
+     must travel with the cursor into the 3D scene rather than sit
+     isolated in the inventory strip. */
+  #l2-arm-ghost {
+    position: fixed;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    transform: translate(-50%, calc(-100% - 14px)) rotate(-3deg);
+    background: #fff;
+    border: 3px solid #fbbf24;
+    border-radius: 14px;
+    box-shadow: 0 8px 22px rgba(0,0,0,0.35);
+    padding: 8px 14px;
+    display: none;
+    z-index: 9999;
+    font: 700 0.95rem 'Fredoka', system-ui, sans-serif;
+    color: #78350f;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
+  }
+  #l2-arm-ghost[data-on="1"] { display: inline-flex; }
+  .l2-arm-ghost-dot {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: inset 0 -3px 0 rgba(0,0,0,0.18), 0 0 0 2px #fff, 0 2px 6px rgba(0,0,0,0.25);
+  }
+  .l2-arm-ghost-name { font-size: 1rem; }
+
+  /* Q5 chemistry formula box — research-driven (MDN <wbr>, CSS-Tricks
+     box-decoration-break, Modern CSS container query units, Piccalilli
+     fit-text). Hazim 2026-05-10: "dalam bracket tu kalau ade byk ligand
+     tk nampak sepenuhnya ligand". The previous `clamp(.., 2vw, ..)`
+     scaled to viewport, so a wide screen with a narrow pill still
+     overflowed. `9cqi` (container query inline) scales to the formula
+     pill itself. `word-break: keep-all` guarantees breaks never fall
+     mid-bracket, and `text-wrap: balance` distributes a 2-line wrap
+     evenly. ResizeObserver below shrinks the last 5 % programmatically
+     when the natural fit still overflows. */
+  .l2-formula-box {
+    container-type: inline-size;
+  }
+  .l2-formula {
+    font-size: clamp(1rem, 9cqi, 2.4rem);
+    line-height: 1.15;
+    text-align: center;
+    text-wrap: balance;
+    word-break: keep-all;
+    overflow-wrap: normal;
+    hyphens: none;
+    -webkit-box-decoration-break: clone;
+            box-decoration-break: clone;
+    max-width: 100%;
+    overflow: hidden;
+  }
+  .l2-formula .nb { white-space: nowrap; }
 
   .l2-points-toast-fade { animation: l2-toast-out 0.6s ease-in forwards; }
   @keyframes l2-toast-pop {

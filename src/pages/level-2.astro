@@ -129,16 +129,22 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
                "tk nampak sepenuhnya ligand" — formula no longer
                truncates: it wraps onto multiple lines and auto-shrinks
                on long inputs so every (ligand)ₙ stays readable. -->
-          <div id="builder-outer-box" class="px-4 py-3 border-b-4 border-blue-300 bg-gradient-to-r from-sky-50 via-white to-blue-50 flex items-center justify-between gap-3 flex-shrink-0">
-            <div class="l2-formula-box flex-1 min-w-0">
-              <span class="block text-[10px] font-black uppercase tracking-widest text-blue-600 mb-1">Your Complex</span>
+          <!-- Hazim 2026-05-11: removed the standalone CHARGE pill —
+               it was clipping the formula's right edge ("]⁺" was
+               disappearing behind it on long inputs). The formula
+               itself already encodes the charge at the bracket close
+               (e.g. "[Co(H₂O)(ox)(bipy)]⁺") so the pill was
+               redundant. Formula box now spans the full row width
+               with a fixed font size that wraps to a second line
+               when the chemistry gets long, instead of shrinking the
+               text. -->
+          <div id="builder-outer-box" class="px-4 py-3 border-b-4 border-blue-300 bg-gradient-to-r from-sky-50 via-white to-blue-50 flex-shrink-0">
+            <span class="block text-[10px] font-black uppercase tracking-widest text-blue-600 mb-1">Your Complex</span>
+            <div class="l2-formula-box w-full">
               <div id="builder-formula" class="l2-formula px-4 py-3 rounded-2xl bg-white shadow-md border-2 border-blue-400 text-blue-900 font-extrabold tabular-nums tracking-wide leading-tight"
                    style="font-family:'Fredoka',system-ui,sans-serif;">
                 <span class="text-gray-400 text-base">[ build your complex ]</span>
               </div>
-            </div>
-            <div id="builder-charge-pill" class="px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 shadow-lg text-blue-900 text-base sm:text-xl font-black uppercase tracking-wider whitespace-nowrap hidden ring-2 ring-amber-200">
-              <!-- e.g. CHARGE 2+ -->
             </div>
           </div>
           <canvas id="three-canvas" class="w-full flex-1 min-h-0" style="touch-action:none;"></canvas>
@@ -861,31 +867,30 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
   }
   .l2-arm-ghost-name { font-size: 1rem; }
 
-  /* Q5 chemistry formula box — research-driven (MDN <wbr>, CSS-Tricks
-     box-decoration-break, Modern CSS container query units, Piccalilli
-     fit-text). Hazim 2026-05-10: "dalam bracket tu kalau ade byk ligand
-     tk nampak sepenuhnya ligand". The previous `clamp(.., 2vw, ..)`
-     scaled to viewport, so a wide screen with a narrow pill still
-     overflowed. `9cqi` (container query inline) scales to the formula
-     pill itself. `word-break: keep-all` guarantees breaks never fall
-     mid-bracket, and `text-wrap: balance` distributes a 2-line wrap
-     evenly. ResizeObserver below shrinks the last 5 % programmatically
-     when the natural fit still overflows. */
-  .l2-formula-box {
-    container-type: inline-size;
-  }
+  /* Q5 chemistry formula box — Hazim 2026-05-11 spec: "remove charge
+     pill, buat panjang font size sama, tapi nak panjang dia memang
+     fit". Strategy:
+       - fixed font size (no auto-shrink) — clamp keeps it readable
+         from 1.4rem on small screens up to 2.4rem on desktop
+       - long formulas WRAP to a second line instead of shrinking,
+         using text-wrap: balance + word-break: keep-all so breaks
+         only land between bracket groups (never mid-token)
+       - box itself spans the full width of the outer-box row now
+         that the redundant CHARGE pill is gone, so there's much more
+         horizontal real estate before any wrap is needed */
   .l2-formula {
-    font-size: clamp(1rem, 9cqi, 2.4rem);
-    line-height: 1.15;
+    font-size: clamp(1.4rem, 2.6vw, 2.4rem);
+    line-height: 1.2;
     text-align: center;
     text-wrap: balance;
     word-break: keep-all;
     overflow-wrap: normal;
+    white-space: normal;
     hyphens: none;
     -webkit-box-decoration-break: clone;
             box-decoration-break: clone;
+    width: 100%;
     max-width: 100%;
-    overflow: hidden;
   }
   .l2-formula .nb { white-space: nowrap; }
 

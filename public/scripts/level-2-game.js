@@ -940,22 +940,16 @@
 
   function updateBuilderHud() {
     var formula = $("builder-formula");
-    var pill = $("builder-charge-pill");
     if (formula) {
       formula.innerHTML = formatComplexFormulaHtml();
-      ensureFormulaFitObserver();
-      fitFormulaToBox(formula);
     }
-    if (pill) {
-      var charge = computeTotalCharge().total;
-      if (charge === 0) {
-        pill.textContent = "Neutral";
-      } else {
-        var sign = charge > 0 ? "+" : "−";
-        pill.textContent = "Charge " + sign + Math.abs(charge);
-      }
-      pill.classList.remove("hidden");
-    }
+    // Hazim 2026-05-11: the standalone CHARGE pill was removed —
+    // the formula already renders the charge at the bracket close
+    // (e.g. "[Co(H₂O)(ox)(bipy)]⁺"). The pill DOM element no longer
+    // exists in the page; defensive lookup just no-ops if anything
+    // legacy still tries to read it.
+    var pill = $("builder-charge-pill");
+    if (pill) pill.classList.add("hidden");
   }
 
   function renderStep2_Q1_type() {

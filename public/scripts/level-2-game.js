@@ -1514,20 +1514,29 @@
     // selected/correct/wrong states use the gold-ring + check-badge
     // styling. Players need to clearly see which option is chosen
     // before submitting (Hazim spec "tk nampak player tgh pilih mana").
+    // Wrong picks get pushed to cnEliminated and rendered as the
+    // grayed "WRONG" stamp from the kahoot eliminated state — Hazim
+    // 2026-05-11 spec ("yg salah ptutnyee akan disabled").
+    if (!Array.isArray(level2State.cnEliminated)) level2State.cnEliminated = [];
+    var cnEliminated = level2State.cnEliminated;
     var opts = [3, 4, 5, 6];
     var cnColors = ['teal', 'green', 'yellow', 'pink'];
     html += '<div class="grid grid-cols-4 gap-3 mb-3">';
     opts.forEach(function (n, i) {
+      var isEliminated = cnEliminated.indexOf(n) !== -1;
       var state = "idle";
+      var disabled = done || isEliminated;
       if (done) {
         if (n === cn) state = "correct";
         else if (n === chosen) state = "wrong";
         else state = "faded";
+      } else if (isEliminated) {
+        state = "eliminated";
       } else if (n === chosen) {
         state = "selected";
       }
       var cls = "cn-opt l2-kahoot-btn l2-kahoot-btn--" + cnColors[i % cnColors.length];
-      html += '<button class="' + cls + '" data-state="' + state + '" data-val="' + n + '"' + (done ? ' disabled' : '') + '>' + n + '</button>';
+      html += '<button class="' + cls + '" data-state="' + state + '" data-val="' + n + '"' + (disabled ? ' disabled' : '') + '>' + n + '</button>';
     });
     html += '</div>';
 
@@ -1605,6 +1614,8 @@
       onNext: function () {
         if (done) { renderStep(4); return; }
         if (level2State.cnAnswer === null) return;
+        // Defensive: don't double-count an already-eliminated pick.
+        if (cnEliminated.indexOf(level2State.cnAnswer) !== -1) return;
 
         level2State.cnAttempts++;
         var right = level2State.cnAnswer === cn;
@@ -1614,9 +1625,6 @@
           level2State.cnDone = true;
           level2State.level2Score += level2State.cnScore;
           updateScoreBar();
-          // Always celebrate the correct answer with a toast — even on
-          // 2nd-attempt where score is 0, the player still earned the
-          // win and should feel it (Hazim spec: every Q gets the box).
           showPointsToast(level2State.cnScore, "You earned");
           renderStep3_Q2_cn();
         } else if (level2State.cnAttempts >= 2) {
@@ -1626,7 +1634,15 @@
           if (window.AudioManager) window.AudioManager.play("wrong");
           renderStep3_Q2_cn();
         } else {
+          // Wrong but attempts left — eliminate the pick + clear
+          // selection so the player must choose another (Hazim
+          // 2026-05-11: "yg salah ptutnyee akan disabled").
+          if (cnEliminated.indexOf(level2State.cnAnswer) === -1) {
+            cnEliminated.push(level2State.cnAnswer);
+          }
+          level2State.cnAnswer = null;
           if (window.AudioManager) window.AudioManager.play("wrong");
+          saveLevel2State();
           renderStep3_Q2_cn();
         }
       },
@@ -1676,19 +1692,25 @@
     // New palette uses deep Kahoot-aligned hues, all 6 distinct under
     // colour-blind simulation, all WCAG ≥4.5:1 with white text.
     var geoColors = ["red", "blue", "green", "orange", "purple", "teal"];
+    if (!Array.isArray(level2State.geometryEliminated)) level2State.geometryEliminated = [];
+    var geometryEliminated = level2State.geometryEliminated;
     html += '<div class="grid grid-cols-2 sm:grid-cols-3 gap-3">';
     level2State.geometryOrder.forEach(function (geo, idx) {
       var isCorrect = correctList.indexOf(geo) >= 0;
+      var isEliminated = geometryEliminated.indexOf(geo) !== -1;
       var state = "idle";
+      var disabled = done || isEliminated;
       if (done) {
         if (isCorrect) state = "correct";
         else if (geo === level2State.selectedGeometry && !isCorrect) state = "wrong";
         else state = "faded";
+      } else if (isEliminated) {
+        state = "eliminated";
       } else if (geo === pending) {
         state = "selected";
       }
       var cls = "geo-btn l2-kahoot-btn l2-kahoot-btn--" + geoColors[idx % geoColors.length];
-      html += '<button class="' + cls + '" data-state="' + state + '" data-val="' + geo + '"' + (done ? ' disabled' : '') + '>';
+      html += '<button class="' + cls + '" data-state="' + state + '" data-val="' + geo + '"' + (disabled ? ' disabled' : '') + '>';
       html +=   '<span>' + geo + '</span>';
       html += '</button>';
     });
@@ -1747,7 +1769,12 @@
           level2State.geometryDone = true;
           if (window.AudioManager) window.AudioManager.play("wrong");
         } else {
-          // Wrong, but attempts left — clear pending so they pick again.
+          // Wrong, but attempts left — eliminate the picked option +
+          // clear pending so they MUST choose another (Hazim
+          // 2026-05-11: "yg salah ptutnyee akan disabled").
+          if (geometryEliminated.indexOf(val) === -1) {
+            geometryEliminated.push(val);
+          }
           level2State.geometryPending = null;
           if (window.AudioManager) window.AudioManager.play("wrong");
         }
@@ -1796,17 +1823,23 @@
       "3 PTS"
     );
 
-    // Image-only options per Hazim spec. Order is randomised once per
-    // session and PERSISTED on level2State so the cards don't jump
-    // around under the player's finger every time they pick — Hazim
-    // spec 2026-05-10: "pilihan jwpn berubah tmpt after tekan" was
-    // making it impossible to see what they selected. Mirrors the
-    // geometryOrder lock used by Q3 (renderStep2).
-    if (!Array.isArray(level2State.pictureOrder) || level2State.pictureOrder.length !== GEOMETRY_PICS.length) {
-      level2State.pictureOrder = GEOMETRY_PICS.slice().sort(function () { return Math.random() - 0.5; });
+    // Filter to ONLY the geometries that match the player's CN —
+    // Hazim 2026-05-11 ("kadang boleh pilih 2, kadang satu kite
+    // tengok CN dia tau"). CN=3 → 1 option (trigonal planar);
+    // CN=4 → 2 options (tetrahedral / square planar); CN=5 →
+    // 2 options (trigonal bipyramidal / square pyramidal); CN=6
+    // → 1 option (octahedral). Order is randomised once per
+    // session AND scoped to the CN — re-uses level2State.pictureOrder
+    // when its CN signature matches.
+    var validPics = GEOMETRY_PICS.filter(function (g) { return g.cn === cn; });
+    var orderSig = "cn" + cn + ":" + validPics.length;
+    if (!Array.isArray(level2State.pictureOrder)
+        || level2State.pictureOrderSig !== orderSig) {
+      level2State.pictureOrder = validPics.slice().sort(function () { return Math.random() - 0.5; });
+      level2State.pictureOrderSig = orderSig;
     }
 
-    html += '<div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">';
+    html += '<div class="grid ' + (validPics.length === 1 ? 'grid-cols-1 max-w-xs mx-auto' : 'grid-cols-2') + ' gap-3 mb-4">';
     level2State.pictureOrder.forEach(function (g) {
       var isCorrect = g.cn === cn;
       var state = "idle";

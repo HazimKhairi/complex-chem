@@ -609,13 +609,19 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
      ============================================================ */
   .l2-points-toast {
     position: fixed;
-    top: 18%;
+    top: 7%;
     left: 50%;
     transform: translateX(-50%);
     z-index: 9999;
     animation: l2-toast-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
     pointer-events: none;
   }
+  /* Hazim 2026-05-11: the toast was previously at top:18% which sat
+     directly over the Q5 formula box, hiding the "[Co(NH₃)…" prefix
+     while only the tail "(ox)(bipy)]⁺" was visible behind it. Lifted
+     to top:7% so the toast sits above the score bar / formula box
+     and the chemistry notation stays fully readable through the
+     celebration. */
   .l2-points-toast-inner {
     background: linear-gradient(135deg, #fde68a 0%, #f59e0b 70%, #d97706 100%);
     color: #78350f;

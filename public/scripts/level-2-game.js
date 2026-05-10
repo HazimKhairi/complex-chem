@@ -2100,6 +2100,17 @@
   }
 
   function handleBuildSubmit() {
+    // Hard guard against re-entry — Hazim 2026-05-11 saw "+1 points
+    // (attempt 6/3)" with the score bar climbing past 18 while the
+    // demo bot kept hitting Submit. Once buildDone, every subsequent
+    // call would re-enter the `if (valid)` branch, do
+    // `level2Score += 1`, and re-render the success screen. Now we
+    // bail early so attempts are properly capped at 3 and the score
+    // can only be awarded once.
+    if (level2State.buildDone) {
+      console.log('[L2] handleBuildSubmit: already done — ignoring re-submit');
+      return;
+    }
     level2State.buildAttempts++;
     var valid = validateBuild();
     var placed = window.BoneBuilder.getPlacedLigands();

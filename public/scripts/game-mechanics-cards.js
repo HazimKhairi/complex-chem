@@ -859,7 +859,11 @@ function openQuestionHintPopup(imageFile) {
   // structure on a single panel). The earlier `/left/` subdirectory
   // was a redundant 49 % slice that bled the right edge of the source.
   // Use the originals directly.
-  var imgSrc = "/assets/question-cards/" + imageFile;
+  // Cache-buster: Vercel CDN was serving an OLD composite version of
+  // these PNGs (896 KB note+question) even after the repo was updated
+  // with the note-only crop (536 KB). The ?v=2 query forces a fresh
+  // fetch past the CDN. Bump if these images ever change again.
+  var imgSrc = "/assets/question-cards/" + imageFile + "?v=2";
   overlay.innerHTML = `
     <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full relative overflow-hidden">
       <button

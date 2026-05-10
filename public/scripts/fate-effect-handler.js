@@ -744,7 +744,7 @@ window.FateEffectHandler = {
       }
 
       return `
-        <div class="ligand-mini-card aspect-[3/4] rounded border-2 overflow-hidden shadow-sm transition-transform"
+        <div class="ligand-mini-card aspect-[7/10] rounded border-2 overflow-hidden shadow-sm transition-transform"
              style="border-color: ${ligandData.color};"
              title="${ligandData.name}"
              data-ligand-id="${ligandData.id}"

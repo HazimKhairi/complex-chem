@@ -446,7 +446,7 @@
     overlay.innerHTML = ''
       + '<div class="relative w-full max-w-sm" style="perspective:1200px;">'
       +   '<button id="ligand-card-close" class="absolute -top-3 -right-3 z-10 w-9 h-9 rounded-full bg-white text-gray-700 shadow-lg text-xl leading-none font-black hover:bg-gray-100" aria-label="Close">&times;</button>'
-      +   '<div id="ligand-card-flip" class="relative w-full" style="aspect-ratio:3/4; transform-style:preserve-3d; transition:transform 600ms cubic-bezier(.2,.7,.2,1); cursor:pointer;">'
+      +   '<div id="ligand-card-flip" class="relative w-full" style="aspect-ratio:7/10; transform-style:preserve-3d; transition:transform 600ms cubic-bezier(.2,.7,.2,1); cursor:pointer;">'
       +     '<div class="absolute inset-0 rounded-2xl border-4 overflow-hidden bg-white shadow-2xl" style="border-color:' + color + '; backface-visibility:hidden;">'
       +       '<div class="w-full h-full bg-no-repeat bg-contain bg-center" style="background-image:url(\'' + frontPath + '\');"></div>'
       +       '<div class="absolute bottom-2 right-2 px-3 py-1 bg-black/70 text-white text-xs rounded-full font-semibold pointer-events-none">Click to flip</div>'

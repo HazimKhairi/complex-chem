@@ -2559,9 +2559,18 @@
         if (Array.isArray(ap) && ap.length > 0) return ap;
       }
     } catch (e) {}
+    // Fallback when TurnManager is missing — match the pass-and-play
+    // wizard's slot mapping (per player-color-remap memory):
+    //   solo        → [1]
+    //   one-vs-one  → [1, 2]   (P1 green + P2 yellow — wizard default)
+    //   one-vs-two  → [1, 2, 3]
+    //   one-vs-three → [1, 2, 3, 4]
+    // Hazim 2026-05-11 audit caught the legacy [1, 4] hard-code for
+    // one-vs-one which would have broken the L2 pass-device gate on
+    // pass-and-play 1v1.
     var opt = sessionStorage.getItem("game-option");
     if (opt === "solo") return [1];
-    if (opt === "one-vs-one") return [1, 4];
+    if (opt === "one-vs-one") return [1, 2];
     if (opt === "one-vs-two") return [1, 2, 3];
     if (opt === "one-vs-three") return [1, 2, 3, 4];
     return [1];

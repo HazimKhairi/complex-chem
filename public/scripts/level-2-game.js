@@ -2482,12 +2482,51 @@
     var entries = Object.values(finals);
 
     if (entries.length >= expected.length) {
+      // Last player just finished — open the final podium with the
+      // birthday-party confetti + applause finale (handled inside
+      // LevelTwoPodium.show). Hazim 2026-05-11 spec: "after semua
+      // player dah siap redirect ke page baru terus show result".
       if (window.LevelTwoPodium && typeof window.LevelTwoPodium.show === "function") {
         window.LevelTwoPodium.show(entries);
       }
     } else {
+      // Pass-device prompt — replace the native alert() with a styled
+      // modal that matches the rest of the wizard.
       var remaining = expected.filter(function (pid) { return !finals[pid]; });
-      alert("Pass the device to " + playerNameFor(remaining[0]) + " to finish Level 2.");
+      _showPassDeviceModal(playerNameFor(remaining[0]), remaining.length);
+    }
+  }
+
+  /**
+   * In-page modal asking the current group to pass the device to the
+   * next player. Replaces the legacy `alert()` which broke the page's
+   * rounded-modal aesthetic.
+   */
+  function _showPassDeviceModal(nextName, remainingCount) {
+    var overlay = document.createElement("div");
+    overlay.id = "l2-pass-device-modal";
+    overlay.style.cssText = "position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,0.55);backdrop-filter:blur(4px);padding:24px;";
+    overlay.innerHTML =
+      '<div style="background:#fff;border-radius:24px;padding:32px;max-width:420px;width:100%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,0.35);border:4px solid #4187a0;font-family:Fredoka,system-ui,sans-serif;">' +
+        '<div style="font-size:56px;margin-bottom:8px;line-height:1;">→</div>' +
+        '<h2 style="font-size:1.5rem;font-weight:800;color:#0f172a;margin-bottom:6px;">Pass the device</h2>' +
+        '<p style="color:#475569;font-size:0.95rem;margin-bottom:18px;">It\'s <strong style="color:#0f172a;">' +
+          String(nextName).replace(/[<>&]/g, "") +
+          '</strong>\'s turn to play Level 2.</p>' +
+        '<p style="color:#64748b;font-size:0.8rem;margin-bottom:22px;">' +
+          remainingCount + ' player' + (remainingCount === 1 ? '' : 's') + ' still to go before the final podium.' +
+        '</p>' +
+        '<button id="l2-pass-device-ok" style="background:#4187a0;color:#fff;font-weight:700;font-size:1rem;padding:12px 32px;border-radius:14px;border:none;cursor:pointer;box-shadow:0 4px 0 #357a91;">Hand it over</button>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    var btn = document.getElementById("l2-pass-device-ok");
+    if (btn) {
+      btn.addEventListener("click", function () {
+        overlay.remove();
+        // Reset the wizard state so the next player starts at Q1.
+        try { sessionStorage.removeItem("level2-state-1"); } catch (e) {}
+        location.reload();
+      });
     }
   }
 

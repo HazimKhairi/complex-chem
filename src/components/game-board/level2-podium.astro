@@ -252,7 +252,71 @@
     modal.classList.remove("hidden");
     modal.classList.add("flex");
 
-    if ((window as any).AudioManager) (window as any).AudioManager.play("win");
+    // Birthday-party finale (Hazim 2026-05-11: "sparking like
+    // birthday, bunyi orang tepuk tangan"). Layer:
+    //   - existing win chime
+    //   - synthesised cheer / applause tone
+    //   - 90-piece confetti rain falling across the modal
+    const am = (window as any).AudioManager;
+    if (am) {
+      am.play("win");
+      am.play("cheer");
+    }
+    triggerPodiumConfetti();
+  }
+
+  function triggerPodiumConfetti() {
+    const palette = [
+      "#fde047", "#f97316", "#22c55e", "#3b82f6",
+      "#ec4899", "#a855f7", "#06b6d4", "#ef4444",
+      "#84cc16", "#fb7185",
+    ];
+    const container = document.createElement("div");
+    container.id = "l2-podium-confetti";
+    container.style.cssText = "position:fixed;inset:0;pointer-events:none;z-index:10001;overflow:hidden";
+    const total = 90;
+    let maxDur = 0;
+    for (let i = 0; i < total; i++) {
+      const piece = document.createElement("div");
+      piece.className = "l2-confetti-piece";
+      const color = palette[i % palette.length];
+      const left = Math.random() * 100;
+      const dur = 2.6 + Math.random() * 2.4;
+      const delay = Math.random() * 1.2;
+      const sway = 0.7 + Math.random() * 1.0;
+      const w = 8 + Math.floor(Math.random() * 9);
+      const h = 11 + Math.floor(Math.random() * 11);
+      const radius = i % 4 === 0 ? "50%" : "2px";
+      piece.style.cssText =
+        `left:${left}%;background:${color};width:${w}px;height:${h}px;border-radius:${radius};` +
+        `animation-duration:${dur}s, ${sway}s;animation-delay:${delay}s, 0s;`;
+      container.appendChild(piece);
+      if (dur + delay > maxDur) maxDur = dur + delay;
+    }
+    document.body.appendChild(container);
+    // Second burst 1.5 s later for a sustained "explosion" feel.
+    setTimeout(() => {
+      const burst = container.cloneNode(false) as HTMLDivElement;
+      burst.id = "l2-podium-confetti-burst";
+      for (let i = 0; i < 60; i++) {
+        const p = document.createElement("div");
+        p.className = "l2-confetti-piece";
+        const color = palette[(i + 3) % palette.length];
+        const left = Math.random() * 100;
+        const dur = 2.2 + Math.random() * 1.8;
+        const sway = 0.6 + Math.random() * 1.0;
+        const w = 8 + Math.floor(Math.random() * 9);
+        const h = 11 + Math.floor(Math.random() * 11);
+        const radius = i % 3 === 0 ? "50%" : "2px";
+        p.style.cssText =
+          `left:${left}%;background:${color};width:${w}px;height:${h}px;border-radius:${radius};` +
+          `animation-duration:${dur}s, ${sway}s;animation-delay:0s, 0s;`;
+        burst.appendChild(p);
+      }
+      document.body.appendChild(burst);
+      setTimeout(() => burst.parentNode && burst.parentNode.removeChild(burst), 5000);
+    }, 1500);
+    setTimeout(() => container.parentNode && container.parentNode.removeChild(container), (maxDur + 0.6) * 1000);
   }
 
   function hide() {

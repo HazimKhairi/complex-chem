@@ -197,12 +197,58 @@
 
     gameOption = sessionStorage.getItem("game-option") || "one-vs-one";
 
+    // Pick the next active player who STILL needs to play Level 2.
+    // Hazim 2026-05-11 bug: after P1 finished and the page reloaded
+    // for the pass-device handoff, init was re-selecting P1 (the
+    // first player with ligands) — so P2 could never start. Skip
+    // anyone already in level2-finals.
+    var alreadyFinished = {};
+    try {
+      var finalsRaw = sessionStorage.getItem("level2-finals");
+      if (finalsRaw) {
+        var finals = JSON.parse(finalsRaw) || {};
+        Object.keys(finals).forEach(function (k) { alreadyFinished[String(k)] = true; });
+      }
+    } catch (e) {}
+
     var pl = gameState.playerLigands || {};
-    for (var id in pl) {
-      if (pl[id] && pl[id].length > 0) {
-        level2State.playerId = id;
-        playerLigands = pl[id];
+    // Walk the active-player list in order so P1→P2→P3→P4 progression
+    // is deterministic. Skip players who already submitted a Level 2
+    // result (they appear in level2-finals).
+    var activeList;
+    try {
+      if (window.TurnManager && typeof window.TurnManager.getActivePlayers === "function") {
+        activeList = window.TurnManager.getActivePlayers();
+      }
+    } catch (e) {}
+    if (!Array.isArray(activeList) || activeList.length === 0) {
+      var opt = sessionStorage.getItem("game-option");
+      activeList = (opt === "solo") ? [1]
+        : (opt === "one-vs-one")   ? [1, 2]
+        : (opt === "one-vs-two")   ? [1, 2, 3]
+        : (opt === "one-vs-three") ? [1, 2, 3, 4]
+        : Object.keys(pl).map(Number);
+    }
+
+    for (var ai = 0; ai < activeList.length; ai++) {
+      var pid = String(activeList[ai]);
+      if (alreadyFinished[pid]) continue;
+      if (pl[pid] && pl[pid].length > 0) {
+        level2State.playerId = pid;
+        playerLigands = pl[pid];
         break;
+      }
+    }
+    // Fall back to the legacy "first with ligands" search if nothing
+    // matched (e.g. simulation mode that doesn't populate TurnManager).
+    if (!level2State.playerId) {
+      for (var fid in pl) {
+        if (alreadyFinished[fid]) continue;
+        if (pl[fid] && pl[fid].length > 0) {
+          level2State.playerId = fid;
+          playerLigands = pl[fid];
+          break;
+        }
       }
     }
     if (!level2State.playerId) {
@@ -2545,8 +2591,13 @@
     if (btn) {
       btn.addEventListener("click", function () {
         overlay.remove();
-        // Reset the wizard state so the next player starts at Q1.
-        try { sessionStorage.removeItem("level2-state-1"); } catch (e) {}
+        // Wipe every per-player snapshot so the next active player
+        // boots into a fresh Q1, not into some other player's
+        // half-finished run. (The legacy version only removed
+        // "level2-state-1" — broken when handoff went P2 → P3.)
+        try {
+          for (var i = 1; i <= 4; i++) sessionStorage.removeItem("level2-state-" + i);
+        } catch (e) {}
         location.reload();
       });
     }

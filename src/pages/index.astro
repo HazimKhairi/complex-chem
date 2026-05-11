@@ -31,25 +31,20 @@ import GameButton from "../components/game-button.astro";
         </div>
       </div>
 
-      <div class="grid grid-cols-2 gap-3">
+      <!-- Watch Demo removed on Hazim's request 2026-05-11 — client
+           is about to present to their supervisor and the demo flow
+           was unfinished. /simulation route is left in place as
+           dormant code in case it's re-enabled later. -->
+      <div>
         <a
           href="/manual"
-          class="flex items-center justify-center gap-2 rounded-xl border-2 border-ludon-blue text-ludon-blue font-bold py-2.5 hover:bg-ludon-blue hover:text-white transition-colors text-sm"
+          class="flex items-center justify-center gap-2 rounded-xl border-2 border-ludon-blue text-ludon-blue font-bold py-2.5 hover:bg-ludon-blue hover:text-white transition-colors text-sm w-full"
         >
           <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M2 4h8a4 4 0 014 4v12a3 3 0 00-3-3H2V4z" stroke-linejoin="round" />
             <path d="M22 4h-8a4 4 0 00-4 4v12a3 3 0 013-3h9V4z" stroke-linejoin="round" />
           </svg>
           Manual
-        </a>
-        <a
-          href="/simulation"
-          class="flex items-center justify-center gap-2 rounded-xl border-2 border-ludon-green text-ludon-green font-bold py-2.5 hover:bg-ludon-green hover:text-white transition-colors text-sm"
-        >
-          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-            <polygon points="6,4 20,12 6,20" />
-          </svg>
-          Watch Demo
         </a>
       </div>
 
@@ -58,8 +53,10 @@ import GameButton from "../components/game-button.astro";
         <ShareButton />
       </div>
 
-      <p class="text-center text-gray-600">
-        Created by <span class="font-medium text-gray-800">HazimDev</span>
+      <!-- Credit kept but shrunk + dimmed (Hazim 2026-05-11 — client
+           presenting to SV, doesn't want it prominent). -->
+      <p class="text-center text-gray-400 text-[10px] tracking-wide">
+        Created by <span class="font-medium">HazimDev</span>
       </p>
     </div>
   </main>

@@ -1596,7 +1596,7 @@
         html += '<div class="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm text-center mb-3">You are wrong. The correct CN was <strong>' + cn + '</strong>.</div>';
       }
     } else if (level2State.cnAttempts > 0) {
-      html += '<div class="p-3 bg-orange-50 border border-orange-200 rounded-lg text-orange-700 text-sm text-center mb-3">Try again. Attempt ' + level2State.cnAttempts + '/2</div>';
+      html += '<div class="p-3 bg-orange-50 border border-orange-200 rounded-lg text-orange-700 text-sm text-center mb-3">Try again. Attempt ' + level2State.cnAttempts + '/3</div>';
     }
 
     html += navButtons({ back: true, next: true, nextDisabled: !done && !chosen, nextLabel: done ? "Next: Geometry" : "Submit" });
@@ -1666,14 +1666,15 @@
         level2State.cnAttempts++;
         var right = level2State.cnAnswer === cn;
         if (right) {
-          // Spec: 1 pt max for CN regardless of attempts
+          // Hazim 2026-05-11 spec: Q3 attempts bumped from 2 → 3.
+          // 1 pt only on first attempt, otherwise 0.
           level2State.cnScore = level2State.cnAttempts === 1 ? 1 : 0;
           level2State.cnDone = true;
           level2State.level2Score += level2State.cnScore;
           updateScoreBar();
           showPointsToast(level2State.cnScore, "You earned");
           renderStep3_Q2_cn();
-        } else if (level2State.cnAttempts >= 2) {
+        } else if (level2State.cnAttempts >= 3) {
           level2State.cnScore = 0;
           level2State.cnDone = true;
           updateScoreBar();
@@ -1943,9 +1944,29 @@
       onBack: function () { renderStep(4); },
       onNext: function () {
         if (done) {
-          // Lock in the chosen geometry for the 3D build phase
+          // Lock in the geometry for the 3D build phase. Hazim
+          // 2026-05-11 spec: "Q5 keluar gambar yg kita tak tekan" —
+          // when the player ran out of attempts on a wrong image
+          // pick, this used to overwrite selectedGeometry with that
+          // WRONG label (e.g. Octahedral when CN was actually 4),
+          // and Q5 then built 6 slots instead of 4. Honour the
+          // player's pick only if it matches their CN; otherwise
+          // fall back to the Q4-text selectedGeometry (correct) or
+          // the first valid geometry for their CN.
+          var cn = calcCN();
           var picked = GEOMETRY_PICS.find(function (g) { return g.id === level2State.pictureAnswer; });
-          if (picked) level2State.selectedGeometry = picked.label;
+          if (picked && picked.cn === cn) {
+            level2State.selectedGeometry = picked.label;
+          } else {
+            var validList = GEOMETRY_MAP[cn] || [];
+            if (validList.length > 0) {
+              // Preserve Q4-text's choice if it's a valid CN match,
+              // else default to the first valid geometry for the CN.
+              if (validList.indexOf(level2State.selectedGeometry) === -1) {
+                level2State.selectedGeometry = validList[0];
+              }
+            }
+          }
           // Re-enter step 5 so renderStep3's 3D-build branch runs
           renderStep(5);
           return;

@@ -1090,7 +1090,11 @@
     var metalChargeOpts  = ['+1', '+2', '+3'];
     // Hazim spec — count chips capped at [1][2] (Q2 + Q3 alike).
     var countOpts        = ['1', '2'];
-    var contribOpts      = ['−6', '−4', '−3', '−2', '−1', '0', '+1', '+2', '+3', '+4', '+6'];
+    // Hazim 2026-05-11: previously missing −5 / +5 in Q2 chip row.
+    // Full integer range from −6 → +6 so every realistic charge
+    // contribution (e.g. 5× Cl⁻ = −5 or +5 metal-ish edge cases)
+    // has a chip pick.
+    var contribOpts      = ['−6', '−5', '−4', '−3', '−2', '−1', '0', '+1', '+2', '+3', '+4', '+5', '+6'];
 
     function pickerChips(field, key, opts, currentValue, expectedValue) {
       var sel = currentValue != null ? currentValue : '';

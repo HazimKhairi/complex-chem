@@ -145,6 +145,7 @@
     canvas.addEventListener("dragover", function (e) { e.preventDefault(); });
     canvas.addEventListener("drop", onCanvasDrop);
     canvas.addEventListener("touchend", onTouchEnd);
+    canvas.addEventListener("mousemove", onCanvasMouseMove);
 
     window.addEventListener("resize", function () {
       if (!canvas || !renderer || !camera) return;
@@ -163,8 +164,19 @@
 
     slotMeshes.forEach(function (slot) {
       if (!slot.ligand && slot.ghostMesh) {
-        var scale = 1 + 0.1 * Math.sin(Date.now() * 0.003 + slot.slotIndex);
+        // When armed, double the pulse amplitude + speed so the empty
+        // slots visibly call for a drop. Idle = gentle baseline pulse.
+        var armed = !!draggedLigand;
+        var freq  = armed ? 0.007 : 0.003;
+        var amp   = armed ? 0.22  : 0.10;
+        var scale = 1 + amp * Math.sin(Date.now() * freq + slot.slotIndex);
         slot.ghostMesh.scale.setScalar(scale);
+        // Also brighten the ghost colour while armed so the player
+        // can see the targets through the OrbitControls dim.
+        if (slot.ghostMesh.material) {
+          slot.ghostMesh.material.opacity = armed ? 0.55 : 0.30;
+          slot.ghostMesh.material.color.setHex(armed ? 0xfde047 : 0xcccccc);
+        }
       }
     });
 
@@ -216,6 +228,22 @@
       ghostMesh.position.set(pos.x, pos.y, pos.z);
       scene.add(ghostMesh);
 
+      // Invisible hit-test sphere — 3x the ghost radius so taps near
+      // the slot still register. Hazim 2026-05-11: "click takleh
+      // letak" — root cause was the 0.35-radius ghost being too tiny
+      // a click target, especially over OrbitControls drag handling.
+      var hitGeo = new THREE.SphereGeometry(1.05, 12, 12);
+      var hitMat = new THREE.MeshBasicMaterial({
+        transparent: true,
+        opacity: 0,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+      });
+      var hitMesh = new THREE.Mesh(hitGeo, hitMat);
+      hitMesh.position.set(pos.x, pos.y, pos.z);
+      hitMesh.renderOrder = -1; // never occlude anything visible
+      scene.add(hitMesh);
+
       var ringGeo = new THREE.RingGeometry(0.4, 0.55, 32);
       var ringMat = new THREE.MeshBasicMaterial({
         color: 0x4187a0,
@@ -233,6 +261,7 @@
         position: pos,
         ligand: null,
         ghostMesh: ghostMesh,
+        hitMesh: hitMesh,
         stickMesh: stickMesh,
         ringMesh: ringMesh,
         ballMesh: null,
@@ -250,9 +279,10 @@
     }
     slotMeshes.forEach(function (slot) {
       if (slot.ghostMesh) scene.remove(slot.ghostMesh);
+      if (slot.hitMesh)   scene.remove(slot.hitMesh);
       if (slot.stickMesh) scene.remove(slot.stickMesh);
-      if (slot.ringMesh) scene.remove(slot.ringMesh);
-      if (slot.ballMesh) scene.remove(slot.ballMesh);
+      if (slot.ringMesh)  scene.remove(slot.ringMesh);
+      if (slot.ballMesh)  scene.remove(slot.ballMesh);
     });
     slotMeshes = [];
   }
@@ -513,6 +543,11 @@
 
     var targets = [];
     slotMeshes.forEach(function (slot) {
+      // Empty slot — accept hits on the big invisible hit-sphere OR
+      // the small visible ghost sphere. Filled slot — accept hits on
+      // the ball + the hit-sphere (so click-to-remove also gets the
+      // forgiving target).
+      if (slot.hitMesh) targets.push(slot.hitMesh);
       if (slot.ghostMesh && slot.ghostMesh.visible) targets.push(slot.ghostMesh);
       if (slot.ballMesh) targets.push(slot.ballMesh);
     });
@@ -522,14 +557,41 @@
 
     var hit = intersects[0].object;
     for (var i = 0; i < slotMeshes.length; i++) {
-      if (slotMeshes[i].ghostMesh === hit || slotMeshes[i].ballMesh === hit) {
-        return slotMeshes[i];
+      var s = slotMeshes[i];
+      if (s.ghostMesh === hit || s.ballMesh === hit || s.hitMesh === hit) {
+        return s;
       }
     }
     return null;
   }
 
+  // Place the armed ligand into the slot under the pointer. Returns
+  // true on success so the caller knows to clear armed state.
+  function tryPlaceArmedAt(clientX, clientY) {
+    if (!draggedLigand) return false;
+    var slot = getIntersectedSlot(clientX, clientY);
+    if (!slot || slot.ligand) return false;
+    var color = SPHERE_COLORS[draggedLigand.sphere] || 0x9ca3af;
+    var placed = placeLigandInSlot(slot.slotIndex, draggedLigand, color);
+    if (placed) {
+      if (onPlaceCallback) onPlaceCallback(draggedLigand, slot.slotIndex);
+      draggedLigand = null;
+      return true;
+    }
+    return false;
+  }
+
   function onCanvasClick(e) {
+    // Hazim 2026-05-11 spec: tap-to-place must work. If a ligand is
+    // armed (`draggedLigand` set by setDraggedLigand) and the click
+    // lands on an empty slot, place it. Falling through to the
+    // existing remove-on-filled-slot behaviour when nothing's armed.
+    if (draggedLigand) {
+      if (tryPlaceArmedAt(e.clientX, e.clientY)) return;
+      // Click missed the slot — leave the ligand armed so the player
+      // can try again instead of silently dropping it.
+      return;
+    }
     var slot = getIntersectedSlot(e.clientX, e.clientY);
     if (slot && slot.ligand) {
       var removed = removeLigandFromSlot(slot.slotIndex);
@@ -540,26 +602,47 @@
   function onCanvasDrop(e) {
     e.preventDefault();
     if (!draggedLigand) return;
-
-    var slot = getIntersectedSlot(e.clientX, e.clientY);
-    if (slot && !slot.ligand) {
-      var color = SPHERE_COLORS[draggedLigand.sphere] || 0x9ca3af;
-      var placed = placeLigandInSlot(slot.slotIndex, draggedLigand, color);
-      if (placed && onPlaceCallback) onPlaceCallback(draggedLigand, slot.slotIndex);
-    }
-    draggedLigand = null;
+    tryPlaceArmedAt(e.clientX, e.clientY);
+    // tryPlaceArmedAt already clears draggedLigand on success.
+    // On a missed drop, KEEP it armed so the player can retry.
   }
 
   function onTouchEnd(e) {
     if (!draggedLigand || !e.changedTouches || !e.changedTouches.length) return;
     var touch = e.changedTouches[0];
-    var slot = getIntersectedSlot(touch.clientX, touch.clientY);
-    if (slot && !slot.ligand) {
-      var color = SPHERE_COLORS[draggedLigand.sphere] || 0x9ca3af;
-      var placed = placeLigandInSlot(slot.slotIndex, draggedLigand, color);
-      if (placed && onPlaceCallback) onPlaceCallback(draggedLigand, slot.slotIndex);
+    tryPlaceArmedAt(touch.clientX, touch.clientY);
+  }
+
+  // Highlight the slot under the cursor while a ligand is armed so the
+  // player can see *where* the click will land. Resets every move so
+  // we don't leave stale highlights when the cursor leaves a slot.
+  var lastHoverSlotIdx = -1;
+  function onCanvasMouseMove(e) {
+    if (!renderer) return;
+    if (!draggedLigand) {
+      // Default cursor when nothing's armed; OrbitControls handles
+      // the grab cursor for orbiting.
+      if (renderer.domElement.style.cursor !== "") {
+        renderer.domElement.style.cursor = "";
+      }
+      if (lastHoverSlotIdx !== -1) {
+        slotMeshes.forEach(function (s, i) {
+          if (s.ringMesh) s.ringMesh.material.opacity = 0.2;
+        });
+        lastHoverSlotIdx = -1;
+      }
+      return;
     }
-    draggedLigand = null;
+    // Armed — change cursor + highlight slot under the pointer.
+    renderer.domElement.style.cursor = "crosshair";
+    var slot = getIntersectedSlot(e.clientX, e.clientY);
+    var hoverIdx = (slot && !slot.ligand) ? slot.slotIndex : -1;
+    if (hoverIdx === lastHoverSlotIdx) return;
+    slotMeshes.forEach(function (s, i) {
+      if (!s.ringMesh) return;
+      s.ringMesh.material.opacity = (i === hoverIdx) ? 0.85 : 0.2;
+    });
+    lastHoverSlotIdx = hoverIdx;
   }
 
   function destroyScene() {

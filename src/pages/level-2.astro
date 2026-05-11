@@ -902,15 +902,17 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
      the top-right, mimicking [Co(NH₃)₃(H₂O)₃]³⁺ rendered around
      the live model. Pure-CSS pseudo-elements; pointer-events stay
      on the canvas. */
+  /* Hazim 2026-05-11: cap canvas tighter so the 3D scene doesn't
+     mask the ligand picker / submit row below. 48vh leaves enough
+     vertical space on a 900-pixel viewport for the formula box,
+     the picker strip, and the slot counter row. Extra right
+     padding leaves a gutter where the charge pill can sit OUTSIDE
+     the bracket without escaping the card's overflow:hidden clip. */
   #l2-bracket-frame {
     position: relative;
-    padding: 8px 36px 0;
-    /* Hazim 2026-05-11: cap canvas height so the 3D scene doesn't
-       cover the ligand picker / submit row below. min-height keeps
-       it big enough to manipulate; max-height stops the flex-1 from
-       eating the whole card. */
-    min-height: 280px;
-    max-height: 56vh;
+    padding: 8px 64px 0 36px;
+    min-height: 240px;
+    max-height: 48vh;
   }
   #l2-bracket-frame::before,
   #l2-bracket-frame::after {
@@ -929,31 +931,35 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
     border-radius: 6px 0 0 6px;
   }
   #l2-bracket-frame::after {
-    right: 10px;
+    right: 36px;
     border-left: none;
     border-radius: 0 6px 6px 0;
   }
-  /* Charge superscript — sits OUTSIDE the closing bracket per Hazim
-     2026-05-11 ("2+ tu jangan duduk dalam bracket wajib luar
-     bracket"). Top -16 px lifts it above the bracket's top edge;
-     right -22 px pushes it past the bracket's right edge. */
+  /* Charge superscript — sits in the gutter to the right of the
+     closing bracket. Frame now has 64 px right padding (vs 10 px
+     bracket width + 26 px → ~28 px clear), so the pill fits cleanly
+     between the bracket's right edge and the card's right edge with
+     no overflow clipping. Hazim 2026-05-11: "+ tu mcm terkeluar
+     ade kene bracket" — the pill is now visibly outside the bracket
+     AND fully visible inside the card. */
   #l2-bracket-charge {
     position: absolute;
-    top: -16px;
-    right: -22px;
+    top: 0;
+    right: 2px;
     font-family: 'Fredoka', system-ui, sans-serif;
     font-weight: 800;
-    font-size: clamp(1.3rem, 2.4vw, 2rem);
+    font-size: clamp(1.1rem, 2vw, 1.6rem);
     color: #0f172a;
     background: #fff;
-    padding: 4px 12px;
+    padding: 3px 9px;
     border-radius: 999px;
     border: 3px solid #0f172a;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
     pointer-events: none;
     z-index: 6;
     line-height: 1;
     letter-spacing: 0.02em;
+    white-space: nowrap;
   }
   #l2-bracket-charge.hidden { display: none; }
   #l2-bracket-charge[data-sign="positive"] { color: #b91c1c; border-color: #b91c1c; }

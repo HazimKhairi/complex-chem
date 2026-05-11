@@ -81,13 +81,28 @@ function transferDiceCode() {
     $("#player-" + x + "-dice-arrow").attr("src", "");
     x++;
     identifyPlayerInfo();
-    if ($(`td${identifyPlayer}57`).find("img").length >= 1) {
+    // Hazim 2026-05-11 bug ("Bila player 1 smpai je situ mesti dh
+    // tk blh tekan"): the skip-at-57 loop could push x past 4 in
+    // 4-player mode when 2+ players had a horse at their winning
+    // cell. Then `#player-5-dice` doesn't exist → no dice ever
+    // armed → game frozen.
+    //
+    // Bound every increment to `x < 4`. If we hit the cap and the
+    // capped player is also at 57, wrap back to x=1 instead of
+    // overshooting. Note: in Complex-Chem a single horse at 57 is
+    // enough to count as finished, so the original `>= 1` check
+    // matches the FINISHED gate in win-checker.
+    if ($(`td${identifyPlayer}57`).find("img").length >= 1 && x < 4) {
       x++;
       identifyPlayerInfo();
-      if ($(`td${identifyPlayer}57`).find("img").length >= 1) {
+      if ($(`td${identifyPlayer}57`).find("img").length >= 1 && x < 4) {
         x++;
+        identifyPlayerInfo();
       }
     }
+    // Final defensive wrap — if x crept beyond 4 anyway, fall back
+    // to the first player so the dice always lands on a valid slot.
+    if (x > 4) { x = 1; identifyPlayerInfo(); }
     $("#player-" + x + "-dice").attr("src", "dice/dice-rest.png");
     $("#player-" + x + "-dice-arrow").attr("src", "gifs/arrow1.gif");
     y = 1; //Y represents number of six in a sequence

@@ -963,12 +963,24 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
     position: absolute;
     top: 2px;
     right: 6px;
+    /* Use inline-flex so + / − is GEOMETRICALLY centred inside the
+       pill regardless of the glyph's own baseline. Hazim 2026-05-11:
+       "+ / − duduk kt tengah bulatan please". `line-height: 1` was
+       making the symbol sit low because the +/− glyph anchors near
+       the cap-height, not the centre. min-width/min-height enforce a
+       round shape; flex centring makes the character sit dead in
+       the middle regardless of which character is rendered. */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    min-height: 32px;
+    padding: 0 8px;
     font-family: 'Fredoka', system-ui, sans-serif;
     font-weight: 800;
     font-size: clamp(1rem, 1.8vw, 1.5rem);
     color: #0f172a;
     background: #fff;
-    padding: 3px 8px;
     border-radius: 999px;
     border: 3px solid #0f172a;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);

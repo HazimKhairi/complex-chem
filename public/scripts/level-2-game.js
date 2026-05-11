@@ -1823,23 +1823,20 @@
       "3 PTS"
     );
 
-    // Filter to ONLY the geometries that match the player's CN —
-    // Hazim 2026-05-11 ("kadang boleh pilih 2, kadang satu kite
-    // tengok CN dia tau"). CN=3 → 1 option (trigonal planar);
-    // CN=4 → 2 options (tetrahedral / square planar); CN=5 →
-    // 2 options (trigonal bipyramidal / square pyramidal); CN=6
-    // → 1 option (octahedral). Order is randomised once per
-    // session AND scoped to the CN — re-uses level2State.pictureOrder
-    // when its CN signature matches.
-    var validPics = GEOMETRY_PICS.filter(function (g) { return g.cn === cn; });
-    var orderSig = "cn" + cn + ":" + validPics.length;
+    // Show all 6 geometry images — Hazim 2026-05-11 reversal
+    // ("kenapa ada satu je gambar ni?? patutnye ade banyak"). The
+    // earlier CN-only filter was too easy: with CN=3 it left exactly
+    // 1 card and the player just clicked the obvious answer. Now
+    // every reference geometry is presented, the player has to
+    // RECOGNISE which one matches their calculated CN. The order is
+    // shuffled once per session and persisted in level2State so the
+    // cards don't jump between attempts.
     if (!Array.isArray(level2State.pictureOrder)
-        || level2State.pictureOrderSig !== orderSig) {
-      level2State.pictureOrder = validPics.slice().sort(function () { return Math.random() - 0.5; });
-      level2State.pictureOrderSig = orderSig;
+        || level2State.pictureOrder.length !== GEOMETRY_PICS.length) {
+      level2State.pictureOrder = GEOMETRY_PICS.slice().sort(function () { return Math.random() - 0.5; });
     }
 
-    html += '<div class="grid ' + (validPics.length === 1 ? 'grid-cols-1 max-w-xs mx-auto' : 'grid-cols-2') + ' gap-3 mb-4">';
+    html += '<div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">';
     level2State.pictureOrder.forEach(function (g) {
       var isCorrect = g.cn === cn;
       var state = "idle";

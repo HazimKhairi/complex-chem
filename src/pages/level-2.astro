@@ -915,14 +915,12 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
      the top-right, mimicking [Co(NH₃)₃(H₂O)₃]³⁺ rendered around
      the live model. Pure-CSS pseudo-elements; pointer-events stay
      on the canvas. */
-  /* Hazim 2026-05-11 follow-up: bracket frame STILL overlapping the
-     picker. Switching from flex max-height (which let canvas content
-     bleed) to fixed flex-basis so the bracket frame OWNS a hard
-     vertical slot and the picker / submit rows get their own
-     guaranteed space below. */
+  /* Bracket frame: fixed vertical slot so canvas can't bleed into
+     the picker. Right padding bumped to 88 px to give the charge
+     pill its own dedicated gutter past the `]` bracket. */
   #l2-bracket-frame {
     position: relative;
-    padding: 8px 64px 0 36px;
+    padding: 8px 88px 0 36px;
     flex: 0 0 auto;
     height: 42vh;
     min-height: 220px;
@@ -951,27 +949,26 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
     border-radius: 6px 0 0 6px;
   }
   #l2-bracket-frame::after {
-    right: 36px;
+    right: 60px;
     border-left: none;
     border-radius: 0 6px 6px 0;
   }
-  /* Charge superscript — sits in the gutter to the right of the
-     closing bracket. Frame now has 64 px right padding (vs 10 px
-     bracket width + 26 px → ~28 px clear), so the pill fits cleanly
-     between the bracket's right edge and the card's right edge with
-     no overflow clipping. Hazim 2026-05-11: "+ tu mcm terkeluar
-     ade kene bracket" — the pill is now visibly outside the bracket
-     AND fully visible inside the card. */
+  /* Charge superscript — sits in the 60 px gutter to the right of
+     the `]` bracket. Bracket at right:60-78 (60+18 wide). Pill at
+     right:6-50 (44 px wide max). 10 px clean gap between pill and
+     bracket. Hazim 2026-05-11 follow-up: pill was still half on
+     the bracket because the previous 36 px right offset gave the
+     pill nowhere to land. */
   #l2-bracket-charge {
     position: absolute;
-    top: 0;
-    right: 2px;
+    top: 2px;
+    right: 6px;
     font-family: 'Fredoka', system-ui, sans-serif;
     font-weight: 800;
-    font-size: clamp(1.1rem, 2vw, 1.6rem);
+    font-size: clamp(1rem, 1.8vw, 1.5rem);
     color: #0f172a;
     background: #fff;
-    padding: 3px 9px;
+    padding: 3px 8px;
     border-radius: 999px;
     border: 3px solid #0f172a;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
@@ -980,6 +977,8 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
     line-height: 1;
     letter-spacing: 0.02em;
     white-space: nowrap;
+    max-width: 64px;
+    text-align: center;
   }
   #l2-bracket-charge.hidden { display: none; }
   #l2-bracket-charge[data-sign="positive"] { color: #b91c1c; border-color: #b91c1c; }

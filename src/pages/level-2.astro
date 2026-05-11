@@ -335,6 +335,14 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
      renders — fade + slight upward slide. */
   #step-container {
     animation: l2-step-in 280ms cubic-bezier(.2,.7,.2,1);
+    /* Hazim 2026-05-11: previously `self-start` was letting the grid
+       auto-shrink to its content's intrinsic width, leaving a big
+       empty band on the right of the workspace. Force the container
+       to fill its grid cell so Q4's 6-image picker grid stretches
+       across the full 1152 px workspace. */
+    justify-self: stretch;
+    align-self: stretch;
+    width: 100%;
   }
   @keyframes l2-step-in {
     from { opacity: 0; transform: translateY(8px); }
@@ -746,22 +754,27 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
     box-shadow: 0 7px 0 rgba(0,0,0,0.10), 0 12px 22px rgba(0,0,0,0.10);
   }
   .geo-img-card:disabled { cursor: default; }
-  /* Picture-pick selected — matches the kahoot-button selected pattern:
-     navy band → gold halo → check badge. White-on-image backgrounds
-     made the previous gold outline disappear over yellow molecules
-     (4.png, 7.png, 9.png). This layered approach is colour-blind safe
-     and pops against any image colour. */
+  /* Hazim 2026-05-11: "buat yang clickable tu active" — the previous
+     white-outline selected state was invisible on the white-background
+     image cards. Strong amber background fill so a picked card is
+     UNMISTAKABLY different from the unpicked ones. The molecule image
+     overlays the new fill. Outline + thick depth shadow + pulse +
+     check badge keep the multi-modal cues. */
   .geo-img-card[data-state="selected"] {
-    outline: 5px solid #ffffff;
-    outline-offset: 4px;
+    background: #fde68a;
+    border: 4px solid #d97706;
+    outline: 4px solid #ffffff;
+    outline-offset: 2px;
     transform: translateY(-4px) scale(1.06);
     box-shadow:
-      0 0 0 9px #0f172a,
-      0 0 0 16px rgba(253, 224, 71, 0.55),
-      0 18px 28px rgba(0,0,0,0.30);
-    border-color: #0f172a;
+      0 0 0 9px #b45309,
+      0 0 0 14px rgba(253, 224, 71, 0.6),
+      0 16px 28px rgba(0,0,0,0.30);
     z-index: 2;
     animation: l2-kahoot-pulse 1.4s ease-in-out infinite;
+  }
+  .geo-img-card[data-state="selected"] img {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.18));
   }
   .geo-img-card[data-state="selected"]::after {
     content: "\2713";
@@ -902,17 +915,24 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
      the top-right, mimicking [Co(NH₃)₃(H₂O)₃]³⁺ rendered around
      the live model. Pure-CSS pseudo-elements; pointer-events stay
      on the canvas. */
-  /* Hazim 2026-05-11: cap canvas tighter so the 3D scene doesn't
-     mask the ligand picker / submit row below. 48vh leaves enough
-     vertical space on a 900-pixel viewport for the formula box,
-     the picker strip, and the slot counter row. Extra right
-     padding leaves a gutter where the charge pill can sit OUTSIDE
-     the bracket without escaping the card's overflow:hidden clip. */
+  /* Hazim 2026-05-11 follow-up: bracket frame STILL overlapping the
+     picker. Switching from flex max-height (which let canvas content
+     bleed) to fixed flex-basis so the bracket frame OWNS a hard
+     vertical slot and the picker / submit rows get their own
+     guaranteed space below. */
   #l2-bracket-frame {
     position: relative;
     padding: 8px 64px 0 36px;
-    min-height: 240px;
-    max-height: 48vh;
+    flex: 0 0 auto;
+    height: 42vh;
+    min-height: 220px;
+    max-height: 460px;
+    overflow: hidden;
+  }
+  #l2-bracket-frame canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
   }
   #l2-bracket-frame::before,
   #l2-bracket-frame::after {

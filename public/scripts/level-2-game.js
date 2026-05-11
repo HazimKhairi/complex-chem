@@ -1812,6 +1812,16 @@
     var c = $("step-container");
     var bc = $("builder-container");
     if (bc) bc.classList.add("hidden"); // hide the 3D canvas during picture pick
+    // Hazim 2026-05-11: workspace toggles to lg:grid-cols-2 the moment
+    // we enter step 5, but Q4 picture-pick is ALSO step 5 with the
+    // builder hidden — that left the image grid in a 50%-width column
+    // with a huge empty band on the right. Drop the 2-col grid until
+    // the 3D builder actually renders.
+    var ws = $("l2-workspace");
+    if (ws) {
+      ws.classList.remove("lg:grid-cols-2");
+      ws.dataset.builderVisible = "false";
+    }
 
     var cn = calcCN();
     var done = level2State.pictureDone;
@@ -1836,7 +1846,10 @@
       level2State.pictureOrder = GEOMETRY_PICS.slice().sort(function () { return Math.random() - 0.5; });
     }
 
-    html += '<div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">';
+    // Hazim 2026-05-11: was rendering as 3-col, leaving the right
+     // half empty. 6-col on large screens spreads the 6 geometry
+     // cards across the full width of the step container.
+    html += '<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">';
     level2State.pictureOrder.forEach(function (g) {
       var isCorrect = g.cn === cn;
       var state = "idle";
@@ -1934,6 +1947,15 @@
 
     var bc = $("builder-container");
     if (bc) bc.classList.remove("hidden");
+
+    // Builder is showing now — re-apply the 2-column workspace so
+    // the step-container shares the row with the 3D card.
+    var ws = $("l2-workspace");
+    if (ws) {
+      ws.classList.add("lg:grid-cols-2");
+      ws.dataset.builderVisible = "true";
+      setTimeout(function () { window.dispatchEvent(new Event('resize')); }, 0);
+    }
 
     // Re-entering the build phase — clear any leftover armed state.
     armedLigandIdx = null;

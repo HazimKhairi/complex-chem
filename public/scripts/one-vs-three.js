@@ -506,7 +506,14 @@ function moveHorse(event) {
           identifyPlayerHomePosition = horseKillList[0].classList[0]; //Home position of player that is going to be killed
         }
 
+        // Hazim 2026-05-11 spec: "akan ade satu player dia kene
+        // tendang masuk rumah balik" — Complex-Chem doesn't want
+        // classic Ludo "kill on collision" mechanic. Pieces should
+        // just merge / stack via mergeHorses. Forced `false` here
+        // keeps the else-branch dice-transfer flow active for every
+        // landing, never sending anyone home.
         if (
+          false &&
           horseKillList.length == 2 &&
           identifyHorseToBeKilled != identifyHorseKiller &&
           window[`lastPos${playerHorseClassCaps}`] != 1 &&

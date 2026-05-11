@@ -572,7 +572,10 @@ function moveHorse(event) {
           }
         }
 
+        // Hazim 2026-05-11 spec — kill mechanic disabled across all
+        // game modes. See one-vs-three.js for the explanation.
         if (
+          false &&
           horseKillList.length == 2 &&
           identifyHorseToBeKilled != identifyHorseKiller &&
           window[`lastPos${playerHorseClassCaps}`] != 1 &&

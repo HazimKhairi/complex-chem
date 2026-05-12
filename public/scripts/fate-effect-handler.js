@@ -253,8 +253,6 @@ window.FateEffectHandler = {
 
     const playerColor = this.getPlayerColor(playerId);
     const posVar = `lastPos${playerColor}H1`;
-
-    // Get current position
     const currentPos = window[posVar];
 
     if (typeof currentPos === 'undefined') {
@@ -263,70 +261,57 @@ window.FateEffectHandler = {
       return;
     }
 
-    console.log(`   Current position: ${currentPos}`);
-
-    // Edge case: Already at finish line
     if (currentPos >= 57) {
       console.warn('⚠️ [FATE] Already at finish line!');
       this.showNotification("Already at the finish line!", 'info');
       return;
     }
 
-    // Calculate new position (max 57)
-    const newPos = Math.min(currentPos + spaces, 57);
-    const actualMoved = newPos - currentPos;
-
-    console.log(`   New position: ${newPos} (moved ${actualMoved} spaces)`);
-
-    // Update position variable
-    window[posVar] = newPos;
-
-    // Move piece visually
     const colorClass = this.getPlayerColorClass(playerId).charAt(0); // 'r', 'b', 'y', 'g'
+
+    // Walk forward via BoardPath so we skip path gaps at corners
+    // (same fix shape as Destiny Dance — a naive `currentPos + spaces`
+    // lands on cells like y11/y24/y32/y38/y50 that don't exist in DOM
+    // and the selector returns empty).
+    let newPos;
+    if (window.BoardPath && window.BoardPath.initialized) {
+      newPos = window.BoardPath.stepBy(colorClass, currentPos, spaces);
+      if (newPos > 57) newPos = 57;
+    } else {
+      newPos = Math.min(currentPos + spaces, 57);
+    }
+    const actualMoved = newPos - currentPos;
+    console.log(`   New position via BoardPath: ${newPos} (moved ${actualMoved})`);
+
     const pieceSelector = `.path img.${colorClass}h1`;
     const piece = $(pieceSelector).first();
 
-    if (piece.length === 0) {
-      console.warn(`⚠️ [FATE] Piece not found on path: ${pieceSelector}`);
-      this.showNotification(`Moved forward ${actualMoved} spaces!`, 'success');
-      return;
-    }
-
-    // Find target cell
+    // Validate target BEFORE mutating state.
     const targetCell = $(`.${colorClass}${newPos}`).first();
-
     if (targetCell.length === 0) {
       console.error(`❌ [FATE] Target cell not found: .${colorClass}${newPos}`);
-      this.showNotification("Error: Cannot find target position", 'error');
+      this.showNotification("Couldn't find a landing cell — staying put.", 'info');
       return;
     }
 
-    // Detach piece from current cell (preserves element for re-attachment)
-    const detachedPiece = piece.detach();
-
-    // Append piece to target cell
-    targetCell.append(detachedPiece);
-    console.log(`   Piece moved to target cell`);
-
-    // Show animation if available
-    if (window.UIAnimations) {
-      window.UIAnimations.movePiece(piece[0]);
+    if (piece.length === 0) {
+      const playerColorName = this.getPlayerColorClass(playerId);
+      targetCell.append(`<img class="${colorClass}h1 w-4" src="/horses/${playerColorName}.png" alt="Player ${playerId} piece" />`);
+    } else {
+      const detachedPiece = piece.detach();
+      targetCell.append(detachedPiece);
+      if (window.UIAnimations) window.UIAnimations.movePiece(piece[0]);
     }
 
-    // Check if landed on special tile
+    window[posVar] = newPos;
     const tileType = window.TileDetector ? window.TileDetector.getTileType(targetCell[0]) : 'normal';
-    console.log(`   Landed on ${tileType} tile`);
-
-    // Show notification
     this.showNotification(`Moved forward ${actualMoved} spaces!`, 'success');
-    console.log(`✅ [FATE] Ligand Square complete - Player ${playerId} moved to position ${newPos}`);
+    console.log(`✅ [FATE] Ligand Square — Player ${playerId} moved to ${newPos} (${tileType} tile)`);
 
-    // If landed on special tile, trigger orchestrator
     if (tileType !== 'normal' && tileType !== 'safe' && window.GameOrchestrator) {
-      console.log(`   Triggering orchestrator for ${tileType} tile`);
       setTimeout(() => {
         window.GameOrchestrator.simulateLanding(playerId, `.${colorClass}${newPos}`);
-      }, 500); // Small delay for animation
+      }, 500);
     }
   },
 
@@ -392,8 +377,6 @@ window.FateEffectHandler = {
 
     const playerColor = this.getPlayerColor(playerId);
     const posVar = `lastPos${playerColor}H1`;
-
-    // Get current position
     const currentPos = window[posVar];
 
     if (typeof currentPos === 'undefined') {
@@ -402,104 +385,86 @@ window.FateEffectHandler = {
       return;
     }
 
-    console.log(`   Current position: ${currentPos}`);
-
-    // Edge case: Piece in home
     if (currentPos === 0) {
       console.warn('⚠️ [FATE] Cannot move backward from home!');
       this.showNotification("Can't move backward from home!", 'info');
       return;
     }
 
-    // Roll dice (1-6)
     const diceRoll = Math.floor(Math.random() * 6) + 1;
-    console.log(`   Rolled: ${diceRoll}`);
+    console.log(`   Current ${currentPos}, rolled ${diceRoll}`);
 
-    // Show dice animation if available
     const diceImg = document.querySelector('.dice_image');
     if (diceImg && window.UIAnimations) {
       window.UIAnimations.rollDice(diceImg, diceRoll);
     } else if (diceImg) {
-      // Fallback: just update image
       diceImg.src = `/dice/dice-${diceRoll}.png`;
     }
 
-    // Calculate new position (min 0 = home)
-    const newPos = Math.max(currentPos - diceRoll, 0);
-    const actualMoved = currentPos - newPos;
-
-    console.log(`   New position: ${newPos} (moved backward ${actualMoved} spaces)`);
-
-    // Update position variable
-    window[posVar] = newPos;
-
     const colorClass = this.getPlayerColorClass(playerId).charAt(0); // 'r', 'b', 'y', 'g'
+
+    // Walk backward along the VALID path (BoardPath skips corner gaps
+    // like y11-13, y24-26, y32, y38-39, y50-51 where the path letter
+    // jumps to a neighbouring arm). Naive `currentPos - diceRoll` lands
+    // on those gaps and `.y${gap}` returns nothing, leaving the piece
+    // visually stuck while `lastPosYH1` had already been mutated.
+    let newPos;
+    if (window.BoardPath && window.BoardPath.initialized) {
+      newPos = window.BoardPath.stepBy(colorClass, currentPos, -diceRoll);
+    } else {
+      newPos = Math.max(currentPos - diceRoll, 0);
+    }
+    console.log(`   New position via BoardPath: ${newPos}`);
+
     const pieceSelector = `.path img.${colorClass}h1`;
     const piece = $(pieceSelector).first();
 
-    // If moving back to home (position 0)
     if (newPos === 0) {
-      console.log('   Moving piece back to home area');
-
-      // Use detach() instead of remove() to preserve element
-      let detachedPiece = piece.length > 0 ? piece.detach() : null;
-
-      // Add back to home area - correct selector for single piece mode
-      // Home structure: #player-N > div > div > img
+      const detachedPiece = piece.length > 0 ? piece.detach() : null;
       const homeArea = $(`#player-${playerId}`);
-      const homeInner = homeArea.find('.bg-gray-200'); // Find innermost circle div
+      const homeInner = homeArea.find('.bg-gray-200');
 
       if (homeInner.length > 0) {
-        // Append detached piece or create new one
         if (detachedPiece && detachedPiece.length > 0) {
           homeInner.append(detachedPiece);
-          console.log('   Reattached piece to home');
         } else {
-          // Create new piece if original was lost
-          const playerColor = this.getPlayerColorClass(playerId);
-          homeInner.append(`<img class="${colorClass}h1 w-4" src="/horses/${playerColor}.png" alt="Player ${playerId} piece" />`);
-          console.log('   Created new piece in home');
+          const playerColorName = this.getPlayerColorClass(playerId);
+          homeInner.append(`<img class="${colorClass}h1 w-4" src="/horses/${playerColorName}.png" alt="Player ${playerId} piece" />`);
         }
       } else {
         console.error(`❌ [FATE] Home area not found for Player ${playerId}`);
       }
 
+      window[posVar] = 0;
       this.showNotification(`Sent back to home! (rolled ${diceRoll})`, 'error');
-      console.log(`✅ [FATE] Destiny Dance complete - Player ${playerId} sent back to home`);
+      console.log(`✅ [FATE] Destiny Dance — Player ${playerId} sent home`);
       return;
     }
 
-    // Normal backward movement on path
-    if (piece.length === 0) {
-      console.warn(`⚠️ [FATE] Piece not found on path: ${pieceSelector}`);
-      this.showNotification(`Moved backward ${actualMoved} spaces!`, 'error');
-      return;
-    }
-
-    // Find target cell
+    // Validate target BEFORE mutating state, so a missing cell never
+    // leaves `lastPos*H1` desynced from the DOM.
     const targetCell = $(`.${colorClass}${newPos}`).first();
-
     if (targetCell.length === 0) {
-      console.error(`❌ [FATE] Target cell not found: .${colorClass}${newPos}`);
-      this.showNotification("Error: Cannot find target position", 'error');
+      console.error(`❌ [FATE] Target cell not found: .${colorClass}${newPos} (currentPos=${currentPos}, dice=${diceRoll})`);
+      this.showNotification("Couldn't find a landing cell — staying put.", 'info');
       return;
     }
 
-    // Detach piece from current cell (preserves element for re-attachment)
-    const detachedPiece = piece.detach();
-
-    // Append piece to target cell
-    targetCell.append(detachedPiece);
-    console.log(`   Piece moved to target cell`);
-
-    // Show animation if available
-    if (window.UIAnimations) {
-      window.UIAnimations.movePiece(piece[0]);
+    if (piece.length === 0) {
+      // Piece missing from DOM (rare race) — drop a fresh one at target
+      // so state stays consistent. Better than freezing.
+      const playerColorName = this.getPlayerColorClass(playerId);
+      targetCell.append(`<img class="${colorClass}h1 w-4" src="/horses/${playerColorName}.png" alt="Player ${playerId} piece" />`);
+    } else {
+      const detachedPiece = piece.detach();
+      targetCell.append(detachedPiece);
+      if (window.UIAnimations) window.UIAnimations.movePiece(piece[0]);
     }
 
-    // Show notification
+    window[posVar] = newPos;
+    const actualMoved = currentPos - newPos;
     this.showNotification(`Moved backward ${actualMoved} spaces! (rolled ${diceRoll})`, 'error');
-    console.log(`✅ [FATE] Destiny Dance complete - Player ${playerId} moved to position ${newPos}`);
+    console.log(`✅ [FATE] Destiny Dance — Player ${playerId} moved to ${newPos}`);
   },
 
   /**

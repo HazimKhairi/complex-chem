@@ -55,6 +55,50 @@ window.BoardPath = {
   },
 
   /**
+   * Get the previous valid position before currentPos.
+   * Skips over non-existent cells (gaps at corners). Returns 0 when
+   * walking back past the first path cell — that means "go home".
+   * Used by fate effects like Destiny Dance that move pieces backward.
+   * @param {string} prefix - Color prefix ('r', 'b', 'y', 'g')
+   * @param {number} currentPos - Current position number
+   * @returns {number} Previous valid position number, or 0 for home
+   */
+  getPrevPos(prefix, currentPos) {
+    const path = this.paths[prefix];
+    if (!path) return Math.max(currentPos - 1, 0);
+    if (currentPos <= 0) return 0;
+    const idx = path.indexOf(currentPos);
+    if (idx > 0) return path[idx - 1];
+    if (idx === 0) return 0;
+    for (let i = currentPos - 1; i >= 1; i--) {
+      if (path.includes(i)) return i;
+    }
+    return 0;
+  },
+
+  /**
+   * Step forward or backward N positions along the valid path,
+   * skipping gaps. Negative steps = backward (returns 0 if walked
+   * past start). Positive = forward (caps at last cell, e.g. 57).
+   * @param {string} prefix - Color prefix
+   * @param {number} currentPos - Current position
+   * @param {number} steps - Number of steps (positive=forward, negative=back)
+   * @returns {number} Resulting valid position (0 for home)
+   */
+  stepBy(prefix, currentPos, steps) {
+    let pos = currentPos;
+    if (steps === 0) return pos;
+    const dir = steps < 0 ? -1 : 1;
+    const count = Math.abs(steps);
+    for (let i = 0; i < count; i++) {
+      const next = dir < 0 ? this.getPrevPos(prefix, pos) : this.getNextPos(prefix, pos);
+      if (dir < 0 && next === 0) return 0;
+      pos = next;
+    }
+    return pos;
+  },
+
+  /**
    * Get the number of actual steps remaining to reach position 57 (home/win).
    * @param {string} prefix - Color prefix
    * @param {number} currentPos - Current position

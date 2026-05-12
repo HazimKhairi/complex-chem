@@ -179,13 +179,21 @@
       }
 
       // Update player card styling
+      // Use OUTLINE not BORDER for the active-player ring. The home corner
+      // already has 2-px sided borders baked in by player-home.astro; toggling
+      // `border: 3px solid …` here was REPLACING that L-shape on every turn
+      // change, shifting the home corner's inner content by 1-3 px and making
+      // adjacent path tiles look like they jiggled. Outline paints outside
+      // the box without affecting layout.
       if (playerCard) {
         if (isCurrentPlayer && playerState !== PLAYER_STATES.FINISHED) {
           playerCard.style.boxShadow = '0 0 20px 5px rgba(59, 130, 246, 0.5)';
-          playerCard.style.border = '3px solid #3B82F6';
+          playerCard.style.outline = '3px solid #3B82F6';
+          playerCard.style.outlineOffset = '0px';
         } else {
           playerCard.style.boxShadow = '';
-          playerCard.style.border = '';
+          playerCard.style.outline = '';
+          playerCard.style.outlineOffset = '';
         }
       }
 

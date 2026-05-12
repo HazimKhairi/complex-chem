@@ -97,6 +97,12 @@ window.AutoMovePiece = {
       const posVarName = `lastPos${identifyPlayer.toUpperCase().substring(1)}H1`;
 
       const placeAt = (pos) => {
+        // Defensive: nuke any leftover copy of this player's piece anywhere
+        // on the board BEFORE the append. Eliminates the "dua entiti" bug
+        // where a stray piece (from a fate animation race, an aborted move,
+        // or a watchdog restore that arrived late) coexists with the one we
+        // are about to place.
+        $(`img.${horseClass}`).not(`${identifyPlayer}${pos} img.${horseClass}`).remove();
         $(`${identifyPlayer}${pos}`).append(imgHtml);
         $(`${identifyPlayer}${pos} > img`).css("opacity", "");
         if (window.AudioManager) window.AudioManager.play("horse-move");

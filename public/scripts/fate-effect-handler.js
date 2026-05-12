@@ -283,8 +283,12 @@ window.FateEffectHandler = {
     const actualMoved = newPos - currentPos;
     console.log(`   New position via BoardPath: ${newPos} (moved ${actualMoved})`);
 
-    const pieceSelector = `.path img.${colorClass}h1`;
-    const piece = $(pieceSelector).first();
+    // Find ALL pieces of this player anywhere (path, home, detached span
+    // wrappers). Defensive: a stray duplicate from an earlier animation race
+    // would otherwise be left behind when we move only the first match.
+    const pieceSelector = `img.${colorClass}h1`;
+    const allPieces = $(pieceSelector);
+    const piece = allPieces.first();
 
     // Validate target BEFORE mutating state.
     const targetCell = $(`.${colorClass}${newPos}`).first();
@@ -294,13 +298,19 @@ window.FateEffectHandler = {
       return;
     }
 
-    if (piece.length === 0) {
-      const playerColorName = this.getPlayerColorClass(playerId);
-      targetCell.append(`<img class="${colorClass}h1 w-4" src="/horses/${playerColorName}.png" alt="Player ${playerId} piece" />`);
-    } else {
-      const detachedPiece = piece.detach();
-      targetCell.append(detachedPiece);
-      if (window.UIAnimations) window.UIAnimations.movePiece(piece[0]);
+    // Remove every existing piece for this player so we end with EXACTLY one
+    // copy at the target cell. Prevents "dua entiti" bug where home + path
+    // copies coexist after a swap/fate race.
+    allPieces.remove();
+    const playerColorName = this.getPlayerColorClass(playerId);
+    targetCell.append(`<img class="${colorClass}h1 ${playerColorName} w-4" src="/horses/${playerColorName}.png" alt="Player ${playerId} piece" />`);
+    if (piece.length > 0 && window.UIAnimations) {
+      const fresh = targetCell.find(`img.${colorClass}h1`)[0];
+      if (fresh) window.UIAnimations.movePiece(fresh);
+    }
+    // Re-apply blook skin so the restored piece matches the player's chosen character
+    if (typeof window.__characterSwapRun === 'function') {
+      try { window.__characterSwapRun(); } catch (e) {}
     }
 
     window[posVar] = newPos;
@@ -416,23 +426,24 @@ window.FateEffectHandler = {
     }
     console.log(`   New position via BoardPath: ${newPos}`);
 
-    const pieceSelector = `.path img.${colorClass}h1`;
-    const piece = $(pieceSelector).first();
+    // Same defensive sweep as Ligand Square: collapse every existing copy
+    // so we never end up with two pieces for the same player after this.
+    const pieceSelector = `img.${colorClass}h1`;
+    const allPieces = $(pieceSelector);
 
     if (newPos === 0) {
-      const detachedPiece = piece.length > 0 ? piece.detach() : null;
       const homeArea = $(`#player-${playerId}`);
       const homeInner = homeArea.find('.bg-gray-200');
 
-      if (homeInner.length > 0) {
-        if (detachedPiece && detachedPiece.length > 0) {
-          homeInner.append(detachedPiece);
-        } else {
-          const playerColorName = this.getPlayerColorClass(playerId);
-          homeInner.append(`<img class="${colorClass}h1 w-4" src="/horses/${playerColorName}.png" alt="Player ${playerId} piece" />`);
-        }
-      } else {
+      if (homeInner.length === 0) {
         console.error(`❌ [FATE] Home area not found for Player ${playerId}`);
+        return;
+      }
+      allPieces.remove();
+      const playerColorName = this.getPlayerColorClass(playerId);
+      homeInner.append(`<img class="${colorClass}h1 ${playerColorName} w-5 sm:w-[22px] md:w-6 lg:w-[26px]" src="/horses/${playerColorName}.png" alt="Player ${playerId} piece" />`);
+      if (typeof window.__characterSwapRun === 'function') {
+        try { window.__characterSwapRun(); } catch (e) {}
       }
 
       window[posVar] = 0;
@@ -450,15 +461,15 @@ window.FateEffectHandler = {
       return;
     }
 
-    if (piece.length === 0) {
-      // Piece missing from DOM (rare race) — drop a fresh one at target
-      // so state stays consistent. Better than freezing.
-      const playerColorName = this.getPlayerColorClass(playerId);
-      targetCell.append(`<img class="${colorClass}h1 w-4" src="/horses/${playerColorName}.png" alt="Player ${playerId} piece" />`);
-    } else {
-      const detachedPiece = piece.detach();
-      targetCell.append(detachedPiece);
-      if (window.UIAnimations) window.UIAnimations.movePiece(piece[0]);
+    allPieces.remove();
+    const playerColorName = this.getPlayerColorClass(playerId);
+    targetCell.append(`<img class="${colorClass}h1 ${playerColorName} w-4" src="/horses/${playerColorName}.png" alt="Player ${playerId} piece" />`);
+    if (window.UIAnimations) {
+      const fresh = targetCell.find(`img.${colorClass}h1`)[0];
+      if (fresh) window.UIAnimations.movePiece(fresh);
+    }
+    if (typeof window.__characterSwapRun === 'function') {
+      try { window.__characterSwapRun(); } catch (e) {}
     }
 
     window[posVar] = newPos;

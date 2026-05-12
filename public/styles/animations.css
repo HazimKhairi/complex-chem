@@ -860,3 +860,22 @@
 .ligand-tile > span {
   z-index: 5 !important;
 }
+
+/* ============================================
+   DICE ARROW STABILITY
+   ============================================
+   The legacy one-vs-*.js code clears the arrow img's src via
+   $.attr('src', '') and re-sets it to 'gifs/arrow1.gif' between turns.
+   Without a reserved size, the img collapses to 0×h while empty, which
+   reflows the player-card row and makes adjacent path pieces appear to
+   jiggle — especially noticeable near end-game when multiple turn-rotation
+   handlers race the src attribute. Lock the box and hide visually when
+   empty so the layout never moves. */
+img[id$="-dice-arrow"] {
+  display: inline-block;
+  vertical-align: middle;
+}
+img[id$="-dice-arrow"]:not([src]),
+img[id$="-dice-arrow"][src=""] {
+  visibility: hidden;
+}

@@ -2515,14 +2515,26 @@
     html += '<h2 class="text-2xl font-bold text-gray-800 mb-2">Level 2 Complete!</h2>';
     html += '<p class="text-gray-500 mb-6">' + level2State.playerName + ', here is your score breakdown.</p>';
 
+    // Player-facing Q1..Q5 breakdown. Hazim 2026-05-13: previous
+    // table omitted `pictureScore` (Q4 image picker, 3 pts) entirely
+    // and used a stale `/6` denominator on the 3D build (max is 5),
+    // which made the grand total look like it included unexplained
+    // points → reported as "Q4 tk simpan markah".
+    //   Q1 (setup)        — setupScore       / 2
+    //   Q2 (type)         — typeScore        / 2
+    //   Q3 (CN)           — cnScore          / 1
+    //   Q4 (geometry)     — geometryScore (text warm-up, 1)
+    //                      + pictureScore  (image picker, 3) = / 4
+    //   Q5 (3D build)     — buildScore       / 5
+    var q4Score = (level2State.geometryScore || 0) + (level2State.pictureScore || 0);
     html += '<div class="bg-gray-50 rounded-lg p-6 text-left max-w-sm mx-auto">';
     html += '<table class="w-full text-sm"><tbody>';
     html += '<tr class="border-b border-gray-200"><td class="py-2 text-gray-600">Level 1 Points</td><td class="py-2 text-right font-bold">' + l1 + '</td></tr>';
-    html += '<tr class="border-b border-gray-200"><td class="py-2 text-gray-600">Step 1: Choose metal &amp; ligands</td><td class="py-2 text-right font-bold">' + (level2State.setupScore || 0) + ' / 2</td></tr>';
-    html += '<tr class="border-b border-gray-200"><td class="py-2 text-gray-600">Step 2: Predict type</td><td class="py-2 text-right font-bold">' + (level2State.typeScore || 0) + ' / 2</td></tr>';
-    html += '<tr class="border-b border-gray-200"><td class="py-2 text-gray-600">Step 3: Coordination number</td><td class="py-2 text-right font-bold">' + (level2State.cnScore || 0) + ' / 1</td></tr>';
-    html += '<tr class="border-b border-gray-200"><td class="py-2 text-gray-600">Step 4: Geometry</td><td class="py-2 text-right font-bold">' + (level2State.geometryScore || 0) + ' / 1</td></tr>';
-    html += '<tr class="border-b border-gray-200"><td class="py-2 text-gray-600">Step 5: 3D build</td><td class="py-2 text-right font-bold">' + (level2State.buildScore || 0) + ' / 6</td></tr>';
+    html += '<tr class="border-b border-gray-200"><td class="py-2 text-gray-600">Q1: Choose metal &amp; ligands</td><td class="py-2 text-right font-bold">' + (level2State.setupScore || 0) + ' / 2</td></tr>';
+    html += '<tr class="border-b border-gray-200"><td class="py-2 text-gray-600">Q2: Type of complex</td><td class="py-2 text-right font-bold">' + (level2State.typeScore || 0) + ' / 2</td></tr>';
+    html += '<tr class="border-b border-gray-200"><td class="py-2 text-gray-600">Q3: Coordination number</td><td class="py-2 text-right font-bold">' + (level2State.cnScore || 0) + ' / 1</td></tr>';
+    html += '<tr class="border-b border-gray-200"><td class="py-2 text-gray-600">Q4: Geometry (name + image)</td><td class="py-2 text-right font-bold">' + q4Score + ' / 4</td></tr>';
+    html += '<tr class="border-b border-gray-200"><td class="py-2 text-gray-600">Q5: 3D build</td><td class="py-2 text-right font-bold">' + (level2State.buildScore || 0) + ' / 5</td></tr>';
     html += '<tr class="text-lg"><td class="pt-3 font-bold text-gray-800">Grand Total</td><td class="pt-3 text-right font-bold text-[#4187a0]">' + grand + '</td></tr>';
     html += '</tbody></table></div>';
 

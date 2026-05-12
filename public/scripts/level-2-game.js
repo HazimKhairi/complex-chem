@@ -696,7 +696,7 @@
     var canAdvance = !!level2State.selectedMetal && selectedIdxs.length > 0 && validCN;
 
     var html = headingBanner(
-      "Step 1 — Build Your Complex",
+      "Q1 — Build Your Complex",
       "Pick one central metal, then choose ligands so the total coordination number (CN) is 3, 4, 5, or 6.",
       "2 PTS"
     );
@@ -1058,7 +1058,7 @@
     var done = level2State.typeDone;
     var chosen = level2State.typeAnswer;
 
-    var html = headingBanner("Q1 — Predict the type of complex", "Calculate the charges and decide whether the complex is cation, anion, or neutral.", "2 PTS");
+    var html = headingBanner("Q2 — Predict the type of complex", "Calculate the charges and decide whether the complex is cation, anion, or neutral.", "2 PTS");
 
     // Info pills — non-blocking chat bubbles like Q3. Same INFO_BUBBLES
     // store + openInfoBubble overlay. Hazim spec: "info what complex &
@@ -1452,7 +1452,7 @@
     var done = level2State.cnDone;
     var chosen = level2State.cnAnswer;
 
-    var html = headingBanner("Q2 — Predict the coordination number", "Sum the donor atoms across all ligands. CN can be 3, 4, 5, or 6.", "1 PT");
+    var html = headingBanner("Q3 — Predict the coordination number", "Sum the donor atoms across all ligands. CN can be 3, 4, 5, or 6.", "1 PT");
 
     // Three toggle buttons that open chat-bubble explainers. Bubbles
     // appear inline below — they don't block the rest of the question
@@ -1670,9 +1670,12 @@
         level2State.cnAttempts++;
         var right = level2State.cnAnswer === cn;
         if (right) {
-          // Hazim 2026-05-11 spec: Q3 attempts bumped from 2 → 3.
-          // 1 pt only on first attempt, otherwise 0.
-          level2State.cnScore = level2State.cnAttempts === 1 ? 1 : 0;
+          // Hazim 2026-05-13 spec: every correct CN earns the full 1pt
+          // regardless of attempt count. Earlier "1st attempt only"
+          // rule made 2nd/3rd-attempt correct answers feel like the
+          // score wasn't saved (toast showed "Correct!" with no +pts
+          // because cnScore was 0).
+          level2State.cnScore = 1;
           level2State.cnDone = true;
           level2State.level2Score += level2State.cnScore;
           updateScoreBar();
@@ -1710,7 +1713,7 @@
     var displayLigands = getSelectedLigands();
     if (displayLigands.length === 0) displayLigands = playerLigands;
 
-    var html = headingBanner("Q3 — State the possible complex geometry", "Choose the correct geometry for your coordination number.", "1 PT");
+    var html = headingBanner("Q4 — State the possible complex geometry", "Choose the correct geometry for your coordination number.", "1 PT");
 
     // Reminder: surface the CN they computed in Q2 so they don't have
     // to flip back, but no longer reveal which geometries map to which
@@ -1809,7 +1812,9 @@
         var isCorrect = correctList.indexOf(val) >= 0;
         if (isCorrect) {
           level2State.selectedGeometry = val;
-          var pts = level2State.geometryAttempts === 1 ? 1 : 0;
+          // Hazim 2026-05-13: always award the full 1pt on correct, no
+          // more "1st attempt only" — see same change on cnScore.
+          var pts = 1;
           level2State.geometryScore = pts;
           level2State.level2Score += pts;
           level2State.geometryDone = true;

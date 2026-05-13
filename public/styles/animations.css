@@ -837,6 +837,21 @@
   pointer-events: auto !important;
 }
 
+/* Piece sizing — uniform square box for every horse/blook image
+   regardless of source aspect ratio. The legacy CSS only set width,
+   so character-swap.js's tall dogs (128x161) and wide pandas
+   (178x128) rendered at very different heights, with the tall ones
+   overflowing into the next cell ("bertindih"). Force a square box
+   and let object-fit:contain scale the source artwork inside. */
+img.gh1, img.gh2, img.gh3, img.gh4,
+img.yh1, img.yh2, img.yh3, img.yh4,
+img.rh1, img.rh2, img.rh3, img.rh4,
+img.bh1, img.bh2, img.bh3, img.bh4 {
+  aspect-ratio: 1 / 1 !important;
+  height: auto !important;
+  object-fit: contain !important;
+}
+
 /* Any decorative text inside a tile (ligand names, START label)
    must stay below the piece. */
 .path td > span:not(:has(img)) {

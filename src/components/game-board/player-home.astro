@@ -26,7 +26,13 @@ const homeBg = HOME_COLOR[horseColor] || "#fc0404";
   style={`background-color: ${homeBg}; border-color: ${homeBg};`}
   class={cn(
     "player-home-area",
-    "w-[180px] h-[180px] sm:w-[190px] sm:h-[190px] md:w-[200px] md:h-[200px] lg:w-[210px] lg:h-[210px]",
+    // +1px over the naive "5 × cell-size" so the home matches the
+    // adjacent path table, which is `5 × cell + 1px` under
+    // border-collapse (the leftmost cell border doesn't merge with
+    // anything). Without this +1, the arm hangs ~1px past the home
+    // corner on each side and shows a visible step at the joint,
+    // amplified by #game-container's 1.36× transform.
+    "w-[181px] h-[181px] sm:w-[191px] sm:h-[191px] md:w-[201px] md:h-[201px] lg:w-[211px] lg:h-[211px]",
     // box-border (default) so the border is INCLUDED in the home's outer
     // height — keeps the home flush with the adjacent middle path table
     // (the path is also border-box). Was box-content, which pushed the

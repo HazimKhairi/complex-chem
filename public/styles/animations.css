@@ -875,7 +875,18 @@ img[id$="-dice-arrow"] {
   display: inline-block;
   vertical-align: middle;
 }
+/* !important is required: turn-manager.js sets inline
+   `style.visibility = 'visible'` on the current player's arrow, which
+   would otherwise override this rule during the brief window when a
+   transferDiceCode has cleared src="" but the next-player visibility
+   sync hasn't run yet — that window flashes the browser's broken-image
+   placeholder. Same hide rule applied to the player dice img below,
+   which renders without `src` until a game script assigns one. */
 img[id$="-dice-arrow"]:not([src]),
 img[id$="-dice-arrow"][src=""] {
-  visibility: hidden;
+  visibility: hidden !important;
+}
+img.player-dice:not([src]),
+img.player-dice[src=""] {
+  visibility: hidden !important;
 }

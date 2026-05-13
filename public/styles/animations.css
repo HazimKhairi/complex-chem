@@ -852,6 +852,63 @@ img.bh1, img.bh2, img.bh3, img.bh4 {
   object-fit: contain !important;
 }
 
+/* Multi-piece cell normalization. When two players share a tile,
+   mergeHorses() wraps them in a <span> sized 21.5px with inline
+   `width: 50%` on each img — but a piece appended AFTER the merge
+   (e.g. fate Second Chance, kill respawn) stays at the solo 28px,
+   producing the "panda small + dog big" mismatch Hazim flagged
+   2026-05-13. These rules override the legacy inline styles so
+   every piece in a path cell renders at the same size regardless
+   of whether it's wrapped in a merge span or pinned directly to
+   the td. */
+.path td > span:first-child:has(img),
+.path td > span > span:has(img) {
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 1px !important;
+  padding: 1px !important;
+}
+.path td img.gh1, .path td img.gh2, .path td img.gh3, .path td img.gh4,
+.path td img.yh1, .path td img.yh2, .path td img.yh3, .path td img.yh4,
+.path td img.rh1, .path td img.rh2, .path td img.rh3, .path td img.rh4,
+.path td img.bh1, .path td img.bh2, .path td img.bh3, .path td img.bh4 {
+  width: 18px !important;
+  height: 18px !important;
+}
+@media (min-width: 641px) {
+  .path td img.gh1, .path td img.gh2, .path td img.gh3, .path td img.gh4,
+  .path td img.yh1, .path td img.yh2, .path td img.yh3, .path td img.yh4,
+  .path td img.rh1, .path td img.rh2, .path td img.rh3, .path td img.rh4,
+  .path td img.bh1, .path td img.bh2, .path td img.bh3, .path td img.bh4 {
+    width: 20px !important;
+    height: 20px !important;
+  }
+}
+@media (min-width: 1025px) {
+  .path td img.gh1, .path td img.gh2, .path td img.gh3, .path td img.gh4,
+  .path td img.yh1, .path td img.yh2, .path td img.yh3, .path td img.yh4,
+  .path td img.rh1, .path td img.rh2, .path td img.rh3, .path td img.rh4,
+  .path td img.bh1, .path td img.bh2, .path td img.bh3, .path td img.bh4 {
+    width: 22px !important;
+    height: 22px !important;
+  }
+}
+@media (min-width: 1440px) {
+  .path td img.gh1, .path td img.gh2, .path td img.gh3, .path td img.gh4,
+  .path td img.yh1, .path td img.yh2, .path td img.yh3, .path td img.yh4,
+  .path td img.rh1, .path td img.rh2, .path td img.rh3, .path td img.rh4,
+  .path td img.bh1, .path td img.bh2, .path td img.bh3, .path td img.bh4 {
+    width: 24px !important;
+    height: 24px !important;
+  }
+}
+
 /* Any decorative text inside a tile (ligand names, START label)
    must stay below the piece. */
 .path td > span:not(:has(img)) {

@@ -317,6 +317,14 @@ import { CHARACTERS } from "../data/characters";
   function commitToSessionAndGo() {
     const colors = colorsFor(currentMode);
 
+    // Wipe any previous game's saved state before booting a fresh one.
+    // game-mechanics-cards.js auto-restores `game-state` on load, so
+    // without this the new player setup inherits the prior session's
+    // ligands, scores and piece positions — Hazim hit this 2026-05-13.
+    sessionStorage.removeItem("game-state");
+    sessionStorage.removeItem("turn-manager-state");
+    sessionStorage.removeItem("level2-finals");
+
     sessionStorage.setItem("game-option", currentMode);
 
     if (currentMode === "solo") {

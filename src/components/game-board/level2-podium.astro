@@ -205,7 +205,11 @@
     if (!host) return null;
     return {
       host,
-      nameEl: host.querySelector<HTMLElement>(".pod-namecard"),
+      // Rank 4 uses a horizontal pill (#l2-podium-4-name) instead of
+      // the stacked .pod-namecard used by ranks 1-3.
+      nameEl: rank === 4
+        ? (document.getElementById(`l2-podium-${rank}-name`) as HTMLElement | null)
+        : host.querySelector<HTMLElement>(".pod-namecard"),
       imgEl: rank === 4
         ? (document.getElementById(`l2-podium-${rank}-blook`) as HTMLImageElement | null)
         : host.querySelector<HTMLImageElement>(".pod-blook"),

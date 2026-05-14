@@ -78,6 +78,30 @@
     red: "#EF4444", blue: "#3B82F6", orange: "#F97316", green: "#10B981",
   };
 
+  // Minimum coordination number permitted by the chemistry spec.
+  // GEOMETRY_MAP only covers CN 3..6 — anything below 3 has no valid
+  // geometry, so a player whose inventory can't reach 3 cannot build
+  // any complex and is eliminated from Level 2 at entry.
+  var MIN_CN = 3;
+
+  /**
+   * Max coordination number a player could possibly reach from their
+   * inventory. Sum of denticity × count across every ligand they hold.
+   * Returns 0 for an empty / null inventory.
+   */
+  function computeMaxCN(ligands) {
+    if (!Array.isArray(ligands) || ligands.length === 0) return 0;
+    var total = 0;
+    for (var i = 0; i < ligands.length; i++) {
+      var lig = ligands[i] || {};
+      var key = String(lig.id || "").toLowerCase();
+      var chem = LIGAND_CHEMISTRY[key];
+      var d = chem && Number(chem.denticity) > 0 ? Number(chem.denticity) : 1;
+      total += d;
+    }
+    return total;
+  }
+
   var LIGAND_IUPAC = {
     h2o: "aqua", nh3: "ammine", py: "pyridine", pph3: "triphenylphosphine",
     cn: "cyano", o2: "oxo", cl: "chlorido", ox: "oxalato",
@@ -275,18 +299,13 @@
     var info = document.getElementById("player-info");
     if (info) info.textContent = level2State.playerName + " \u2014 " + playerLigands.length + " ligand(s) collected";
 
-    // Show message if no ligands collected
-    if (playerLigands.length === 0) {
-      var c = $("step-container");
-      if (c) {
-        c.innerHTML = '<div class="text-center py-12">'
-          + '<div class="text-5xl mb-4">&#9888;</div>'
-          + '<h2 class="text-xl font-bold text-gray-800 mb-3">No Ligands Collected</h2>'
-          + '<p class="text-gray-600 mb-6">You need to collect ligands in Level 1 before building a complex in Level 2.</p>'
-          + '<a href="/pass-and-play" class="inline-block px-6 py-3 rounded-lg bg-[#4187a0] text-white font-semibold hover:bg-[#357a91] transition">Play Level 1</a>'
-          + '</div>';
-      }
-      updateScoreBar();
+    // Eligibility gate. Players whose inventory can't reach the minimum
+    // coordination number (MIN_CN = 3) cannot build any complex \u2014 they
+    // are eliminated from Level 2 with their Level 1 points only.
+    // Covers both 0-ligand and "max-CN < 3" cases (e.g. 1\u00d7 monodentate).
+    var maxCN = computeMaxCN(playerLigands);
+    if (maxCN < MIN_CN) {
+      _handleIneligibleAndAdvance(maxCN);
       return;
     }
 
@@ -294,6 +313,80 @@
     updateScoreBar();
     renderStep(resumed ? (currentStep || 1) : 1);
     if (resumed) showResumeToast();
+  }
+
+  /**
+   * Player can't reach CN >= 3 from their inventory. Record their
+   * Level 1 score as final, render an explanation panel, then route
+   * to the next eligible player (or the podium if none remain).
+   */
+  function _handleIneligibleAndAdvance(maxCN) {
+    var l1 = 0;
+    if (gameState && gameState.playerPoints) {
+      l1 = Number(gameState.playerPoints[level2State.playerId]) || 0;
+    }
+    level2State.level2Score = 0;
+    persistLevel2Finish(level2State.playerId, level2State.playerName, l1);
+    updateScoreBar();
+    // Suppress the learning-outcomes intro modal — an eliminated player
+    // never reaches the wizard, so the intro adds noise behind our
+    // elimination modal.
+    var intro = document.getElementById("level2-intro-modal");
+    if (intro) { intro.classList.add("hidden"); intro.classList.remove("flex"); }
+    _renderIneligiblePanel(maxCN, l1);
+    _showIneligibleModal(level2State.playerName, playerLigands.length, maxCN);
+  }
+
+  /**
+   * In-page panel that stays visible behind the modal \u2014 same slot as
+   * the wizard so the score bar + indicators stay consistent.
+   */
+  function _renderIneligiblePanel(maxCN, l1Points) {
+    var c = $("step-container"); if (!c) return;
+    var bc = $("builder-container"); if (bc) bc.classList.add("hidden");
+    var name = String(level2State.playerName || "").replace(/[<>&]/g, "");
+    var html = '<div class="text-center py-10 px-6 max-w-lg mx-auto">'
+      + '<svg class="w-14 h-14 mx-auto mb-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>'
+      + '<h2 class="text-2xl font-bold text-gray-800 mb-2">' + name + ' &mdash; Eliminated from Level 2</h2>'
+      + '<p class="text-gray-600 mb-4">Inventory can only reach <strong>CN = ' + maxCN + '</strong>. The minimum required to build any complex is <strong>CN = ' + MIN_CN + '</strong>.</p>'
+      + '<div class="bg-gray-50 rounded-lg p-4 text-left max-w-xs mx-auto mb-6">'
+      +   '<div class="flex items-center justify-between text-sm py-1"><span class="text-gray-600">Level 1 Points</span><span class="font-bold">' + l1Points + '</span></div>'
+      +   '<div class="flex items-center justify-between text-sm py-1"><span class="text-gray-600">Level 2 Points</span><span class="font-bold">0</span></div>'
+      +   '<div class="flex items-center justify-between text-base py-2 border-t border-gray-200 mt-1"><span class="font-bold text-gray-800">Final Total</span><span class="font-bold text-[#4187a0]">' + l1Points + '</span></div>'
+      + '</div>'
+      + '</div>';
+    c.innerHTML = html;
+  }
+
+  /**
+   * Modal explaining the elimination + Continue button that advances
+   * to the next eligible player or the podium. Mirrors the look of
+   * `_showPassDeviceModal` so the wizard's visual language stays
+   * consistent.
+   */
+  function _showIneligibleModal(playerName, ligandCount, maxCN) {
+    if (document.getElementById("l2-ineligible-modal")) return;
+    var safe = String(playerName || "").replace(/[<>&]/g, "");
+    var overlay = document.createElement("div");
+    overlay.id = "l2-ineligible-modal";
+    overlay.style.cssText = "position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,0.55);backdrop-filter:blur(4px);padding:24px;";
+    overlay.innerHTML =
+      '<div style="background:#fff;border-radius:24px;padding:32px;max-width:460px;width:100%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,0.35);border:4px solid #f59e0b;font-family:Fredoka,system-ui,sans-serif;">' +
+        '<svg style="width:56px;height:56px;margin:0 auto 8px;color:#f59e0b;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>' +
+        '<h2 style="font-size:1.5rem;font-weight:800;color:#0f172a;margin-bottom:6px;">Not enough ligands</h2>' +
+        '<p style="color:#475569;font-size:0.95rem;margin-bottom:14px;"><strong style="color:#0f172a;">' + safe + '</strong> collected only ' + ligandCount + ' ligand' + (ligandCount === 1 ? '' : 's') + ' in Level 1 (max CN = ' + maxCN + ').</p>' +
+        '<p style="color:#475569;font-size:0.9rem;margin-bottom:8px;">A valid complex needs at least <strong>CN = ' + MIN_CN + '</strong>. ' + safe + ' is eliminated from Level 2 with their Level 1 score only.</p>' +
+        '<p style="color:#64748b;font-size:0.8rem;margin-bottom:22px;">Next: pass the device to the next player, or view the final podium if everyone is done.</p>' +
+        '<button id="l2-ineligible-ok" style="background:#4187a0;color:#fff;font-weight:700;font-size:1rem;padding:12px 32px;border-radius:14px;border:none;cursor:pointer;box-shadow:0 4px 0 #357a91;">Continue</button>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    var btn = document.getElementById("l2-ineligible-ok");
+    if (btn) {
+      btn.addEventListener("click", function () {
+        overlay.remove();
+        openFinalPodiumOrNext();
+      });
+    }
   }
 
   function showResumeToast() {

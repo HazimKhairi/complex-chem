@@ -1191,23 +1191,46 @@
 
     function pickerChips(field, key, opts, currentValue, expectedValue) {
       var sel = currentValue != null ? currentValue : '';
+      var picked = sel !== '';
+      var pickerId = field + ':' + key;
+      var expanded = (level2State._expandedPicker === pickerId);
       var chipBase = 'q1-' + field + '-chip text-xs font-semibold px-2 py-1 rounded-md border-2 transition select-none ';
+
+      // PAKAR 1 spec (Hazim 2026-06-15): "level dua ni macam jawab kuiz,
+      // tak nampak elemen game". Hide chip options behind a "Tap to pick"
+      // trigger so the table doesn't dump every option at once. Once
+      // expanded, the chips appear; picking one collapses back to the
+      // selected value chip (the existing chip-click handler re-renders
+      // the step which clears `_expandedPicker`).
+      // After submit (`done`) chips render flat so the marker can show
+      // wrong picks in red.
+      if (!done && !picked && !expanded) {
+        return '<button type="button" class="l2-picker-trigger inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-md border-2 border-dashed border-gray-300 bg-white text-gray-500 hover:border-[#4187a0] hover:text-[#4187a0] transition" data-picker="' + pickerId + '">Tap to pick <span aria-hidden="true">+</span></button>';
+      }
+      if (!done && picked && !expanded) {
+        var pickedCls = chipBase + 'border-[#4187a0] bg-[#4187a0]/10 text-[#4187a0] cursor-pointer hover:bg-[#4187a0]/20';
+        // The picked chip itself is the change-affordance — tap to expand
+        // the strip again. Reuses the same chip class so click into the
+        // chip handler still fires "set to same value" (no-op).
+        return '<button type="button" class="' + pickedCls + '" data-picker-change="' + pickerId + '" title="Tap to change">' + sel + '</button>';
+      }
+
       var out = '<div class="flex flex-wrap justify-center gap-1">';
       opts.forEach(function (o) {
-        var picked = sel === o;
+        var isPicked = sel === o;
         var cls = chipBase;
         if (done) {
-          var isWrongPick = picked && expectedValue != null && String(o) !== String(expectedValue);
+          var isWrongPick = isPicked && expectedValue != null && String(o) !== String(expectedValue);
           if (isWrongPick) {
             cls += 'border-red-500 bg-red-50 text-red-700 ring-2 ring-red-300 cursor-default ';
-          } else if (picked) {
+          } else if (isPicked) {
             cls += 'border-[#4187a0] bg-[#4187a0]/10 text-[#4187a0] cursor-default ';
           } else {
             cls += 'border-gray-200 text-gray-300 cursor-default ';
           }
         } else {
-          cls += picked ? 'border-[#4187a0] bg-[#4187a0]/10 text-[#4187a0] '
-                        : 'border-gray-300 bg-white text-gray-600 hover:border-[#4187a0] cursor-pointer ';
+          cls += isPicked ? 'border-[#4187a0] bg-[#4187a0]/10 text-[#4187a0] '
+                          : 'border-gray-300 bg-white text-gray-600 hover:border-[#4187a0] cursor-pointer ';
         }
         out += '<button type="button" class="' + cls + '" data-field="' + field + '" data-key="' + key + '" data-val="' + o + '"' + (done ? ' disabled' : '') + '>' + o + '</button>';
       });
@@ -1353,6 +1376,20 @@
         var store = q1FieldStores[field];
         if (!store) return;
         store[this.getAttribute("data-key")] = this.getAttribute("data-val");
+        level2State._expandedPicker = null;
+        saveLevel2State();
+        renderStep2_Q1_type();
+      });
+    });
+
+    // Expand/collapse the picker strip — progressive reveal so the
+    // table reads as a game (Hazim PAKAR 1 spec 2026-06-15) instead of
+    // dumping every chip option upfront.
+    document.querySelectorAll(".l2-picker-trigger, [data-picker-change]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        if (done) return;
+        var pid = this.getAttribute("data-picker") || this.getAttribute("data-picker-change");
+        level2State._expandedPicker = pid;
         saveLevel2State();
         renderStep2_Q1_type();
       });
@@ -1363,6 +1400,7 @@
       chip.addEventListener("click", function () {
         if (done) return;
         level2State.q1TotalLigandChargeInput = chip.getAttribute("data-val");
+        level2State._expandedPicker = null;
         saveLevel2State();
         renderStep2_Q1_type();
       });
@@ -1371,6 +1409,7 @@
       chip.addEventListener("click", function () {
         if (done) return;
         level2State.q1ComplexChargeInput = chip.getAttribute("data-val");
+        level2State._expandedPicker = null;
         saveLevel2State();
         renderStep2_Q1_type();
       });
@@ -1604,7 +1643,21 @@
     var countOpts = ['1', '2'];
 
     function q2Chips(cls, key, opts, sel, expectedVal) {
+      var hasPick = (sel != null && sel !== '');
+      var pickerId = cls + ':' + key;
+      var expanded = (level2State._expandedPicker === pickerId);
       var chipBase = cls + ' text-xs font-semibold px-2 py-1 rounded-md border-2 transition select-none ';
+
+      // PAKAR 1 — progressive reveal (Hazim 2026-06-15). Hide chips
+      // behind a "Tap to pick" trigger until the player taps the cell.
+      if (!done && !hasPick && !expanded) {
+        return '<button type="button" class="l2-picker-trigger inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-md border-2 border-dashed border-gray-300 bg-white text-gray-500 hover:border-[#4187a0] hover:text-[#4187a0] transition" data-picker="' + pickerId + '">Tap to pick <span aria-hidden="true">+</span></button>';
+      }
+      if (!done && hasPick && !expanded) {
+        var pickedCls = chipBase + 'border-[#4187a0] bg-[#4187a0]/10 text-[#4187a0] cursor-pointer hover:bg-[#4187a0]/20';
+        return '<button type="button" class="' + pickedCls + '" data-picker-change="' + pickerId + '" title="Tap to change">' + sel + '</button>';
+      }
+
       var out = '<div class="flex flex-wrap justify-center gap-1">';
       opts.forEach(function (o) {
         var picked = sel === o;
@@ -1712,6 +1765,7 @@
       chip.addEventListener("click", function () {
         if (done) return;
         level2State.q2TypeInputs[this.getAttribute("data-key")] = this.getAttribute("data-val");
+        level2State._expandedPicker = null;
         saveLevel2State();
         renderStep3_Q2_cn();
       });
@@ -1720,6 +1774,7 @@
       chip.addEventListener("click", function () {
         if (done) return;
         level2State.q2DenticityInputs[this.getAttribute("data-key")] = this.getAttribute("data-val");
+        level2State._expandedPicker = null;
         saveLevel2State();
         renderStep3_Q2_cn();
       });
@@ -1728,6 +1783,18 @@
       chip.addEventListener("click", function () {
         if (done) return;
         level2State.q2CountInputs[this.getAttribute("data-key")] = this.getAttribute("data-val");
+        level2State._expandedPicker = null;
+        saveLevel2State();
+        renderStep3_Q2_cn();
+      });
+    });
+
+    // Progressive reveal trigger (Hazim PAKAR 1 2026-06-15).
+    document.querySelectorAll(".l2-picker-trigger, [data-picker-change]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        if (done) return;
+        var pid = this.getAttribute("data-picker") || this.getAttribute("data-picker-change");
+        level2State._expandedPicker = pid;
         saveLevel2State();
         renderStep3_Q2_cn();
       });

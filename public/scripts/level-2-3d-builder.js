@@ -303,6 +303,10 @@
         scene.remove(slot._arcMesh);
         slot._arcMesh = null;
       }
+      if (slot._arcLabel) {
+        scene.remove(slot._arcLabel);
+        slot._arcLabel = null;
+      }
       slot._pairedWith = undefined;
       slot.ligand = null;
       if (slot.ghostMesh) slot.ghostMesh.visible = true;
@@ -340,6 +344,64 @@
     var sprite = new THREE.Sprite(mat);
     sprite.scale.set(0.7, 0.7, 1);
     sprite.renderOrder = 999;  // draw last → always on top
+    return sprite;
+  }
+
+  // Wide pill sprite for bond-arc labels — fits ligand names like
+  // "phen", "bipy", "acac", "CO₃²⁻" along the curved bond.
+  // PAKAR 1 spec (Hazim 2026-06-15): bidentate ligand name reads on the
+  // ring/arc, not just the donor atom on each sphere.
+  function makeArcLabelSprite(text) {
+    var w = 512, h = 192;
+    var canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    var ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, w, h);
+    // Auto-size font so long names ("CO₃²⁻") still fit.
+    var fontSize = 110;
+    ctx.font = "900 " + fontSize + "px system-ui, -apple-system, sans-serif";
+    while (ctx.measureText(text).width > w - 80 && fontSize > 60) {
+      fontSize -= 8;
+      ctx.font = "900 " + fontSize + "px system-ui, -apple-system, sans-serif";
+    }
+    // Rounded background pill — navy fill + gold border so the label
+    // reads against the colourful sphere palette without re-using a
+    // sphere colour.
+    var pad = 14, r = 36;
+    var bx = pad, by = pad, bw = w - pad * 2, bh = h - pad * 2;
+    ctx.beginPath();
+    ctx.moveTo(bx + r, by);
+    ctx.lineTo(bx + bw - r, by);
+    ctx.quadraticCurveTo(bx + bw, by, bx + bw, by + r);
+    ctx.lineTo(bx + bw, by + bh - r);
+    ctx.quadraticCurveTo(bx + bw, by + bh, bx + bw - r, by + bh);
+    ctx.lineTo(bx + r, by + bh);
+    ctx.quadraticCurveTo(bx, by + bh, bx, by + bh - r);
+    ctx.lineTo(bx, by + r);
+    ctx.quadraticCurveTo(bx, by, bx + r, by);
+    ctx.closePath();
+    ctx.fillStyle = "#0f172a";
+    ctx.fill();
+    ctx.lineWidth = 8;
+    ctx.strokeStyle = "#fde047";
+    ctx.stroke();
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText(text, w / 2, h / 2);
+    var tex = new THREE.CanvasTexture(canvas);
+    tex.needsUpdate = true;
+    var mat = new THREE.SpriteMaterial({
+      map: tex,
+      transparent: true,
+      depthTest: false,
+      depthWrite: false,
+    });
+    var sprite = new THREE.Sprite(mat);
+    // Wider than tall — match the canvas aspect.
+    sprite.scale.set(1.4, 0.52, 1);
+    sprite.renderOrder = 1000;
     return sprite;
   }
 
@@ -463,6 +525,24 @@
       first._arcMesh = arc;
       partner._arcMesh = arc;
     }
+
+    // Bond-arc name label — show the ligand name (en/phen/bipy/ox/acac/
+    // CO₃²⁻) on the curved bond so students can tell which bidentate
+    // they just placed. PAKAR 1 spec (Hazim 2026-06-15).
+    var arcName = (ligand && ligand.name) ? String(ligand.name) : "";
+    if (arcName) {
+      var mid = first.position.clone().add(partner.position).multiplyScalar(0.5);
+      var outward = mid.clone();
+      if (outward.lengthSq() > 0.0001) outward.normalize().multiplyScalar(1.25);
+      else outward.set(0, 1.25, 0);
+      mid.add(outward);
+      var arcLabel = makeArcLabelSprite(arcName);
+      arcLabel.position.copy(mid);
+      arcLabel.scale.set(1.4, 0.52, 1);
+      scene.add(arcLabel);
+      first._arcLabel = arcLabel;
+      partner._arcLabel = arcLabel;
+    }
   }
 
   function makeBondArc(p1, p2, colorHex) {
@@ -490,6 +570,7 @@
     scene.remove(slot.ballMesh);
     if (slot.labelMesh) scene.remove(slot.labelMesh);
     if (slot._arcMesh) { scene.remove(slot._arcMesh); slot._arcMesh = null; }
+    if (slot._arcLabel) { scene.remove(slot._arcLabel); slot._arcLabel = null; }
     slot.ballMesh = null;
     slot.labelMesh = null;
     slot.ligand = null;
@@ -505,6 +586,7 @@
         scene.remove(partner.ballMesh);
         if (partner.labelMesh) scene.remove(partner.labelMesh);
         if (partner._arcMesh) { scene.remove(partner._arcMesh); partner._arcMesh = null; }
+        if (partner._arcLabel) { scene.remove(partner._arcLabel); partner._arcLabel = null; }
         partner.ballMesh = null;
         partner.labelMesh = null;
         partner.ligand = null;

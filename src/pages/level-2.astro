@@ -13,7 +13,7 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
   <GameSettingsMenu />
   <Level2IntroModal />
   <IndicatorPanel />
-  <main class="h-dvh px-3 py-2 flex flex-col items-center gap-2 overflow-hidden bg-[#fef9e7]">
+  <main class="l2-stage h-dvh px-3 py-2 flex flex-col items-center gap-2 overflow-hidden">
     <!-- TOP HUD — gradient game bar with brand, step indicator, score chip -->
     <div class="w-full max-w-6xl rounded-2xl shadow-lg overflow-hidden flex-shrink-0 bg-gradient-to-r from-[#1e3a8a] via-[#2563eb] to-[#1e40af]">
       <div class="flex items-center justify-between gap-3 px-4 py-2">
@@ -111,7 +111,7 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
            viewport height, scrolls internally if content is taller. -->
       <div
         id="step-container"
-        class="bg-white rounded-2xl shadow-md p-4 sm:p-5 self-start w-full max-h-full overflow-y-auto"
+        class="l2-stage-card rounded-2xl shadow-xl p-4 sm:p-5 self-start w-full max-h-full overflow-y-auto"
       >
         <p class="text-gray-400 text-center mt-20">Loading...</p>
       </div>
@@ -449,6 +449,53 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
     70%  { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
     100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
   }
+
+  /* ─────────────────────────────────────────────────────────────
+     PAKAR 1 round 4 (Hazim 2026-06-15) — kill the white-paper vibe.
+     "putih so dia nampak macam paper quiz" — Level 2 now sits on a
+     vibrant purple→blue→teal gradient with subtle dot pattern, and
+     the step card is a tinted glass panel with a gold accent rim
+     instead of a flat white sheet.
+     ───────────────────────────────────────────────────────────── */
+  .l2-stage {
+    background:
+      radial-gradient(circle at 20% 18%, rgba(251, 191, 36, 0.16) 0%, transparent 38%),
+      radial-gradient(circle at 80% 84%, rgba(244, 114, 182, 0.18) 0%, transparent 42%),
+      linear-gradient(135deg, #4c1d95 0%, #1d4ed8 45%, #0e7490 100%);
+    position: relative;
+  }
+  .l2-stage::before {
+    content: "";
+    position: absolute; inset: 0;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+    background-size: 22px 22px;
+    pointer-events: none;
+    opacity: 0.55;
+  }
+  .l2-stage > * { position: relative; }
+
+  /* Step card — tinted glass instead of bare white. Light enough to
+     keep table copy readable but coloured enough to break out of
+     "exam paper" territory. */
+  .l2-stage-card {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(245, 243, 255, 0.92));
+    border: 3px solid #fcd34d;
+    box-shadow:
+      0 0 0 4px rgba(76, 29, 149, 0.35),
+      0 20px 40px -12px rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(6px);
+  }
+
+  /* Banded table rows — replace pale tints with saturated game colours
+     so each working row reads as its own "lane". */
+  .l2-stage-card tbody tr:nth-child(odd) > td  { background: rgba(165, 180, 252, 0.18); }
+  .l2-stage-card tbody tr:nth-child(even) > td { background: rgba(252, 211, 77, 0.16); }
+  .l2-stage-card tbody tr.bg-emerald-50 > td   { background: linear-gradient(90deg, #34d399, #10b981) !important; color: #064e3b !important; }
+  .l2-stage-card tbody tr.bg-blue-50 > td      { background: linear-gradient(90deg, #60a5fa, #3b82f6) !important; color: #1e3a8a !important; }
+  .l2-stage-card tbody tr.bg-amber-50 > td     { background: linear-gradient(90deg, #fbbf24, #f59e0b) !important; color: #78350f !important; }
+  .l2-stage-card thead tr                       { background: linear-gradient(90deg, #1e3a8a, #4c1d95) !important; }
+  .l2-stage-card thead th                       { color: #fde68a !important; text-transform: uppercase; letter-spacing: 0.04em; }
 
   /* ─────────────────────────────────────────────────────────────
      PAKAR 1 round 3 (Hazim 2026-06-15) — drag-tile reactor for Q2.

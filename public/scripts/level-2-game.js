@@ -716,10 +716,17 @@
       var mult    = hud.querySelector(".l2-combo-mult");
       if (countEl) countEl.textContent = c;
       if (mult)    mult.textContent = "x" + c;
-      hud.classList.remove("l2-combo-pop");
-      // Force reflow so the animation re-fires on rapid drops.
-      void hud.offsetWidth;
-      hud.classList.add("l2-combo-pop");
+      // GSAP elastic pop — feels chunkier than the CSS keyframe pop.
+      if (window.gsap) {
+        gsap.fromTo(hud,
+          { scale: 1, rotate: 0 },
+          { scale: 1.22, rotate: -3, duration: 0.18, ease: "back.out(3)",
+            yoyo: true, repeat: 1, transformOrigin: "50% 50%" });
+      } else {
+        hud.classList.remove("l2-combo-pop");
+        void hud.offsetWidth;
+        hud.classList.add("l2-combo-pop");
+      }
     }
     if (originEl && originEl.getBoundingClientRect) {
       var rect = originEl.getBoundingClientRect();
@@ -730,7 +737,36 @@
       floatEl.style.left = (rect.left + rect.width / 2) + "px";
       floatEl.style.top  = (rect.top - 6) + "px";
       document.body.appendChild(floatEl);
-      setTimeout(function () { if (floatEl.parentNode) floatEl.parentNode.removeChild(floatEl); }, 1100);
+      if (window.gsap) {
+        // Disable CSS animation so GSAP owns the motion.
+        floatEl.style.animation = "none";
+        var tl = gsap.timeline({ onComplete: function () {
+          if (floatEl.parentNode) floatEl.parentNode.removeChild(floatEl);
+        }});
+        tl.fromTo(floatEl,
+            { y: -10, scale: 0.55, opacity: 0 },
+            { y: -55, scale: 1.18, opacity: 1, duration: 0.32, ease: "back.out(2.6)" })
+          .to(floatEl,
+            { y: -150, scale: 0.95, opacity: 0, duration: 0.7, ease: "power2.in" });
+      } else {
+        setTimeout(function () { if (floatEl.parentNode) floatEl.parentNode.removeChild(floatEl); }, 1100);
+      }
+    }
+    // Animate the just-placed tile that's now in the slot. We re-render
+    // synchronously after the click, so the placed tile is sibling of
+    // the tray button by the time GSAP runs on the next frame.
+    if (window.gsap) {
+      requestAnimationFrame(function () {
+        var slotKey = originEl && originEl.getAttribute ? originEl.getAttribute('data-key') : null;
+        var field   = originEl && originEl.getAttribute ? originEl.getAttribute('data-field') : null;
+        if (!slotKey || !field) return;
+        var slotId = field + ':' + slotKey;
+        var placed = document.querySelector('[data-slot-clear="' + slotId + '"]');
+        if (!placed) return;
+        gsap.fromTo(placed,
+          { scale: 0.3, rotate: -10, opacity: 0 },
+          { scale: 1, rotate: 0, opacity: 1, duration: 0.45, ease: "elastic.out(1, 0.55)" });
+      });
     }
     try {
       if (window.AudioManager) window.AudioManager.play(c >= 3 ? "complex-built" : "ligand");
@@ -1488,6 +1524,37 @@
 
     html += navButtons({ back: true, next: true, nextDisabled: !done && !chosen, nextLabel: done ? "Next: Geometry" : "Submit" });
     c.innerHTML = html;
+
+    // GSAP entrance — Q2 now stages in (combo HUD, table rows, tile
+    // tray) so the page reads like a game level loading rather than
+    // an exam paper appearing. Each element pops with elastic ease.
+    if (window.gsap) {
+      var tlEntrance = gsap.timeline({ defaults: { ease: "back.out(1.8)" } });
+      var hudEl = c.querySelector("#l2-combo-hud");
+      if (hudEl) tlEntrance.from(hudEl, { y: -12, scale: 0.7, opacity: 0, duration: 0.35 }, 0);
+      var rows = c.querySelectorAll("table tbody tr");
+      if (rows.length) tlEntrance.from(rows,
+        { y: 14, opacity: 0, duration: 0.32, stagger: 0.06 }, 0.05);
+      var tray = c.querySelector("#l2-tile-tray");
+      if (tray) tlEntrance.from(tray,
+        { y: 24, opacity: 0, duration: 0.42 }, 0.18);
+      var trayTiles = c.querySelectorAll("#l2-tile-tray .l2-tile--tray");
+      if (trayTiles.length) tlEntrance.from(trayTiles,
+        { y: 10, scale: 0.6, opacity: 0, duration: 0.3, stagger: 0.03 }, 0.32);
+      var kBtns = c.querySelectorAll(".l2-kahoot-btn");
+      if (kBtns.length) tlEntrance.from(kBtns,
+        { y: 18, scale: 0.85, opacity: 0, duration: 0.32, stagger: 0.07 }, 0.42);
+    }
+
+    // Armed-slot floating pulse — GSAP infinite loop on the pulsing
+    // slot so it really catches the eye versus the CSS keyframe.
+    if (window.gsap) {
+      var armedSlot = c.querySelector(".l2-tile-slot--armed");
+      if (armedSlot) {
+        gsap.to(armedSlot, { scale: 1.08, duration: 0.55, yoyo: true,
+          repeat: -1, ease: "sine.inOut", transformOrigin: "50% 50%" });
+      }
+    }
 
     document.querySelectorAll(".type-opt").forEach(function (btn) {
       btn.addEventListener("click", function () {

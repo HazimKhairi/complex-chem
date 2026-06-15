@@ -138,10 +138,10 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
                with a fixed font size that wraps to a second line
                when the chemistry gets long, instead of shrinking the
                text. -->
-          <div id="builder-outer-box" class="px-4 py-4 border-b-4 border-blue-400 bg-gradient-to-r from-sky-100 via-white to-blue-100 flex-shrink-0">
-            <span class="block text-sm font-black uppercase tracking-widest text-blue-700 mb-1.5">Build this complex</span>
+          <div id="builder-outer-box" class="px-3 py-2 border-b-2 border-blue-300 bg-gradient-to-r from-sky-50 via-white to-blue-50 flex-shrink-0">
+            <span class="block text-[11px] font-black uppercase tracking-widest text-blue-600 mb-1">Build this</span>
             <div class="l2-formula-box w-full">
-              <div id="builder-formula" class="l2-formula px-5 py-4 rounded-2xl bg-white shadow-lg border-4 border-blue-500 text-blue-900 font-extrabold tabular-nums tracking-wide leading-tight ring-4 ring-amber-200"
+              <div id="builder-formula" class="l2-formula px-3 py-2 rounded-xl bg-white shadow border-2 border-blue-400 text-blue-900 font-extrabold tabular-nums tracking-wide leading-tight"
                    style="font-family:'Fredoka',system-ui,sans-serif;">
                 <span class="text-gray-400 text-base">[ build your complex ]</span>
               </div>
@@ -169,7 +169,7 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
             </span>
           </div>
           <div class="px-3 py-1.5 border-t border-gray-100 flex-shrink-0">
-            <p class="text-[10px] text-gray-500 uppercase tracking-wide mb-1">Your Ligands — tap to pick up, drag onto empty slots</p>
+            <p class="text-[11px] text-amber-700 font-black uppercase tracking-wide mb-1">Your Ligands — <span class="text-blue-700">TAP to pick up</span>, then <span class="text-blue-700">DRAG</span> onto empty slots</p>
             <div id="ligand-inventory" class="flex flex-wrap gap-1.5 justify-center min-h-[36px]"></div>
           </div>
           <div class="px-3 py-1.5 border-t border-gray-100 flex justify-between items-center flex-shrink-0">
@@ -397,6 +397,56 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
     display: inline-block;
     box-shadow: 0 2px 6px rgba(0,0,0,0.18);
     text-shadow: none;
+  }
+
+  /* Game-feel "Tap to pick" pill — PAKAR 1 2026-06-15.
+     Bold all-caps label, dashed gold ring, soft pulse so the cell
+     reads as an interactive game element instead of a quiz blank. */
+  .l2-tap-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.95rem;
+    border-radius: 9999px;
+    background: linear-gradient(180deg, #fffbeb, #fef3c7);
+    border: 2px dashed #f59e0b;
+    color: #92400e;
+    font-family: 'Fredoka', system-ui, sans-serif;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 0 2px 0 #fbbf24, 0 4px 12px rgba(245, 158, 11, 0.18);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    position: relative;
+    user-select: none;
+  }
+  .l2-tap-pill:hover {
+    transform: translateY(-1px);
+    background: linear-gradient(180deg, #fef3c7, #fde68a);
+    box-shadow: 0 3px 0 #f59e0b, 0 6px 16px rgba(245, 158, 11, 0.28);
+  }
+  .l2-tap-pill:active { transform: translateY(1px); box-shadow: 0 1px 0 #fbbf24; }
+  .l2-tap-pulse {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 9999px;
+    background: #f59e0b;
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.55);
+    animation: l2TapPulse 1.6s ease-out infinite;
+  }
+  .l2-tap-label { font-weight: 900; }
+  .l2-tap-plus {
+    font-weight: 900;
+    font-size: 1rem;
+    line-height: 1;
+    margin-left: 0.1rem;
+  }
+  @keyframes l2TapPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.55); }
+    70%  { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
   }
 
   /* Kahoot 2-2 vibrant button with bouncy depth shadow. */
@@ -898,8 +948,8 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
      the pill's width. Short formulas keep the big font; long
      formulas auto-shrink just enough to fit on one line. */
   .l2-formula {
-    font-size: clamp(1.75rem, 3.4vw, 3rem);
-    line-height: 1.25;
+    font-size: clamp(1.25rem, 2.4vw, 2rem);
+    line-height: 1.2;
     text-align: center;
     white-space: nowrap;
     overflow: hidden;

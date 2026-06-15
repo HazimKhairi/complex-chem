@@ -1194,7 +1194,7 @@
       var picked = sel !== '';
       var pickerId = field + ':' + key;
       var expanded = (level2State._expandedPicker === pickerId);
-      var chipBase = 'q1-' + field + '-chip text-xs font-semibold px-2 py-1 rounded-md border-2 transition select-none ';
+      var chipBase = 'q1-' + field + '-chip text-sm font-black px-2.5 py-1.5 rounded-md border-2 transition select-none ';
 
       // PAKAR 1 spec (Hazim 2026-06-15): "level dua ni macam jawab kuiz,
       // tak nampak elemen game". Hide chip options behind a "Tap to pick"
@@ -1205,7 +1205,7 @@
       // After submit (`done`) chips render flat so the marker can show
       // wrong picks in red.
       if (!done && !picked && !expanded) {
-        return '<button type="button" class="l2-picker-trigger inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-md border-2 border-dashed border-gray-300 bg-white text-gray-500 hover:border-[#4187a0] hover:text-[#4187a0] transition" data-picker="' + pickerId + '">Tap to pick <span aria-hidden="true">+</span></button>';
+        return '<button type="button" class="l2-picker-trigger l2-tap-pill" data-picker="' + pickerId + '"><span class="l2-tap-pulse"></span><span class="l2-tap-label">Tap to pick</span><span class="l2-tap-plus" aria-hidden="true">+</span></button>';
       }
       if (!done && picked && !expanded) {
         var pickedCls = chipBase + 'border-[#4187a0] bg-[#4187a0]/10 text-[#4187a0] cursor-pointer hover:bg-[#4187a0]/20';
@@ -1646,12 +1646,12 @@
       var hasPick = (sel != null && sel !== '');
       var pickerId = cls + ':' + key;
       var expanded = (level2State._expandedPicker === pickerId);
-      var chipBase = cls + ' text-xs font-semibold px-2 py-1 rounded-md border-2 transition select-none ';
+      var chipBase = cls + ' text-sm font-black px-2.5 py-1.5 rounded-md border-2 transition select-none ';
 
       // PAKAR 1 — progressive reveal (Hazim 2026-06-15). Hide chips
       // behind a "Tap to pick" trigger until the player taps the cell.
       if (!done && !hasPick && !expanded) {
-        return '<button type="button" class="l2-picker-trigger inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-md border-2 border-dashed border-gray-300 bg-white text-gray-500 hover:border-[#4187a0] hover:text-[#4187a0] transition" data-picker="' + pickerId + '">Tap to pick <span aria-hidden="true">+</span></button>';
+        return '<button type="button" class="l2-picker-trigger l2-tap-pill" data-picker="' + pickerId + '"><span class="l2-tap-pulse"></span><span class="l2-tap-label">Tap to pick</span><span class="l2-tap-plus" aria-hidden="true">+</span></button>';
       }
       if (!done && hasPick && !expanded) {
         var pickedCls = chipBase + 'border-[#4187a0] bg-[#4187a0]/10 text-[#4187a0] cursor-pointer hover:bg-[#4187a0]/20';

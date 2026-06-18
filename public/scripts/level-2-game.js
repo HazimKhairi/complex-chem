@@ -1282,35 +1282,108 @@
     // has a chip pick.
     var contribOpts      = ['−6', '−5', '−4', '−3', '−2', '−1', '0', '+1', '+2', '+3', '+4', '+5', '+6'];
 
-    // Inline number chips, always visible (Hazim 2026-06-17: "buang
-    // pill, nombor terus nampak"). Tap a chip → it selects + plays a
-    // sound, no full-stage re-animation. Reverts the PAKAR 1 tile-slot
-    // + dial reactor which forced a tap-to-arm → spin → drop dance and
-    // re-rendered the whole stage at each step (looked like a refresh).
+    // PAKAR 1 drag-tile reactor (Hazim 2026-06-15; restored 2026-06-18:
+    // "saya nak yang mini-game tu, cuma buang popup"). Each cell renders
+    // as a pulsing TAP slot (empty) or a snapped tile (filled). A shared
+    // bottom tray (tileTrayHtml) feeds the currently-armed slot via a
+    // prev/next dial. Tap a placed tile to pop it out and re-arm.
+    // NO score/combo popup — dropping a tile just plays a pick sound.
+    // The refresh-flash that killed v1 is gone: the whole-stage GSAP
+    // entrance is gated behind _pendingEntrance, so taps re-render
+    // instantly without replaying the entrance timeline.
     function pickerChips(field, key, opts, currentValue, expectedValue) {
+      return tileSlot(field, key, opts, currentValue, expectedValue);
+    }
+
+    function tileSlot(field, key, opts, currentValue, expectedValue) {
       var sel = currentValue != null ? currentValue : '';
-      var chipBase = 'q1-' + field + '-chip text-sm font-black px-2.5 py-1.5 rounded-md border-2 transition select-none ';
-      var out = '<div class="flex flex-wrap justify-center gap-1">';
-      opts.forEach(function (o) {
-        var isPicked = sel === o;
-        var cls = chipBase;
-        if (done) {
-          var isWrongPick = isPicked && expectedValue != null && String(o) !== String(expectedValue);
-          if (isWrongPick) {
-            cls += 'border-red-500 bg-red-50 text-red-700 ring-2 ring-red-300 cursor-default ';
-          } else if (isPicked) {
-            cls += 'border-[#4187a0] bg-[#4187a0]/10 text-[#4187a0] cursor-default ';
-          } else {
-            cls += 'border-gray-200 text-gray-300 cursor-default ';
-          }
-        } else {
-          cls += isPicked ? 'border-[#4187a0] bg-[#4187a0]/10 text-[#4187a0] '
-                          : 'border-gray-300 bg-white text-gray-600 hover:border-[#4187a0] cursor-pointer ';
+      var picked = sel !== '';
+      var slotId = field + ':' + key;
+      var armed = (level2State._armedSlot === slotId);
+
+      if (done) {
+        if (!picked) {
+          return '<span class="l2-tile-slot l2-tile-slot--empty l2-tile-slot--done" aria-label="empty">·</span>';
         }
-        out += '<button type="button" class="' + cls + '" data-field="' + field + '" data-key="' + key + '" data-val="' + o + '"' + (done ? ' disabled' : '') + '>' + o + '</button>';
-      });
-      out += '</div>';
-      return out;
+        var wrong = expectedValue != null && String(sel) !== String(expectedValue);
+        return '<span class="l2-tile ' + (wrong ? 'l2-tile--wrong' : 'l2-tile--correct') + '">' + sel + '</span>';
+      }
+
+      if (!picked) {
+        var emptyCls = 'l2-tile-slot l2-tile-slot--empty' + (armed ? ' l2-tile-slot--armed' : '');
+        return '<button type="button" class="' + emptyCls + '" data-slot="' + slotId + '" aria-label="Tap to fill"><span class="l2-tap-label">Tap</span></button>';
+      }
+      return '<button type="button" class="l2-tile l2-tile--placed" data-slot-clear="' + slotId + '" data-field="' + field + '" data-key="' + key + '" title="Tap to change">' + sel + '</button>';
+    }
+
+    // Bottom tray — feeds the armed slot. One big tile flanked by ◀ / ▶
+    // (slot-machine dial, Hazim "next next ke previous ke"); tap the big
+    // tile to drop the current value into the armed slot. Idle hint when
+    // no slot is armed. Progress bar tracks tiles dropped (not score).
+    function tileTrayHtml() {
+      if (done) return '';
+      var armedId = level2State._armedSlot;
+      var totalCells = (charge.rows.length * 3) + 3;
+      var filledCells = 0;
+      Object.keys(q1Charges).forEach(function (k) { if (q1Charges[k]) filledCells++; });
+      Object.keys(q1Counts).forEach(function (k) { if (q1Counts[k]) filledCells++; });
+      Object.keys(q1Contribs).forEach(function (k) { if (q1Contribs[k]) filledCells++; });
+      if (level2State.q1TotalLigandChargeInput) filledCells++;
+      if (level2State.q1ComplexChargeInput) filledCells++;
+      var pct = totalCells > 0 ? Math.min(100, Math.round((filledCells / totalCells) * 100)) : 0;
+
+      var html = '<div id="l2-tile-tray" class="l2-tile-tray">';
+      html += '<div class="l2-tile-tray-head">';
+      html += '<div class="l2-tile-tray-progress"><div class="l2-tile-tray-progress-bar" style="width:' + pct + '%"></div></div>';
+      html += '<div class="l2-tile-tray-progress-label">' + filledCells + ' / ' + totalCells + ' tiles dropped</div>';
+      html += '</div>';
+
+      if (!armedId) {
+        html += '<div class="l2-tile-tray-hint"><span class="l2-tap-pulse"></span><span>Tap a glowing slot in the table to start</span></div>';
+        html += '</div>';
+        return html;
+      }
+      var parts = armedId.split(':');
+      var field = parts[0];
+      var slotKey = parts[1];
+      var pool;
+      if (field === 'charge')         pool = ligandChargeOpts;
+      else if (field === 'count')     pool = countOpts;
+      else if (field === 'contrib')   pool = (slotKey === 'metal') ? metalChargeOpts : contribOpts;
+      else if (field === 'totLigand') pool = contribOpts;
+      else if (field === 'complex')   pool = contribOpts;
+      else                            pool = contribOpts;
+
+      // _trayIndex tracks the dial position; reset to pool midpoint when a
+      // new slot is armed so both directions are reachable in fewest taps.
+      // Clamp every render — pools differ in length per field.
+      if (typeof level2State._trayIndex !== 'number' || isNaN(level2State._trayIndex)) {
+        level2State._trayIndex = Math.floor(pool.length / 2);
+      }
+      if (level2State._trayIndex < 0) level2State._trayIndex = 0;
+      if (level2State._trayIndex >= pool.length) level2State._trayIndex = pool.length - 1;
+      var idx = level2State._trayIndex;
+      var current = pool[idx];
+      var prevDisabled = idx <= 0 ? ' disabled' : '';
+      var nextDisabled = idx >= pool.length - 1 ? ' disabled' : '';
+      var chipCls = 'q1-' + field + '-chip';
+
+      html += '<div class="l2-tile-tray-label">Spin the dial → tap the tile to drop it</div>';
+      html += '<div class="l2-tray-scroller">';
+      html += '  <button type="button" class="l2-tray-arrow" data-tray-step="-1"' + prevDisabled + ' aria-label="Previous">';
+      html += '    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>';
+      html += '  </button>';
+      html += '  <div class="l2-tray-dial">';
+      html += '    <span class="l2-tray-dial-pos">' + (idx + 1) + ' / ' + pool.length + '</span>';
+      html += '    <button type="button" class="' + chipCls + ' l2-tile l2-tile--dial" data-field="' + field + '" data-key="' + slotKey + '" data-val="' + current + '" data-tray-current="1">' + current + '</button>';
+      html += '    <span class="l2-tray-dial-cta">Tap to drop</span>';
+      html += '  </div>';
+      html += '  <button type="button" class="l2-tray-arrow" data-tray-step="1"' + nextDisabled + ' aria-label="Next">';
+      html += '    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
+      html += '  </button>';
+      html += '</div>';
+      html += '</div>';
+      return html;
     }
 
     // Helper to format a numeric charge into the same +/- string shape
@@ -1373,6 +1446,9 @@
     html += '<td class="text-center px-3 py-2">' + pickerChips('complex', 'cmp', contribOpts, level2State.q1ComplexChargeInput, expComplexChargeStr) + '</td>';
     html += '</tr>';
     html += '</tbody></table></div>';
+
+    // Tile tray — game-feel bottom strip with prev/next dial (PAKAR 1).
+    html += tileTrayHtml();
 
     // 3-option answer with eliminate-on-2nd-wrong logic. Kahoot-style
     // depth buttons; one colour per option so the grid reads bright.
@@ -1441,9 +1517,32 @@
       var rows = c.querySelectorAll("table tbody tr");
       if (rows.length) tlEntrance.from(rows,
         { y: 14, opacity: 0, duration: 0.32, stagger: 0.06 }, 0.05);
+      var tray = c.querySelector("#l2-tile-tray");
+      if (tray) tlEntrance.from(tray,
+        { y: 24, opacity: 0, duration: 0.42 }, 0.18);
       var kBtns = c.querySelectorAll(".l2-kahoot-btn");
       if (kBtns.length) tlEntrance.from(kBtns,
         { y: 18, scale: 0.85, opacity: 0, duration: 0.32, stagger: 0.07 }, 0.42);
+    }
+
+    // Dial value swap — every prev/next re-renders; pop the new dial tile
+    // so the scrub reads as a slot-machine roll. Runs on every render
+    // (NOT gated by _pendingEntrance) — it's a local motion, not the
+    // whole-stage entrance, so it never looks like a page refresh.
+    if (window.gsap) {
+      var dial = c.querySelector(".l2-tile--dial");
+      if (dial) {
+        gsap.fromTo(dial,
+          { y: -8, rotateX: -45, opacity: 0 },
+          { y: 0, rotateX: 0, opacity: 1, duration: 0.28, ease: "back.out(2.2)" });
+      }
+      // Armed-slot floating pulse — infinite yoyo so the live slot really
+      // catches the eye versus the CSS keyframe alone.
+      var armedSlot = c.querySelector(".l2-tile-slot--armed");
+      if (armedSlot) {
+        gsap.to(armedSlot, { scale: 1.08, duration: 0.55, yoyo: true,
+          repeat: -1, ease: "sine.inOut", transformOrigin: "50% 50%" });
+      }
     }
 
     document.querySelectorAll(".type-opt").forEach(function (btn) {
@@ -1467,6 +1566,9 @@
         var store = q1FieldStores[field];
         if (!store) return;
         store[this.getAttribute("data-key")] = this.getAttribute("data-val");
+        // Tile dropped → disarm slot so the tray returns to its idle hint.
+        level2State._armedSlot = null;
+        level2State._trayIndex = null;
         if (window.AudioManager) window.AudioManager.play("ligand");
         saveLevel2State();
         renderStep2_Q1_type();
@@ -1478,6 +1580,8 @@
       chip.addEventListener("click", function () {
         if (done) return;
         level2State.q1TotalLigandChargeInput = chip.getAttribute("data-val");
+        level2State._armedSlot = null;
+        level2State._trayIndex = null;
         if (window.AudioManager) window.AudioManager.play("ligand");
         saveLevel2State();
         renderStep2_Q1_type();
@@ -1487,7 +1591,54 @@
       chip.addEventListener("click", function () {
         if (done) return;
         level2State.q1ComplexChargeInput = chip.getAttribute("data-val");
+        level2State._armedSlot = null;
+        level2State._trayIndex = null;
         if (window.AudioManager) window.AudioManager.play("ligand");
+        saveLevel2State();
+        renderStep2_Q1_type();
+      });
+    });
+
+    // Drag-tile reactor wiring (PAKAR 1, restored 2026-06-18).
+    // Tap an empty slot → arm it (the bottom dial loads the pool, slot
+    // pulses). Reset _trayIndex so the dial centres on the new pool.
+    document.querySelectorAll("[data-slot]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        if (done) return;
+        level2State._armedSlot = this.getAttribute("data-slot");
+        level2State._trayIndex = null;
+        saveLevel2State();
+        renderStep2_Q1_type();
+      });
+    });
+    // Prev/next dial — increment / decrement _trayIndex with end-stop
+    // clamp; re-render shows the new current tile.
+    document.querySelectorAll("[data-tray-step]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        if (done) return;
+        if (this.hasAttribute("disabled")) return;
+        var step = parseInt(this.getAttribute("data-tray-step"), 10) || 0;
+        var cur  = (typeof level2State._trayIndex === 'number') ? level2State._trayIndex : 0;
+        level2State._trayIndex = cur + step;
+        saveLevel2State();
+        renderStep2_Q1_type();
+      });
+    });
+    // Tap a placed tile → clear its value and re-arm the slot so the
+    // player can drop a different tile.
+    document.querySelectorAll("[data-slot-clear]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        if (done) return;
+        var sid = this.getAttribute("data-slot-clear");
+        var field = this.getAttribute("data-field");
+        var key = this.getAttribute("data-key");
+        if (field === 'charge' && level2State.q1ChargeInputs)        delete level2State.q1ChargeInputs[key];
+        else if (field === 'count' && level2State.q1CountInputs)     delete level2State.q1CountInputs[key];
+        else if (field === 'contrib' && level2State.q1ContribInputs) delete level2State.q1ContribInputs[key];
+        else if (field === 'totLigand') level2State.q1TotalLigandChargeInput = null;
+        else if (field === 'complex')   level2State.q1ComplexChargeInput = null;
+        level2State._armedSlot = sid;
+        level2State._trayIndex = null;
         saveLevel2State();
         renderStep2_Q1_type();
       });

@@ -693,6 +693,21 @@ import LevelTwoPodium from "../components/game-board/level2-podium.astro";
   }
   .l2-tile--dial:hover { transform: translateY(-3px) scale(1.04); }
   .l2-tile--dial:active { transform: translateY(2px); box-shadow: 0 1px 0 #92400e; }
+  /* Long word values (e.g. "Monodentate") — shrink the giant dial font so
+     the word fits the tile instead of overflowing. */
+  .l2-tile--dial-text {
+    font-size: 1rem;
+    min-width: 150px;
+    padding: 0 1.1rem;
+    letter-spacing: 0.01em;
+  }
+  /* Placed/correct/wrong text tile in the table for long words. */
+  .l2-tile--text {
+    font-size: 0.82rem;
+    min-width: 92px;
+    padding: 0 0.6rem;
+    letter-spacing: 0;
+  }
   .l2-tray-dial-cta {
     font-family: 'Fredoka', system-ui, sans-serif;
     font-size: 0.6rem;

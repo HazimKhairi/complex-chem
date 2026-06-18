@@ -795,8 +795,13 @@
     currentStep = step;
     // Real navigation → allow the entrance animation to play once.
     _pendingEntrance = true;
-    // Reset combo on step change so each phase starts fresh.
+    // Reset combo + any armed tile-slot so each phase starts idle and the
+    // Q2/Q3 dials never inherit the other step's armed pool.
     level2State._comboCount = 0;
+    level2State._armedSlot = null;
+    level2State._cnArmedSlot = null;
+    level2State._trayIndex = null;
+    level2State._cnTrayIndex = null;
     saveLevel2State();
     updateStepIndicator(step);
     renderCollectedLigandsStrip(step);
@@ -1871,36 +1876,94 @@
     // Hazim spec — n column capped at [1][2] (matches Q2 chips).
     var countOpts = ['1', '2'];
 
-    function q2Chips(cls, key, opts, sel, expectedVal) {
-      // Inline chips, always visible (Hazim 2026-06-17: "buang pill,
-      // nombor terus nampak"). Reverts the PAKAR 1 "Tap to pick"
-      // progressive reveal — that pill needed two full re-renders per
-      // pick (expand → collapse), which looked like a page refresh.
-      var chipBase = cls + ' text-sm font-black px-2.5 py-1.5 rounded-md border-2 transition select-none ';
+    // Q3 cells use the SAME blue drag-tile / dial mini-game as Q2 (Hazim
+    // 2026-06-18: "taknak kotak putih, nak kotak biru macam game... dekat
+    // semua Q yang ada pilihan jawapan"). Empty cell = pulsing TAP slot;
+    // filled = snapped blue tile. The bottom dial (cnTileTrayHtml) feeds
+    // the armed slot. Uses its OWN armed/index state (`_cnArmedSlot`,
+    // `_cnTrayIndex`) so it never collides with Q2's `_armedSlot`.
+    var cnFieldStores = { type: q2Type, dent: q2Dent, count: q2Count };
+    var cnFieldPools  = { type: typeOpts, dent: dentOpts, count: countOpts };
 
-      var out = '<div class="flex flex-wrap justify-center gap-1">';
-      opts.forEach(function (o) {
-        var picked = sel === o;
-        var c = chipBase;
-        if (done) {
-          // After submit, surface wrong picks in red so the player sees
-          // exactly which working-out steps were off.
-          var isWrongPick = picked && expectedVal !== undefined && String(o) !== String(expectedVal);
-          if (isWrongPick) {
-            c += 'border-red-500 bg-red-50 text-red-700 ring-2 ring-red-300 cursor-default ';
-          } else if (picked) {
-            c += 'border-[#4187a0] bg-[#4187a0]/10 text-[#4187a0] cursor-default ';
-          } else {
-            c += 'border-gray-200 text-gray-300 cursor-default ';
-          }
-        } else {
-          c += picked ? 'border-[#4187a0] bg-[#4187a0]/10 text-[#4187a0] '
-                      : 'border-gray-300 bg-white text-gray-600 hover:border-[#4187a0] cursor-pointer ';
+    function cnTileSlot(field, key, currentValue, expectedValue) {
+      var sel = currentValue != null ? currentValue : '';
+      var picked = sel !== '';
+      var slotId = field + ':' + key;
+      var armed = (level2State._cnArmedSlot === slotId);
+
+      if (done) {
+        if (!picked) {
+          return '<span class="l2-tile-slot l2-tile-slot--empty l2-tile-slot--done" aria-label="empty">·</span>';
         }
-        out += '<button type="button" class="' + c + '" data-key="' + key + '" data-val="' + o + '"' + (done ? ' disabled' : '') + '>' + o + '</button>';
+        var wrong = expectedValue != null && String(sel) !== String(expectedValue);
+        var longTxt = String(sel).length > 3 ? ' l2-tile--text' : '';
+        return '<span class="l2-tile ' + (wrong ? 'l2-tile--wrong' : 'l2-tile--correct') + longTxt + '">' + sel + '</span>';
+      }
+      if (!picked) {
+        var emptyCls = 'l2-tile-slot l2-tile-slot--empty' + (armed ? ' l2-tile-slot--armed' : '');
+        return '<button type="button" class="' + emptyCls + '" data-cnslot="' + slotId + '" aria-label="Tap to fill"><span class="l2-tap-label">Tap</span></button>';
+      }
+      var lt = String(sel).length > 3 ? ' l2-tile--text' : '';
+      return '<button type="button" class="l2-tile l2-tile--placed' + lt + '" data-cnslot-clear="' + slotId + '" data-field="' + field + '" data-key="' + key + '" title="Tap to change">' + sel + '</button>';
+    }
+
+    function cnTileTrayHtml() {
+      if (done) return '';
+      var armedId = level2State._cnArmedSlot;
+      var totalCells = rows.length * 3;
+      var filled = 0;
+      rows.forEach(function (r, i) {
+        var k = 'r_' + i;
+        if (q2Type[k])  filled++;
+        if (q2Dent[k])  filled++;
+        if (q2Count[k]) filled++;
       });
-      out += '</div>';
-      return out;
+      var pct = totalCells > 0 ? Math.min(100, Math.round((filled / totalCells) * 100)) : 0;
+
+      var html = '<div id="l2-cn-tray" class="l2-tile-tray">';
+      html += '<div class="l2-tile-tray-head">';
+      html += '<div class="l2-tile-tray-progress"><div class="l2-tile-tray-progress-bar" style="width:' + pct + '%"></div></div>';
+      html += '<div class="l2-tile-tray-progress-label">' + filled + ' / ' + totalCells + ' tiles dropped</div>';
+      html += '</div>';
+
+      if (!armedId) {
+        html += '<div class="l2-tile-tray-hint"><span class="l2-tap-pulse"></span><span>Tap a glowing slot in the table to start</span></div>';
+        html += '</div>';
+        return html;
+      }
+      var parts = armedId.split(':');
+      var field = parts[0];
+      var slotKey = parts[1];
+      var pool = cnFieldPools[field] || dentOpts;
+
+      if (typeof level2State._cnTrayIndex !== 'number' || isNaN(level2State._cnTrayIndex)) {
+        level2State._cnTrayIndex = Math.floor(pool.length / 2);
+      }
+      if (level2State._cnTrayIndex < 0) level2State._cnTrayIndex = 0;
+      if (level2State._cnTrayIndex >= pool.length) level2State._cnTrayIndex = pool.length - 1;
+      var idx = level2State._cnTrayIndex;
+      var current = pool[idx];
+      var prevDisabled = idx <= 0 ? ' disabled' : '';
+      var nextDisabled = idx >= pool.length - 1 ? ' disabled' : '';
+      var chipCls = 'q2-' + field + '-chip';
+      var dialTextCls = String(current).length > 3 ? ' l2-tile--dial-text' : '';
+
+      html += '<div class="l2-tile-tray-label">Spin the dial → tap the tile to drop it</div>';
+      html += '<div class="l2-tray-scroller">';
+      html += '  <button type="button" class="l2-tray-arrow" data-cntray-step="-1"' + prevDisabled + ' aria-label="Previous">';
+      html += '    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>';
+      html += '  </button>';
+      html += '  <div class="l2-tray-dial">';
+      html += '    <span class="l2-tray-dial-pos">' + (idx + 1) + ' / ' + pool.length + '</span>';
+      html += '    <button type="button" class="' + chipCls + ' l2-tile l2-tile--dial' + dialTextCls + '" data-key="' + slotKey + '" data-val="' + current + '" data-cntray-current="1">' + current + '</button>';
+      html += '    <span class="l2-tray-dial-cta">Tap to drop</span>';
+      html += '  </div>';
+      html += '  <button type="button" class="l2-tray-arrow" data-cntray-step="1"' + nextDisabled + ' aria-label="Next">';
+      html += '    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
+      html += '  </button>';
+      html += '</div>';
+      html += '</div>';
+      return html;
     }
 
     html += '<div class="overflow-x-auto mb-3 rounded-lg border border-gray-200">';
@@ -1918,12 +1981,15 @@
       var expectedCount = String(r.count);
       html += '<tr class="border-t border-gray-100">';
       html += '<td class="px-3 py-2 font-medium text-gray-800">' + r.name + '</td>';
-      html += '<td class="text-center px-3 py-2">' + q2Chips('q2-type-chip',  key, typeOpts,  q2Type[key],  expectedType)  + '</td>';
-      html += '<td class="text-center px-3 py-2">' + q2Chips('q2-dent-chip',  key, dentOpts,  q2Dent[key],  expectedDent)  + '</td>';
-      html += '<td class="text-center px-3 py-2">' + q2Chips('q2-count-chip', key, countOpts, q2Count[key], expectedCount) + '</td>';
+      html += '<td class="text-center px-3 py-2">' + cnTileSlot('type',  key, q2Type[key],  expectedType)  + '</td>';
+      html += '<td class="text-center px-3 py-2">' + cnTileSlot('dent',  key, q2Dent[key],  expectedDent)  + '</td>';
+      html += '<td class="text-center px-3 py-2">' + cnTileSlot('count', key, q2Count[key], expectedCount) + '</td>';
       html += '</tr>';
     });
     html += '</tbody></table></div>';
+
+    // Bottom dial tray — feeds the armed Q3 slot (same mini-game as Q2).
+    html += cnTileTrayHtml();
 
 
     // 4-option answer — same kahoot button pattern as Q2 so the
@@ -1972,6 +2038,18 @@
     html += navButtons({ back: true, next: true, nextDisabled: !done && !chosen, nextLabel: done ? "Next: Geometry" : "Submit" });
     c.innerHTML = html;
 
+    // Dial swap + armed pulse — local motions (not whole-stage), so the
+    // slot-machine feel matches Q2 without any refresh-flash.
+    if (window.gsap) {
+      var cnDial = c.querySelector(".l2-tile--dial");
+      if (cnDial) gsap.fromTo(cnDial,
+        { y: -8, rotateX: -45, opacity: 0 },
+        { y: 0, rotateX: 0, opacity: 1, duration: 0.28, ease: "back.out(2.2)" });
+      var cnArmed = c.querySelector(".l2-tile-slot--armed");
+      if (cnArmed) gsap.to(cnArmed, { scale: 1.08, duration: 0.55, yoyo: true,
+        repeat: -1, ease: "sine.inOut", transformOrigin: "50% 50%" });
+    }
+
     document.querySelectorAll(".cn-opt").forEach(function (btn) {
       btn.addEventListener("click", function () {
         if (done) return;
@@ -1981,29 +2059,69 @@
       });
     });
 
+    function cnDropDone() {
+      // Tile dropped → disarm so the tray returns to its idle hint.
+      level2State._cnArmedSlot = null;
+      level2State._cnTrayIndex = null;
+      if (window.AudioManager) window.AudioManager.play("ligand");
+      saveLevel2State();
+      renderStep3_Q2_cn();
+    }
     document.querySelectorAll(".q2-type-chip").forEach(function (chip) {
       chip.addEventListener("click", function () {
         if (done) return;
         level2State.q2TypeInputs[this.getAttribute("data-key")] = this.getAttribute("data-val");
-        if (window.AudioManager) window.AudioManager.play("ligand");
-        saveLevel2State();
-        renderStep3_Q2_cn();
+        cnDropDone();
       });
     });
     document.querySelectorAll(".q2-dent-chip").forEach(function (chip) {
       chip.addEventListener("click", function () {
         if (done) return;
         level2State.q2DenticityInputs[this.getAttribute("data-key")] = this.getAttribute("data-val");
-        if (window.AudioManager) window.AudioManager.play("ligand");
-        saveLevel2State();
-        renderStep3_Q2_cn();
+        cnDropDone();
       });
     });
     document.querySelectorAll(".q2-count-chip").forEach(function (chip) {
       chip.addEventListener("click", function () {
         if (done) return;
         level2State.q2CountInputs[this.getAttribute("data-key")] = this.getAttribute("data-val");
-        if (window.AudioManager) window.AudioManager.play("ligand");
+        cnDropDone();
+      });
+    });
+
+    // Drag-tile reactor wiring for Q3 (mirrors Q2). Arm an empty slot →
+    // dial loads its pool; scrub ◀ ▶; tap a placed tile to pop + re-arm.
+    document.querySelectorAll("[data-cnslot]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        if (done) return;
+        level2State._cnArmedSlot = this.getAttribute("data-cnslot");
+        level2State._cnTrayIndex = null;
+        saveLevel2State();
+        renderStep3_Q2_cn();
+      });
+    });
+    document.querySelectorAll("[data-cntray-step]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        if (done) return;
+        if (this.hasAttribute("disabled")) return;
+        var step = parseInt(this.getAttribute("data-cntray-step"), 10) || 0;
+        var cur  = (typeof level2State._cnTrayIndex === 'number') ? level2State._cnTrayIndex : 0;
+        level2State._cnTrayIndex = cur + step;
+        saveLevel2State();
+        renderStep3_Q2_cn();
+      });
+    });
+    document.querySelectorAll("[data-cnslot-clear]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        if (done) return;
+        var sid = this.getAttribute("data-cnslot-clear");
+        var field = this.getAttribute("data-field");
+        var key = this.getAttribute("data-key");
+        if (field === 'type'  && level2State.q2TypeInputs)      delete level2State.q2TypeInputs[key];
+        else if (field === 'dent'  && level2State.q2DenticityInputs) delete level2State.q2DenticityInputs[key];
+        else if (field === 'count' && level2State.q2CountInputs)     delete level2State.q2CountInputs[key];
+        level2State._cnArmedSlot = sid;
+        level2State._cnTrayIndex = null;
         saveLevel2State();
         renderStep3_Q2_cn();
       });

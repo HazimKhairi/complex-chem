@@ -80,6 +80,9 @@
   var slotMeshes = [];
   var currentGeometry = null;
   var raycaster, mouse;
+  // Press-vs-drag tracking so a rotate gesture isn't treated as a click.
+  var _pressX = null, _pressY = null, _pressMoved = false;
+  var DRAG_PX = 6; // movement beyond this = a drag (orbit), not a click
   var draggedLigand = null;
   var onPlaceCallback = null;
   var onRemoveCallback = null;
@@ -140,6 +143,21 @@
 
     raycaster = new THREE.Raycaster();
     mouse = new THREE.Vector2();
+
+    // Track where a press started so we can tell an OrbitControls rotate
+    // (drag) apart from a genuine click. Without this, spinning the model
+    // ends in a browser "click" that removes whatever ligand is under the
+    // cursor — Hazim 2026-06-18: "saya main pusing-pusing je tapi automatic
+    // dia buang satu padahal dah letak".
+    canvas.addEventListener("pointerdown", function (e) {
+      _pressX = e.clientX; _pressY = e.clientY; _pressMoved = false;
+    });
+    canvas.addEventListener("pointermove", function (e) {
+      if (_pressX === null) return;
+      var dx = e.clientX - _pressX, dy = e.clientY - _pressY;
+      if ((dx * dx + dy * dy) > DRAG_PX * DRAG_PX) _pressMoved = true;
+    });
+    canvas.addEventListener("pointerup", function () { /* keep _pressMoved for click */ });
 
     canvas.addEventListener("click", onCanvasClick);
     canvas.addEventListener("dragover", function (e) { e.preventDefault(); });
@@ -668,6 +686,12 @@
   }
 
   function onCanvasClick(e) {
+    // If the pointer moved past the drag threshold between press and
+    // release, this "click" is the tail of an OrbitControls rotate — do
+    // nothing (don't place, don't remove). Only clean taps act. Hazim
+    // 2026-06-18: "pusing-pusing je tapi automatic dia buang satu".
+    if (_pressMoved) { _pressMoved = false; return; }
+    _pressMoved = false;
     // Hazim 2026-05-11 spec: tap-to-place must work. If a ligand is
     // armed (`draggedLigand` set by setDraggedLigand) and the click
     // lands on an empty slot, place it. Falling through to the

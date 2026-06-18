@@ -220,10 +220,18 @@
       var reason = (e.detail && e.detail.reason) || "";
       var msg = "Cannot place that here.";
       if (reason === "no-bidentate-partner") {
-        msg = "Bidentate ligand needs 2 free slots — fill another slot first.";
+        msg = "Bidentate ligand needs 2 empty slots side by side. Remove a ligand to make room, then place it again.";
+      } else if (reason === "slots-full") {
+        msg = "All slots are full. Click a placed ligand to remove it if you want to swap.";
       }
       showLevel2Toast(msg, "error");
       if (window.AudioManager) window.AudioManager.play("wrong");
+      // Client 2026-06-18: "dah letak tapi still follow cursor" — a
+      // rejected placement used to leave the ligand armed, so the ghost
+      // kept chasing the pointer with no way to drop it. Disarm so the
+      // player can free a slot and re-pick cleanly.
+      setArmedLigand(null);
+      if (window.BoneBuilder) window.BoneBuilder.clearDraggedLigand();
     });
 
     gameOption = sessionStorage.getItem("game-option") || "one-vs-one";
@@ -2029,7 +2037,8 @@
           level2State.geometryScore = pts;
           level2State.level2Score += pts;
           level2State.geometryDone = true;
-          showPointsToast(pts, "You earned");
+          // Client 2026-06-18: no score popup on Q4 — quiet chime only.
+          if (window.AudioManager) window.AudioManager.play("correct");
         } else if (level2State.geometryAttempts >= 3) {
           level2State.selectedGeometry = correctList[0];
           level2State.geometryScore = 0;
@@ -2201,7 +2210,8 @@
           level2State.pictureDone = true;
           level2State.level2Score += level2State.pictureScore;
           updateScoreBar();
-          showPointsToast(level2State.pictureScore, "You earned");
+          // Client 2026-06-18: no score popup on Q4 — quiet chime only.
+          if (window.AudioManager) window.AudioManager.play("correct");
           renderStep5_Q4_picture();
         } else if (level2State.pictureAttempts >= 3) {
           level2State.pictureScore = 0;

@@ -647,6 +647,10 @@
     return null;
   }
 
+  function hasEmptySlot() {
+    return slotMeshes.some(function (s) { return !s.ligand; });
+  }
+
   // Place the armed ligand into the slot under the pointer. Returns
   // true on success so the caller knows to clear armed state.
   function tryPlaceArmedAt(clientX, clientY) {
@@ -670,8 +674,16 @@
     // existing remove-on-filled-slot behaviour when nothing's armed.
     if (draggedLigand) {
       if (tryPlaceArmedAt(e.clientX, e.clientY)) return;
-      // Click missed the slot — leave the ligand armed so the player
-      // can try again instead of silently dropping it.
+      // Placement failed. If every slot is already filled, this ligand
+      // can never land — disarm it so it stops chasing the cursor
+      // (Client 2026-06-18). Otherwise the click just missed a slot:
+      // keep it armed so the player can try again.
+      if (!hasEmptySlot()) {
+        draggedLigand = null;
+        document.dispatchEvent(new CustomEvent("ligand-place-rejected", {
+          detail: { reason: "slots-full" },
+        }));
+      }
       return;
     }
     var slot = getIntersectedSlot(e.clientX, e.clientY);
@@ -684,9 +696,16 @@
   function onCanvasDrop(e) {
     e.preventDefault();
     if (!draggedLigand) return;
-    tryPlaceArmedAt(e.clientX, e.clientY);
-    // tryPlaceArmedAt already clears draggedLigand on success.
-    // On a missed drop, KEEP it armed so the player can retry.
+    if (tryPlaceArmedAt(e.clientX, e.clientY)) return;
+    // Missed drop. If the board is full, disarm so the ligand doesn't
+    // keep following the cursor (Client 2026-06-18); otherwise keep it
+    // armed so the player can retry on an empty slot.
+    if (!hasEmptySlot()) {
+      draggedLigand = null;
+      document.dispatchEvent(new CustomEvent("ligand-place-rejected", {
+        detail: { reason: "slots-full" },
+      }));
+    }
   }
 
   function onTouchEnd(e) {

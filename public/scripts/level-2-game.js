@@ -1234,13 +1234,9 @@
 
     var html = headingBanner("Q2 — Predict the type of complex", "Calculate the charges and decide whether the complex is cation, anion, or neutral.", "2 PTS");
 
-    // Combo HUD — sits above the table. Updates live as tiles drop.
-    var comboInit = level2State._comboCount || 0;
-    html += '<div id="l2-combo-hud" class="l2-combo-hud" aria-live="polite">';
-    html += '  <span class="l2-combo-label">COMBO</span>';
-    html += '  <span class="l2-combo-count">' + comboInit + '</span>';
-    html += '  <span class="l2-combo-mult">x' + comboInit + '</span>';
-    html += '</div>';
+    // Client 2026-06-18: "buang pop up markah yg ade tulis bonus" — the
+    // COMBO HUD + floating "+N COMBO" sparkle read as fake bonus marks on
+    // what is an exam question. Removed. Chip taps keep the pick sound.
 
     // Info pills — non-blocking chat bubbles like Q3. Same INFO_BUBBLES
     // store + openInfoBubble overlay. Hazim spec: "info what complex &
@@ -1434,8 +1430,6 @@
     if (window.gsap && _pendingEntrance) {
       _pendingEntrance = false;
       var tlEntrance = gsap.timeline({ defaults: { ease: "back.out(1.8)" } });
-      var hudEl = c.querySelector("#l2-combo-hud");
-      if (hudEl) tlEntrance.from(hudEl, { y: -12, scale: 0.7, opacity: 0, duration: 0.35 }, 0);
       var rows = c.querySelectorAll("table tbody tr");
       if (rows.length) tlEntrance.from(rows,
         { y: 14, opacity: 0, duration: 0.32, stagger: 0.06 }, 0.05);
@@ -1465,7 +1459,7 @@
         var store = q1FieldStores[field];
         if (!store) return;
         store[this.getAttribute("data-key")] = this.getAttribute("data-val");
-        bumpComboAndFloat(this);
+        if (window.AudioManager) window.AudioManager.play("ligand");
         saveLevel2State();
         renderStep2_Q1_type();
       });
@@ -1476,7 +1470,7 @@
       chip.addEventListener("click", function () {
         if (done) return;
         level2State.q1TotalLigandChargeInput = chip.getAttribute("data-val");
-        bumpComboAndFloat(chip);
+        if (window.AudioManager) window.AudioManager.play("ligand");
         saveLevel2State();
         renderStep2_Q1_type();
       });
@@ -1485,7 +1479,7 @@
       chip.addEventListener("click", function () {
         if (done) return;
         level2State.q1ComplexChargeInput = chip.getAttribute("data-val");
-        bumpComboAndFloat(chip);
+        if (window.AudioManager) window.AudioManager.play("ligand");
         saveLevel2State();
         renderStep2_Q1_type();
       });
@@ -1526,8 +1520,9 @@
           level2State.typeDone = true;
           level2State.level2Score += level2State.typeScore;
           updateScoreBar();
-          if (level2State.typeScore > 0) showPointsToast(level2State.typeScore, "You earned");
-          else if (window.AudioManager) window.AudioManager.play("correct");
+          // Client 2026-06-18: no score popup on Q2 — inline green banner
+          // already reports the marks. Quiet chime only.
+          if (window.AudioManager) window.AudioManager.play("correct");
         } else if (level2State.typeAttempts >= 3) {
           // Out of attempts — type mark zero, but still grant the
           // working-out mark if those chips were correct.
@@ -1539,7 +1534,6 @@
           level2State.typeDone = true;
           level2State.level2Score += level2State.typeScore;
           updateScoreBar();
-          if (level2State.typeScore > 0) showPointsToast(level2State.typeScore, "Working credit");
           if (window.AudioManager) window.AudioManager.play("wrong");
         } else {
           // Wrong, but attempts left — eliminate the option they just
@@ -1895,7 +1889,8 @@
           level2State.cnDone = true;
           level2State.level2Score += level2State.cnScore;
           updateScoreBar();
-          showPointsToast(level2State.cnScore, "You earned");
+          // Client 2026-06-18: Q3 — no score popup, inline banner reports it.
+          if (window.AudioManager) window.AudioManager.play("correct");
           renderStep3_Q2_cn();
         } else if (level2State.cnAttempts >= 3) {
           level2State.cnScore = 0;

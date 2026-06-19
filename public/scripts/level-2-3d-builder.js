@@ -476,7 +476,14 @@
     // nearest empty slot with a matching sphere and link the pair with
     // a curved bond arc. One inventory pill still equals one placement.
     if (ligand && ligand.denticity === 2) {
-      tryPairBidentate(slotIndex, ligand, sphereColorHex);
+      // Never let a pairing/render error abort the whole placement — the
+      // caller (tryPlaceArmedAt) must still fire onPlace so the armed
+      // ghost disarms and the player isn't left "carrying" the ligand.
+      try {
+        tryPairBidentate(slotIndex, ligand, sphereColorHex);
+      } catch (err) {
+        console.error("[L2] tryPairBidentate failed:", err);
+      }
     }
 
     // Play a soft chime when a ligand actually lands on the central metal.
@@ -549,7 +556,14 @@
     // they just placed. PAKAR 1 spec (Hazim 2026-06-15).
     var arcName = (ligand && ligand.name) ? String(ligand.name) : "";
     if (arcName) {
-      var mid = first.position.clone().add(partner.position).multiplyScalar(0.5);
+      // slot.position is a plain {x,y,z} (not a THREE.Vector3) — wrap it
+      // before any vector math. The previous `.clone()` threw mid-place,
+      // aborting tryPairBidentate so the bidentate never paired: ghost
+      // stayed armed (kept following the cursor), the partner slot never
+      // registered (Submit stayed disabled) and the ligand-name label
+      // never drew on the ring. (Client 2026-06-19.)
+      var mid = new THREE.Vector3(first.position.x, first.position.y, first.position.z)
+        .add(partner.position).multiplyScalar(0.5);
       var outward = mid.clone();
       if (outward.lengthSq() > 0.0001) outward.normalize().multiplyScalar(1.25);
       else outward.set(0, 1.25, 0);

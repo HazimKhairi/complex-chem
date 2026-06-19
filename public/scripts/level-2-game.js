@@ -522,20 +522,6 @@
     setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 3400);
   }
 
-  /**
-   * Sound-only celebration for a scoring answer. Client 2026-06-18 culled
-   * the visual score popups from Q1-Q4, but the crowd "cheer" (sorakan)
-   * lived INSIDE showPointsToast — so removing the popups silenced the
-   * celebration too, leaving only the bare "correct" chime. Client
-   * 2026-06-19 complained the sorakan hilang. This plays the same
-   * correct-chime + crowd-cheer layer showPointsToast uses, with no popup.
-   */
-  function playScoreCheer() {
-    if (!window.AudioManager) return;
-    window.AudioManager.play("correct");
-    window.AudioManager.play("cheer");
-  }
-
   // ── Helpers ─────────────────────────────────────────────
 
   function $(id) { return document.getElementById(id); }
@@ -1698,10 +1684,11 @@
           level2State.typeDone = true;
           level2State.level2Score += level2State.typeScore;
           updateScoreBar();
-          // Client 2026-06-18: no score popup on Q2 — inline green banner
-          // already reports the marks. Sound-only celebration (correct +
-          // crowd cheer) so the sorakan still fires (client 2026-06-19).
-          playScoreCheer();
+          // Client 2026-06-19: bring back the "You earned +N pts" box on
+          // every scoring question (Hazim standing spec: "untuk point
+          // setiap soalan buat je macam Q1 keluar box you earned"). The
+          // toast also fires the correct + crowd-cheer SFX (sorakan).
+          showPointsToast(level2State.typeScore, "You earned");
         } else if (level2State.typeAttempts >= 3) {
           // Out of attempts — type mark zero, but still grant the
           // working-out mark if those chips were correct.
@@ -2181,9 +2168,8 @@
           level2State.cnDone = true;
           level2State.level2Score += level2State.cnScore;
           updateScoreBar();
-          // Client 2026-06-18: Q3 — no score popup, inline banner reports it.
-          // Sound-only sorakan on marks (client 2026-06-19).
-          playScoreCheer();
+          // Client 2026-06-19: show the "You earned +N pts" box (+ sorakan).
+          showPointsToast(level2State.cnScore, "You earned");
           renderStep3_Q2_cn();
         } else if (level2State.cnAttempts >= 3) {
           level2State.cnScore = 0;
@@ -2322,9 +2308,8 @@
           level2State.geometryScore = pts;
           level2State.level2Score += pts;
           level2State.geometryDone = true;
-          // Client 2026-06-18: no score popup on Q4 — sound-only sorakan
-          // on marks (client 2026-06-19).
-          playScoreCheer();
+          // Client 2026-06-19: show the "You earned +N pts" box (+ sorakan).
+          showPointsToast(pts, "You earned");
         } else if (level2State.geometryAttempts >= 3) {
           level2State.selectedGeometry = correctList[0];
           level2State.geometryScore = 0;
@@ -2496,9 +2481,8 @@
           level2State.pictureDone = true;
           level2State.level2Score += level2State.pictureScore;
           updateScoreBar();
-          // Client 2026-06-18: no score popup on Q4 — sound-only sorakan
-          // on marks (client 2026-06-19).
-          playScoreCheer();
+          // Client 2026-06-19: show the "You earned +N pts" box (+ sorakan).
+          showPointsToast(level2State.pictureScore, "You earned");
           renderStep5_Q4_picture();
         } else if (level2State.pictureAttempts >= 3) {
           level2State.pictureScore = 0;
@@ -3001,8 +2985,8 @@
           if (val === correct) {
             level2State.namingScore = 2;
             level2State.level2Score += 2;
-            // Sorakan on marks (client 2026-06-19) — this branch had no SFX.
-            playScoreCheer();
+            // Client 2026-06-19: show the "You earned +2 pts" box (+ sorakan).
+            showPointsToast(2, "You earned");
           } else if (window.AudioManager) {
             window.AudioManager.play("wrong");
           }
